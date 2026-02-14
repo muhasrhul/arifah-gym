@@ -1,0 +1,173 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\TransactionResource\Pages;
+use App\Models\Transaction;
+use Filament\Forms;
+use Filament\Resources\Form;
+use Filament\Resources\Resource;
+use Filament\Resources\Table;
+use Filament\Tables;
+use Illuminate\Database\Eloquent\Builder;
+
+class TransactionResource extends Resource
+{
+    protected static ?string $model = Transaction::class;
+    protected static ?string $navigationIcon = 'heroicon-o-cash';
+    protected static ?string $navigationLabel = 'Laporan Transaksi';
+    protected static ?string $pluralLabel = 'Laporan Transaksi';
+    
+    // PERMISSION: Staff hanya bisa lihat, tidak bisa create/edit/delete
+    public static function canCreate(): bool
+    {
+        return !auth()->user()->isStaff(); // Super Admin & Admin bisa
+    }
+
+    public static function canEdit($record): bool
+    {
+        return !auth()->user()->isStaff(); // Super Admin & Admin bisa
+    }
+
+    public static function canDelete($record): bool
+    {
+        return !auth()->user()->isStaff(); // Super Admin & Admin bisa
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return !auth()->user()->isStaff(); // Super Admin & Admin bisa
+    }
+    
+    // Eager loading untuk relasi member
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with('member');
+    }
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Forms\Components\Card::make()->schema([
+                // 1. Pilih Member (Bisa dikosongkan jika tamu harian)
+                Forms\Components\Select::make('member_id')
+                    ->label('Pilih Member (Jika terdaftar)')
+                    ->relationship('member', 'name')
+                    ->searchable()
+                    ->placeholder('Cari nama member...'),
+
+                // 2. Input Nama Tamu (Jika tidak mau daftar member)
+                Forms\Components\TextInput::make('guest_name')
+                    ->label('Nama Tamu / Harian')
+                    ->placeholder('Ketik nama jika bukan member terdaftar')
+                    ->helperText('Isi ini jika Anda tidak memilih nama di kolom atas.'),
+
+                Forms\Components\TextInput::make('order_id')
+                    ->label('ID Transaksi / Order ID')
+                    ->default('MANUAL-' . uniqid())
+                    ->required(),
+
+                Forms\Components\TextInput::make('amount')
+                    ->label('Nominal (Rp)')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->required(),
+
+                Forms\Components\Select::make('type')
+                    ->label('Kategori')
+                    ->options([
+                        'Pendaftaran' => 'Pendaftaran',
+                        'Bulanan' => 'Iuran Bulanan',
+                        'Harian' => 'Harian (Insidentil)',
+                        'Minuman/Kantin' => 'Minuman/Kantin',
+                    ])
+                    ->default('Harian')
+                    ->required(),
+
+                Forms\Components\Select::make('payment_method')
+                    ->label('Metode Bayar')
+                    ->options([
+                        'Cash' => 'Cash',
+                        'Transfer Bank' => 'Transfer Bank',
+                    ])
+                    ->default('Cash')
+                    ->required(),
+
+                Forms\Components\DateTimePicker::make('payment_date')
+                    ->label('Tanggal & Jam Bayar')
+                    ->default(now())
+                    ->required(),
+            ])
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                // LOGIKA: Tampilkan nama member, jika kosong tampilkan guest_name
+                Tables\Columns\TextColumn::make('customer_name')
+                    ->label('Nama Customer')
+                    ->getStateUsing(fn ($record) => $record->member ? $record->member->name : ($record->guest_name ?? 'Umum'))
+                    ->searchable(),
+                
+                Tables\Columns\TextColumn::make('amount')
+                    ->label('Nominal')
+                    ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                    ->color('success')
+                    ->weight('bold'),
+
+                Tables\Columns\BadgeColumn::make('type')
+                    ->label('Kategori')
+                    ->color('primary'),
+                
+                Tables\Columns\BadgeColumn::make('status')
+                    ->label('Status')
+                    ->colors([
+                        'success' => 'paid',
+                        'warning' => 'pending',
+                        'danger' => 'failed',
+                        'secondary' => 'refund',
+                    ])
+                    ->icons([
+                        'heroicon-o-check-circle' => 'paid',
+                        'heroicon-o-clock' => 'pending',
+                        'heroicon-o-x-circle' => 'failed',
+                        'heroicon-o-arrow-left' => 'refund',
+                    ])
+                    ->formatStateUsing(fn (string $state): string => strtoupper($state)),
+                
+                Tables\Columns\TextColumn::make('payment_method')->label('Metode'),
+                
+                Tables\Columns\TextColumn::make('payment_date')
+                    ->label('Waktu')
+                    ->dateTime('d M Y, H:i')
+                    ->sortable(),
+            ])
+            ->defaultSort('payment_date', 'desc')
+            ->headerActions([
+                Tables\Actions\Action::make('export_excel')
+                    ->label('Export Excel')
+                    ->color('success')
+                    ->icon('heroicon-o-document-download')
+                    ->url(fn () => route('cetak-laporan', ['format' => 'excel']))
+                    ->openUrlInNewTab(),
+
+                Tables\Actions\Action::make('print_pdf')
+                    ->label('Cetak PDF')
+                    ->color('warning')
+                    ->icon('heroicon-o-printer')
+                    ->url(fn () => route('cetak-laporan', ['format' => 'pdf']))
+                    ->openUrlInNewTab(),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListTransactions::route('/'),
+            'create' => Pages\CreateTransaction::route('/create'),
+            'edit' => Pages\EditTransaction::route('/{record}/edit'),
+        ];
+    }
+}

@@ -1,0 +1,189 @@
+/* Custom CSS untuk Fix Dark Mode - Filament Admin Panel */
+
+/* =========================================
+   FIX USER MENU DROPDOWN - DARK MODE
+   ========================================= */
+
+/* Force background putih untuk user menu dropdown di dark mode */
+.dark .filament-user-menu .filament-dropdown-panel,
+.dark [x-data*="userMenu"] .filament-dropdown-panel,
+.dark div[x-data] > div[role="menu"] {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Force semua container di dalam user menu */
+.dark .filament-user-menu > div,
+.dark [x-data*="userMenu"] > div {
+    background: #ffffff !important;
+}
+
+/* Text hitam untuk semua item */
+.dark .filament-user-menu .filament-dropdown-list-item,
+.dark .filament-user-menu .filament-dropdown-list-item span,
+.dark .filament-user-menu .filament-dropdown-list-item button,
+.dark .filament-user-menu .filament-dropdown-list-item button span,
+.dark [x-data*="userMenu"] .filament-dropdown-list-item,
+.dark [x-data*="userMenu"] .filament-dropdown-list-item span,
+.dark [x-data*="userMenu"] .filament-dropdown-list-item button,
+.dark [x-data*="userMenu"] .filament-dropdown-list-item button span {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+}
+
+/* Icon putih untuk SEMUA icon di user menu - dark mode */
+.dark .filament-user-menu svg,
+.dark .filament-user-menu button svg,
+.dark .filament-user-menu a svg,
+.dark .filament-user-menu .filament-dropdown-list-item svg,
+.dark [x-data*="userMenu"] svg,
+.dark [x-data*="userMenu"] button svg,
+.dark [x-data*="userMenu"] a svg,
+.dark [x-data*="userMenu"] .filament-dropdown-list-item svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+    fill: currentColor !important;
+}
+
+/* Force icon putih untuk button theme dan logout */
+.dark button[x-on\:click*="theme"] svg,
+.dark button[x-on\:click*="logout"] svg,
+.dark form[action*="logout"] button svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+    fill: currentColor !important;
+}
+
+/* Hover state */
+.dark .filament-user-menu .filament-dropdown-list-item:hover,
+.dark [x-data*="userMenu"] .filament-dropdown-list-item:hover {
+    background: #f1f5f9 !important;
+}
+
+.dark .filament-user-menu .filament-dropdown-list-item:hover span,
+.dark .filament-user-menu .filament-dropdown-list-item:hover button span,
+.dark [x-data*="userMenu"] .filament-dropdown-list-item:hover span,
+.dark [x-data*="userMenu"] .filament-dropdown-list-item:hover button span {
+    color: #0992C2 !important;
+}
+
+.dark .filament-user-menu .filament-dropdown-list-item:hover svg,
+.dark [x-data*="userMenu"] .filament-dropdown-list-item:hover svg {
+    color: #0992C2 !important;
+    stroke: #0992C2 !important;
+}
+
+/* Header nama user */
+.dark .filament-user-menu .filament-dropdown-header,
+.dark .filament-user-menu .filament-dropdown-header span,
+.dark [x-data*="userMenu"] .filament-dropdown-header,
+.dark [x-data*="userMenu"] .filament-dropdown-header span {
+    color: #1e293b !important;
+    font-weight: 700 !important;
+}
+
+/* Header dropdown - Nama Admin dan Avatar */
+.dark .filament-user-menu .filament-dropdown-header,
+.dark .filament-user-menu .filament-dropdown-header *,
+.dark [x-data*="userMenu"] .filament-dropdown-header,
+.dark [x-data*="userMenu"] .filament-dropdown-header * {
+    color: #1e293b !important;
+}
+
+/* Avatar/Logo di header dropdown */
+.dark .filament-user-menu .filament-dropdown-header img,
+.dark [x-data*="userMenu"] .filament-dropdown-header img {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+/* Nama user dan email di header */
+.dark .filament-user-menu .filament-dropdown-header .filament-dropdown-header-label,
+.dark .filament-user-menu .filament-dropdown-header .filament-dropdown-header-description,
+.dark [x-data*="userMenu"] .filament-dropdown-header .filament-dropdown-header-label,
+.dark [x-data*="userMenu"] .filament-dropdown-header .filament-dropdown-header-description {
+    color: #1e293b !important;
+}
+
+/* Force semua text di header dropdown menjadi hitam */
+.dark .filament-user-menu > div > div:first-child,
+.dark .filament-user-menu > div > div:first-child *,
+.dark [x-data*="userMenu"] > div > div:first-child,
+.dark [x-data*="userMenu"] > div > div:first-child * {
+    color: #1e293b !important;
+}
+
+/* =========================================
+   FIX DROPDOWN COLUMN TOGGLE - DARK MODE
+   ========================================= */
+
+/* Background dropdown column toggle di dark mode */
+.dark .filament-tables-column-toggle-dropdown,
+.dark [x-data*="toggleColumns"] > div,
+.dark .filament-dropdown-panel:not(.filament-user-menu *):not([x-data*="userMenu"] *) {
+    background-color: rgb(31 41 55) !important; /* gray-800 */
+    border-color: rgb(55 65 81) !important; /* gray-700 */
+}
+
+/* Text color untuk item di dropdown (kecuali user menu) */
+.dark .filament-dropdown-list-item:not(.filament-user-menu *):not([x-data*="userMenu"] *) {
+    color: rgb(229 231 235) !important; /* gray-200 */
+}
+
+/* Hover state (kecuali user menu) */
+.dark .filament-dropdown-list-item:not(.filament-user-menu *):not([x-data*="userMenu"] *):hover {
+    background-color: rgb(55 65 81) !important; /* gray-700 */
+}
+
+/* Checkbox label text (kecuali user menu) */
+.dark .filament-dropdown-list-item:not(.filament-user-menu *):not([x-data*="userMenu"] *) label,
+.dark .filament-dropdown-list-item:not(.filament-user-menu *):not([x-data*="userMenu"] *) span {
+    color: rgb(229 231 235) !important; /* gray-200 */
+}
+
+/* =========================================
+   FORGOT PASSWORD LINK - LOGIN PAGE
+   ========================================= */
+
+/* Container untuk link lupa password */
+.forgot-password-container {
+    margin-top: 1.5rem;
+    text-align: center;
+    width: 100%;
+}
+
+/* Link lupa password */
+.forgot-password-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0992C2;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+}
+
+.forgot-password-link:hover {
+    color: #0779a3;
+    background-color: rgba(9, 146, 194, 0.1);
+}
+
+/* Dark mode */
+.dark .forgot-password-link {
+    color: #5bc0de;
+}
+
+.dark .forgot-password-link:hover {
+    color: #0992C2;
+    background-color: rgba(91, 192, 222, 0.1);
+}
+
+/* Icon di link */
+.forgot-password-link svg {
+    width: 1rem;
+    height: 1rem;
+}

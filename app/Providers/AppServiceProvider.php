@@ -1,0 +1,682 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+use Filament\Facades\Filament;
+use Filament\Navigation\NavigationItem;
+use Illuminate\Support\HtmlString;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
+    }
+
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        // --- FITUR BYPASS TIME LIMIT (AGAR TIDAK ERROR 120 DETIK) ---
+        if (app()->runningInConsole()) {
+            // Jika sedang menjalankan Queue Worker di terminal, waktu tidak dibatasi
+            set_time_limit(0);
+        } else {
+            // Jika akses web biasa, beri nafas 2 menit
+            set_time_limit(120); 
+        }
+        // -----------------------------------------------------------
+
+        Filament::serving(function () {
+            // Load custom CSS untuk dark mode fixes dengan versioning
+            Filament::registerStyles([
+                asset('css/filament-dark-fix.css?v=' . time()),
+            ]);
+            
+            // 1. DAFTAR NAVIGATION ITEMS
+            Filament::registerNavigationItems([
+                NavigationItem::make('Backup Data')
+                    ->url(route('backup-database'))
+                    ->icon('heroicon-o-database')
+                    ->group('Sistem')
+                    ->sort(10),
+            ]);
+
+            // 2. STYLE CUSTOM UNTUK TAMPILAN LOGIN PREMIUM
+            // DISABLED: Google Fonts untuk performa lebih baik
+            // Filament::registerStyles([
+            //     'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap',
+            // ]);
+
+            Filament::pushMeta([
+                new HtmlString('
+                <style>
+                    /* Latar Belakang Full Screen dengan Overlay Gelap */
+                    .filament-login-page {
+                        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                                    url("/images/bg-login.jpg") no-repeat center center fixed !important;
+                        background-size: cover !important;
+                        font-family: "Poppins", sans-serif !important;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+
+                    /* Kartu Login Glassmorphism (Efek Kaca) */
+                    .filament-login-page .filament-forms-card-component {
+                        background: rgba(255, 255, 255, 0.08) !important;
+                        backdrop-filter: blur(12px) !important;
+                        -webkit-backdrop-filter: blur(12px) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                        border-radius: 24px !important;
+                        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
+                        padding: 2rem !important;
+                    }
+
+                    /* Judul Heading Login */
+                    .filament-login-page h2 {
+                        color: #ffffff !important;
+                        font-weight: 800 !important;
+                        letter-spacing: -0.5px !important;
+                        text-align: center !important;
+                        margin-bottom: 1.5rem !important;
+                        font-size: 1.8rem !important;
+                    }
+
+                    /* Styling Input Field agar Mewah */
+                    .filament-login-page input {
+                        background: rgba(0, 0, 0, 0.5) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        color: #ffffff !important;
+                        border-radius: 12px !important;
+                        padding: 0.75rem 1rem !important;
+                        transition: all 0.3s ease !important;
+                    }
+
+                    .filament-login-page input:focus {
+                        border-color: #fbbf24 !important;
+                        box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2) !important;
+                    }
+
+                    /* Tombol Submit Login Premium */
+                    .filament-login-page button[type="submit"] {
+                        background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%) !important;
+                        color: #000000 !important;
+                        border: none !important;
+                        border-radius: 12px !important;
+                        font-weight: 700 !important;
+                        padding: 0.75rem !important;
+                        text-transform: uppercase !important;
+                        letter-spacing: 1px !important;
+                        transition: all 0.3s ease !important;
+                        width: 100% !important;
+                    }
+
+                    /* =========================================
+                       UPGRADE MODAL & NOTIFIKASI (LIGHT MEWAH)
+                       ========================================= */
+
+                    /* Jendela Modal (Putih Bersih) - LIGHT MODE */
+                    .filament-modal-window {
+                        background: #ffffff !important;
+                        border-radius: 28px !important;
+                        border: none !important;
+                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+                    }
+
+                    /* Jendela Modal - DARK MODE */
+                    .dark .filament-modal-window {
+                        background: rgb(31 41 55) !important; /* gray-800 */
+                        border: 1px solid rgb(55 65 81) !important; /* gray-700 */
+                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3) !important;
+                    }
+
+                    /* Judul Modal (Hitam Slate) - LIGHT MODE */
+                    .filament-modal-heading {
+                        color: #1e293b !important;
+                        font-family: "Poppins", sans-serif !important;
+                        font-weight: 800 !important;
+                    }
+
+                    /* Judul Modal - DARK MODE */
+                    .dark .filament-modal-heading {
+                        color: rgb(229 231 235) !important; /* gray-200 */
+                    }
+
+                    /* Deskripsi Modal (Abu-abu Halus) - LIGHT MODE */
+                    .filament-modal-description {
+                        color: #64748b !important;
+                        font-weight: 500 !important;
+                    }
+
+                    /* Deskripsi Modal - DARK MODE */
+                    .dark .filament-modal-description {
+                        color: rgb(156 163 175) !important; /* gray-400 */
+                    }
+
+                    /* Tombol Konfirmasi (Danger) Menjadi Orange Gold */
+                    .filament-modal-actions button.bg-danger-600 {
+                        background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%) !important;
+                        color: #000000 !important;
+                        border-radius: 14px !important;
+                        font-weight: 700 !important;
+                        text-transform: uppercase !important;
+                        border: none !important;
+                        letter-spacing: 1px !important;
+                        box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2) !important;
+                        transition: all 0.3s ease !important;
+                    }
+
+                    .filament-modal-actions button.bg-danger-600:hover {
+                        transform: translateY(-1px) !important;
+                        filter: brightness(1.1) !important;
+                    }
+
+                    /* Tombol Batal (Light Grey) */
+                    .filament-modal-actions button.bg-white {
+                        background: #f1f5f9 !important;
+                        color: #475569 !important;
+                        border: none !important;
+                        border-radius: 14px !important;
+                        font-weight: 600 !important;
+                    }
+
+                    /* Tombol Batal - DARK MODE */
+                    .dark .filament-modal-actions button.bg-white,
+                    .dark .filament-modal-actions button[class*="bg-white"] {
+                        background: rgb(55 65 81) !important; /* gray-700 */
+                        color: rgb(229 231 235) !important; /* gray-200 */
+                    }
+
+                    .dark .filament-modal-actions button.bg-white:hover,
+                    .dark .filament-modal-actions button[class*="bg-white"]:hover {
+                        background: rgb(75 85 99) !important; /* gray-600 */
+                    }
+
+                    /* Dropdown Action Menu */
+                    .filament-dropdown-panel {
+                        background: #ffffff !important;
+                        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+                        border-radius: 12px !important;
+                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+                    }
+
+                    .filament-dropdown-list-item:hover {
+                        background: #fff7ed !important;
+                    }
+
+                    /* User Menu Dropdown - BACKGROUND TERANG UNTUK SEMUA MODE */
+                    .filament-user-menu .filament-dropdown-panel,
+                    [x-data*="userMenu"] .filament-dropdown-panel,
+                    .dark .filament-user-menu .filament-dropdown-panel,
+                    .dark [x-data*="userMenu"] .filament-dropdown-panel {
+                        background: #ffffff !important;
+                        border: 1px solid rgba(0, 0, 0, 0.1) !important;
+                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+                    }
+
+                    /* Force background putih untuk container dropdown */
+                    .dark .filament-user-menu > div,
+                    .dark [x-data*="userMenu"] > div,
+                    .dark .filament-user-menu [role="menu"],
+                    .dark [x-data*="userMenu"] [role="menu"] {
+                        background: #ffffff !important;
+                    }
+
+                    /* Force background putih untuk semua child elements */
+                    .dark .filament-user-menu *,
+                    .dark [x-data*="userMenu"] * {
+                        background-color: transparent !important;
+                    }
+
+                    .dark .filament-user-menu .filament-dropdown-panel,
+                    .dark [x-data*="userMenu"] .filament-dropdown-panel {
+                        background-color: #ffffff !important;
+                    }
+
+                    /* Hover background tetap light gray */
+                    .dark .filament-user-menu .filament-dropdown-list-item:hover,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item:hover {
+                        background-color: #f1f5f9 !important;
+                    }
+
+                    /* Font HITAM untuk semua mode - SEMUA ITEM */
+                    .filament-user-menu .filament-dropdown-list-item,
+                    .filament-user-menu .filament-dropdown-list-item span,
+                    .filament-user-menu .filament-dropdown-list-item button,
+                    .filament-user-menu .filament-dropdown-list-item button span,
+                    .filament-user-menu .filament-dropdown-list-item a,
+                    [x-data*="userMenu"] .filament-dropdown-list-item,
+                    [x-data*="userMenu"] .filament-dropdown-list-item span,
+                    [x-data*="userMenu"] .filament-dropdown-list-item button,
+                    [x-data*="userMenu"] .filament-dropdown-list-item button span,
+                    [x-data*="userMenu"] .filament-dropdown-list-item a,
+                    .dark .filament-user-menu .filament-dropdown-list-item,
+                    .dark .filament-user-menu .filament-dropdown-list-item span,
+                    .dark .filament-user-menu .filament-dropdown-list-item button,
+                    .dark .filament-user-menu .filament-dropdown-list-item button span,
+                    .dark .filament-user-menu .filament-dropdown-list-item a,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item span,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item button,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item button span,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item a {
+                        color: #1e293b !important;
+                        font-weight: 600 !important;
+                    }
+
+                    /* Hover state */
+                    .filament-user-menu .filament-dropdown-list-item:hover,
+                    [x-data*="userMenu"] .filament-dropdown-list-item:hover,
+                    .dark .filament-user-menu .filament-dropdown-list-item:hover,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item:hover {
+                        background: #f1f5f9 !important;
+                    }
+
+                    .filament-user-menu .filament-dropdown-list-item:hover span,
+                    .filament-user-menu .filament-dropdown-list-item:hover button,
+                    .filament-user-menu .filament-dropdown-list-item:hover button span,
+                    .filament-user-menu .filament-dropdown-list-item:hover a,
+                    [x-data*="userMenu"] .filament-dropdown-list-item:hover span,
+                    [x-data*="userMenu"] .filament-dropdown-list-item:hover button,
+                    [x-data*="userMenu"] .filament-dropdown-list-item:hover button span,
+                    [x-data*="userMenu"] .filament-dropdown-list-item:hover a,
+                    .dark .filament-user-menu .filament-dropdown-list-item:hover span,
+                    .dark .filament-user-menu .filament-dropdown-list-item:hover button,
+                    .dark .filament-user-menu .filament-dropdown-list-item:hover button span,
+                    .dark .filament-user-menu .filament-dropdown-list-item:hover a,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item:hover span,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item:hover button,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item:hover button span,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item:hover a {
+                        color: #0992C2 !important;
+                    }
+
+                    /* User Name Header - HITAM */
+                    .filament-user-menu .filament-dropdown-header,
+                    .filament-user-menu .filament-dropdown-header span,
+                    [x-data*="userMenu"] .filament-dropdown-header,
+                    [x-data*="userMenu"] .filament-dropdown-header span,
+                    .dark .filament-user-menu .filament-dropdown-header,
+                    .dark .filament-user-menu .filament-dropdown-header span,
+                    .dark [x-data*="userMenu"] .filament-dropdown-header,
+                    .dark [x-data*="userMenu"] .filament-dropdown-header span {
+                        color: #1e293b !important;
+                        font-weight: 700 !important;
+                    }
+
+                    /* Nama User di Header - Paksa Hitam di DARK MODE */
+                    .dark .filament-user-menu .filament-dropdown-header,
+                    .dark .filament-user-menu .filament-dropdown-header *,
+                    .dark [x-data*="userMenu"] .filament-dropdown-header,
+                    .dark [x-data*="userMenu"] .filament-dropdown-header * {
+                        color: #1e293b !important;
+                    }
+
+                    /* Avatar/Logo di header - Pastikan terlihat */
+                    .dark .filament-user-menu .filament-dropdown-header img,
+                    .dark [x-data*="userMenu"] .filament-dropdown-header img {
+                        opacity: 1 !important;
+                        filter: none !important;
+                    }
+
+                    /* Nama dan email user di header dropdown */
+                    .dark .filament-user-menu .filament-dropdown-header .filament-dropdown-header-label,
+                    .dark .filament-user-menu .filament-dropdown-header .filament-dropdown-header-description,
+                    .dark [x-data*="userMenu"] .filament-dropdown-header .filament-dropdown-header-label,
+                    .dark [x-data*="userMenu"] .filament-dropdown-header .filament-dropdown-header-description {
+                        color: #1e293b !important;
+                    }
+
+                    /* Force semua text di header dropdown menjadi hitam */
+                    .dark .filament-user-menu > div > div:first-child,
+                    .dark .filament-user-menu > div > div:first-child *,
+                    .dark [x-data*="userMenu"] > div > div:first-child,
+                    .dark [x-data*="userMenu"] > div > div:first-child * {
+                        color: #1e293b !important;
+                    }
+
+                    /* Icon colors - Abu-abu gelap untuk light mode, PUTIH untuk dark mode */
+                    .filament-user-menu svg,
+                    .filament-user-menu button svg,
+                    .filament-user-menu a svg,
+                    [x-data*="userMenu"] svg,
+                    [x-data*="userMenu"] button svg,
+                    [x-data*="userMenu"] a svg {
+                        color: #64748b !important;
+                        stroke: #64748b !important;
+                    }
+
+                    /* DARK MODE: Icon PUTIH untuk user menu */
+                    .dark .filament-user-menu svg,
+                    .dark .filament-user-menu button svg,
+                    .dark .filament-user-menu a svg,
+                    .dark .filament-user-menu .filament-dropdown-list-item svg,
+                    .dark [x-data*="userMenu"] svg,
+                    .dark [x-data*="userMenu"] button svg,
+                    .dark [x-data*="userMenu"] a svg,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item svg {
+                        color: #ffffff !important;
+                        stroke: #ffffff !important;
+                        fill: currentColor !important;
+                    }
+
+                    /* Icon hover state - Biru untuk SEMUA mode */
+                    .filament-user-menu .filament-dropdown-list-item:hover svg,
+                    .filament-user-menu .filament-dropdown-list-item:hover button svg,
+                    .filament-user-menu .filament-dropdown-list-item:hover a svg,
+                    [x-data*="userMenu"] .filament-dropdown-list-item:hover svg,
+                    [x-data*="userMenu"] .filament-dropdown-list-item:hover button svg,
+                    [x-data*="userMenu"] .filament-dropdown-list-item:hover a svg,
+                    .dark .filament-user-menu .filament-dropdown-list-item:hover svg,
+                    .dark .filament-user-menu .filament-dropdown-list-item:hover button svg,
+                    .dark .filament-user-menu .filament-dropdown-list-item:hover a svg,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item:hover svg,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item:hover button svg,
+                    .dark [x-data*="userMenu"] .filament-dropdown-list-item:hover a svg {
+                        color: #0992C2 !important;
+                        stroke: #0992C2 !important;
+                    }
+
+                    /* =========================================
+                       SORT ICON - LEBIH KENTARA
+                       ========================================= */
+                    
+                    /* Icon sort di header kolom */
+                    .filament-tables-header-cell button svg {
+                        width: 20px !important;
+                        height: 20px !important;
+                        color: #0992C2 !important;
+                        stroke-width: 2.5 !important;
+                    }
+
+                    /* Hover state untuk sort button */
+                    .filament-tables-header-cell button:hover svg {
+                        color: #0992C2 !important;
+                        transform: scale(1.2);
+                        transition: all 0.2s ease;
+                    }
+
+                    /* Active sort (sedang digunakan) */
+                    .filament-tables-header-cell button[class*="text-primary"] svg {
+                        color: #0992C2 !important;
+                        font-weight: bold !important;
+                    }
+
+                    /* Dark mode */
+                    .dark .filament-tables-header-cell button svg {
+                        color: #0992C2 !important;
+                    }
+
+                    .dark .filament-tables-header-cell button:hover svg {
+                        color: #60d5ff !important;
+                    }
+
+                    /* =========================================
+                       FIX DROPDOWN COLUMN TOGGLE - DARK MODE
+                       ========================================= */
+                    
+                    /* Background dropdown column toggle di dark mode */
+                    .dark .filament-tables-column-toggle-dropdown,
+                    .dark [x-data*="toggleColumns"] > div,
+                    .dark .filament-dropdown-panel {
+                        background-color: rgb(31 41 55) !important; /* gray-800 */
+                        border-color: rgb(55 65 81) !important; /* gray-700 */
+                    }
+
+                    /* Text color untuk item di dropdown */
+                    .dark .filament-dropdown-list-item {
+                        color: rgb(229 231 235) !important; /* gray-200 */
+                    }
+
+                    /* Hover state */
+                    .dark .filament-dropdown-list-item:hover {
+                        background-color: rgb(55 65 81) !important; /* gray-700 */
+                    }
+
+                    /* Checkbox label text */
+                    .dark .filament-dropdown-list-item label,
+                    .dark .filament-dropdown-list-item span {
+                        color: rgb(229 231 235) !important; /* gray-200 */
+                    }
+
+                    /* Force semua dropdown di dark mode */
+                    .dark [x-data*="dropdown"] > div:not(.filament-user-menu *) {
+                        background-color: rgb(31 41 55) !important;
+                        border-color: rgb(55 65 81) !important;
+                    }
+
+                    /* Force text color untuk dropdown items (kecuali user menu) */
+                    .dark [x-data*="dropdown"] > div:not(.filament-user-menu *) .filament-dropdown-list-item,
+                    .dark [x-data*="dropdown"] > div:not(.filament-user-menu *) .filament-dropdown-list-item * {
+                        color: rgb(229 231 235) !important;
+                    }
+
+                    /* Force text color untuk semua elemen dropdown */
+                    .dark [x-data] [role="menuitem"],
+                    .dark [x-data] [role="menuitem"] *,
+                    .dark .filament-dropdown-list-item *,
+                    .dark button[x-on\\:click*="theme"] span {
+                        color: #1e293b !important;
+                    }
+
+                    /* Animasi Modal Pop */
+                    .filament-modal-window {
+                        animation: modalPop 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+                    }
+
+                    @keyframes modalPop {
+                        from { transform: scale(0.95); opacity: 0; }
+                        to { transform: scale(1); opacity: 1; }
+                    }
+
+                    /* Label Fingerprint ID - Bold - Paksa dengan text content */
+                    .filament-forms-field-wrapper label {
+                        font-weight: 400;
+                    }
+                    
+                    .filament-forms-field-wrapper label:contains("Fingerprint ID") {
+                        font-weight: 700 !important;
+                    }
+                    
+                    /* Fallback: Semua label yang mengandung kata Fingerprint */
+                    label {
+                        font-weight: inherit;
+                    }
+                    
+                    span.text-sm.font-medium:contains("Fingerprint") {
+                        font-weight: 700 !important;
+                    }
+                </style>
+                
+                <script>
+                    // JavaScript untuk memaksa bold pada label Fingerprint ID
+                    document.addEventListener("DOMContentLoaded", function() {
+                        function makeFingerprintBold() {
+                            const labels = document.querySelectorAll("label, span.text-sm");
+                            labels.forEach(label => {
+                                if (label.textContent.includes("Fingerprint ID")) {
+                                    label.style.fontWeight = "700";
+                                    label.style.fontWeight = "bold";
+                                }
+                            });
+                        }
+                        
+                        // Jalankan saat load
+                        makeFingerprintBold();
+                        
+                        // Jalankan lagi setelah delay (untuk Livewire)
+                        setTimeout(makeFingerprintBold, 500);
+                        setTimeout(makeFingerprintBold, 1000);
+                        
+                        // Observer untuk perubahan DOM (Livewire updates)
+                        const observer = new MutationObserver(makeFingerprintBold);
+                        observer.observe(document.body, { childList: true, subtree: true });
+                    });
+                </script>
+                
+                <script>
+                    // Auto reset SEMUA (sort + filter + search) saat refresh halaman
+                    (function() {
+                        // Fungsi untuk reset semua parameter tabel
+                        function resetAllTableParameters() {
+                            // Cek flag untuk mencegah infinite loop
+                            if (sessionStorage.getItem("tableResetInProgress")) {
+                                // Hapus flag setelah reload selesai
+                                sessionStorage.removeItem("tableResetInProgress");
+                                return;
+                            }
+                            
+                            // Cek apakah ada parameter tabel di URL
+                            const url = new URL(window.location.href);
+                            const hasSort = url.searchParams.has("tableSort") || url.searchParams.has("tableSortDirection");
+                            const hasSearch = url.searchParams.has("tableSearch");
+                            
+                            // Cek apakah ada filter (parameter yang dimulai dengan "tableFilters")
+                            let hasFilter = false;
+                            for (let key of url.searchParams.keys()) {
+                                if (key.startsWith("tableFilters")) {
+                                    hasFilter = true;
+                                    break;
+                                }
+                            }
+                            
+                            // Jika ada sort ATAU filter ATAU search, reset SEMUA ke halaman bersih
+                            if (hasSort || hasFilter || hasSearch) {
+                                // Ambil base URL tanpa query parameters
+                                const cleanUrl = url.origin + url.pathname;
+                                
+                                // Set flag untuk mencegah infinite loop
+                                sessionStorage.setItem("tableResetInProgress", "true");
+                                
+                                // Redirect ke URL bersih (tanpa parameter apapun)
+                                window.location.href = cleanUrl;
+                            }
+                        }
+                        
+                        // Jalankan saat DOM ready
+                        if (document.readyState === "loading") {
+                            document.addEventListener("DOMContentLoaded", resetAllTableParameters);
+                        } else {
+                            // DOM sudah ready, jalankan langsung
+                            resetAllTableParameters();
+                        }
+                        
+                        // Backup: jalankan juga saat window load (untuk kasus Livewire)
+                        window.addEventListener("load", function() {
+                            const url = new URL(window.location.href);
+                            const hasSort = url.searchParams.has("tableSort") || url.searchParams.has("tableSortDirection");
+                            const hasSearch = url.searchParams.has("tableSearch");
+                            let hasFilter = false;
+                            for (let key of url.searchParams.keys()) {
+                                if (key.startsWith("tableFilters")) {
+                                    hasFilter = true;
+                                    break;
+                                }
+                            }
+                            
+                            // Hanya jalankan jika belum pernah dijalankan dan ada parameter
+                            if (!sessionStorage.getItem("tableResetInProgress") && (hasSort || hasFilter || hasSearch)) {
+                                resetAllTableParameters();
+                            }
+                        });
+                    })();
+                </script>
+                
+                <script>
+                    // Inject "Lupa Password?" link di halaman login
+                    (function() {
+                        function addForgotPasswordLink() {
+                            // Cek apakah ini halaman login
+                            if (!window.location.pathname.includes("/login")) {
+                                return;
+                            }
+                            
+                            // Cek apakah link sudah ada
+                            if (document.querySelector(".forgot-password-link")) {
+                                return;
+                            }
+                            
+                            // Cari tombol submit login
+                            const submitButton = document.querySelector(".filament-login-page button[type=\'submit\']");
+                            if (!submitButton) {
+                                return;
+                            }
+                            
+                            // Buat container untuk link
+                            const container = document.createElement("div");
+                            container.className = "forgot-password-container";
+                            container.style.cssText = "margin-top: 1.5rem; text-align: center; width: 100%;";
+                            
+                            // Buat link
+                            const link = document.createElement("a");
+                            link.href = "/forgot-password";
+                            link.className = "forgot-password-link";
+                            link.style.cssText = "display: inline-flex; align-items: center; gap: 0.375rem; font-size: 0.875rem; font-weight: 600; color: #0992C2; text-decoration: none; transition: all 0.2s ease; padding: 0.5rem 1rem; border-radius: 0.5rem;";
+                            
+                            // Buat icon
+                            const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                            icon.setAttribute("fill", "none");
+                            icon.setAttribute("stroke", "currentColor");
+                            icon.setAttribute("viewBox", "0 0 24 24");
+                            icon.style.cssText = "width: 1rem; height: 1rem;";
+                            
+                            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                            path.setAttribute("stroke-linecap", "round");
+                            path.setAttribute("stroke-linejoin", "round");
+                            path.setAttribute("stroke-width", "2");
+                            path.setAttribute("d", "M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z");
+                            
+                            icon.appendChild(path);
+                            link.appendChild(icon);
+                            link.appendChild(document.createTextNode(" Lupa Password?"));
+                            
+                            // Hover effect
+                            link.addEventListener("mouseenter", function() {
+                                this.style.color = "#0779a3";
+                                this.style.backgroundColor = "rgba(9, 146, 194, 0.1)";
+                            });
+                            
+                            link.addEventListener("mouseleave", function() {
+                                this.style.color = "#0992C2";
+                                this.style.backgroundColor = "transparent";
+                            });
+                            
+                            container.appendChild(link);
+                            
+                            // Insert setelah tombol submit
+                            submitButton.parentElement.appendChild(container);
+                        }
+                        
+                        // Jalankan saat DOM ready
+                        if (document.readyState === "loading") {
+                            document.addEventListener("DOMContentLoaded", addForgotPasswordLink);
+                        } else {
+                            addForgotPasswordLink();
+                        }
+                        
+                        // Jalankan lagi setelah delay (untuk Livewire)
+                        setTimeout(addForgotPasswordLink, 500);
+                        setTimeout(addForgotPasswordLink, 1000);
+                        
+                        // Observer untuk perubahan DOM
+                        const observer = new MutationObserver(addForgotPasswordLink);
+                        if (document.body) {
+                            observer.observe(document.body, { childList: true, subtree: true });
+                        }
+                    })();
+                </script>
+                '),
+            ]);
+        });
+    }
+}
