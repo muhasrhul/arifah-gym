@@ -294,7 +294,7 @@
                 </button>
 
                 <!-- Metode 2: Cash -->
-                <button onclick="confirmPayment('cash')" class="w-full bg-white/5 hover:bg-[#0992C2]/10 border-2 border-white/10 hover:border-[#0992C2]/30 text-white font-bold py-5 rounded-xl text-xs uppercase tracking-wider shadow-md hover:shadow-[#0992C2]/30 transition-all duration-300 transform hover:scale-[1.02]">
+                <button onclick="savePaymentMethod('cash'); confirmPayment('cash');" class="w-full bg-white/5 hover:bg-[#0992C2]/10 border-2 border-white/10 hover:border-[#0992C2]/30 text-white font-bold py-5 rounded-xl text-xs uppercase tracking-wider shadow-md hover:shadow-[#0992C2]/30 transition-all duration-300 transform hover:scale-[1.02]">
                     <div class="flex items-center justify-center gap-3">
                         <i class="fa-solid fa-money-bill-wave text-[#0992C2] text-xl"></i> 
                         <span>CASH</span>
@@ -318,6 +318,10 @@
     <script type="text/javascript">
         // Open modal
         function openModal(modalId) {
+            // Jika membuka modal transfer, langsung simpan metode pembayaran
+            if (modalId === 'transfer-modal') {
+                savePaymentMethod('transfer');
+            }
             document.getElementById(modalId).classList.add('active');
         }
 
@@ -392,9 +396,6 @@
         function confirmPayment(method) {
             // Mark payment as confirmed to allow page exit
             markPaymentConfirmed();
-            
-            // Simpan metode pembayaran ke database
-            savePaymentMethod(method);
             
             // Tutup modal terlebih dahulu
             if (method === 'transfer') {
