@@ -43,10 +43,10 @@
                         $isExpired = $expiredDate->lt($now); 
                     @endphp
 
-                    <div class="flex flex-col items-center gap-6 py-4 w-full">
+                    <div class="flex flex-col items-center gap-6 py-4 w-full px-2">
                         <!-- Modern Member Card dengan Glassmorphism -->
-                        <div id="memberCard" class="relative text-white font-sans rounded-3xl overflow-hidden shadow-2xl text-left scale-[0.8] md:scale-100 origin-center transition-all duration-500 hover:scale-[0.85] md:hover:scale-105 hover:shadow-[0_20px_60px_-15px_rgba(9,146,194,0.5)] group" 
-                             style="width: 350px; height: 210px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%); backdrop-filter: blur(20px);">
+                        <div id="memberCard" class="relative text-white font-sans rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl text-left w-full max-w-[320px] md:max-w-[350px] transition-all duration-500 hover:shadow-[0_20px_60px_-15px_rgba(9,146,194,0.5)] group" 
+                             style="aspect-ratio: 5/3; background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%); backdrop-filter: blur(20px);">
                             
                             <!-- Animated Background Pattern -->
                             <div class="absolute inset-0 opacity-[0.03] pointer-events-none">
@@ -70,34 +70,34 @@
                                 </div>
                             @endif
 
-                            <div class="p-6 h-full flex flex-col justify-between relative z-10">
+                            <div class="p-4 md:p-6 h-full flex flex-col justify-between relative z-10">
                                 <!-- Header Section -->
                                 <div class="flex justify-between items-start gap-2">
                                     <div class="flex-1 min-w-0">
-                                        <h2 class="text-[14px] font-extrabold italic leading-tight tracking-tighter transition-all duration-300 group-hover:text-[#0992C2]" style="color: #0992C2; font-family: 'Poppins', sans-serif; text-shadow: 0 0 20px rgba(9, 146, 194, 0.5);">ARIFAH GYM</h2>
-                                        <p class="text-[8px] uppercase tracking-[0.2em] opacity-70 font-bold transition-all duration-300 group-hover:opacity-100" style="font-family: 'Poppins', sans-serif;">Official Member</p>
+                                        <h2 class="text-xs md:text-[14px] font-extrabold italic leading-tight tracking-tighter transition-all duration-300 group-hover:text-[#0992C2]" style="color: #0992C2; font-family: 'Poppins', sans-serif; text-shadow: 0 0 20px rgba(9, 146, 194, 0.5);">ARIFAH GYM</h2>
+                                        <p class="text-[7px] md:text-[8px] uppercase tracking-[0.15em] md:tracking-[0.2em] opacity-70 font-bold transition-all duration-300 group-hover:opacity-100" style="font-family: 'Poppins', sans-serif;">Official Member</p>
                                     </div>
-                                    <span class="px-3 py-1 rounded-full text-[7px] font-bold uppercase border whitespace-nowrap transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg" style="border-color: #0992C2; color: #0992C2; background: rgba(9, 146, 194, 0.15); font-family: 'Poppins', sans-serif; box-shadow: 0 0 15px rgba(9, 146, 194, 0.3);">
+                                    <span class="px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[6px] md:text-[7px] font-bold uppercase border whitespace-nowrap transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg" style="border-color: #0992C2; color: #0992C2; background: rgba(9, 146, 194, 0.15); font-family: 'Poppins', sans-serif; box-shadow: 0 0 15px rgba(9, 146, 194, 0.3);">
                                         {{ $member->type }}
                                     </span>
                                 </div>
 
                                 <!-- Member Info Section -->
                                 <div class="mt-2 transform transition-all duration-300 group-hover:translate-x-1">
-                                    <h3 class="text-xl font-bold uppercase truncate transition-all duration-300 group-hover:text-[#0992C2]" style="font-family: 'Poppins', sans-serif; letter-spacing: 0.05em;">{{ $member->name }}</h3>
-                                    <p class="text-[10px] opacity-50 font-mono tracking-widest transition-all duration-300 group-hover:opacity-70">{{ $member->order_id }}</p>
+                                    <h3 class="text-base md:text-xl font-bold uppercase truncate transition-all duration-300 group-hover:text-[#0992C2]" style="font-family: 'Poppins', sans-serif; letter-spacing: 0.05em;">{{ $member->name }}</h3>
+                                    <p class="text-[8px] md:text-[10px] opacity-50 font-mono tracking-widest transition-all duration-300 group-hover:opacity-70">{{ $member->order_id }}</p>
                                 </div>
 
                                 <!-- Footer Section -->
-                                <div class="flex justify-between items-end border-t border-white/20 pt-3 transition-all duration-300 group-hover:border-[#0992C2]/30">
+                                <div class="flex justify-between items-end border-t border-white/20 pt-2 md:pt-3 transition-all duration-300 group-hover:border-[#0992C2]/30">
                                     <div class="transform transition-all duration-300 group-hover:translate-y-[-2px]">
-                                        <p class="text-[9px] uppercase opacity-50 font-medium mb-1 transition-all duration-300 group-hover:opacity-70" style="font-family: 'Poppins', sans-serif; letter-spacing: 0.1em;">Berlaku Hingga</p>
-                                        <p class="text-sm font-bold {{ $isExpired ? 'text-red-400' : 'text-white' }} transition-all duration-300 group-hover:text-[#0992C2]" style="font-family: 'Poppins', sans-serif;">
+                                        <p class="text-[8px] md:text-[9px] uppercase opacity-50 font-medium mb-1 transition-all duration-300 group-hover:opacity-70" style="font-family: 'Poppins', sans-serif; letter-spacing: 0.1em;">Berlaku Hingga</p>
+                                        <p class="text-xs md:text-sm font-bold {{ $isExpired ? 'text-red-400' : 'text-white' }} transition-all duration-300 group-hover:text-[#0992C2]" style="font-family: 'Poppins', sans-serif;">
                                             {{ \Carbon\Carbon::parse($member->expiry_date)->format('d M Y') }}
                                         </p>
                                     </div>
-                                    <div class="bg-white p-1.5 rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-2xl" style="box-shadow: 0 4px 20px rgba(9, 146, 194, 0.3);">
-                                        <img id="qrSource" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ $member->order_id }}" crossorigin="anonymous" style="width: 40px; height: 40px;">
+                                    <div class="bg-white p-1 md:p-1.5 rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-2xl" style="box-shadow: 0 4px 20px rgba(9, 146, 194, 0.3);">
+                                        <img id="qrSource" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ $member->order_id }}" crossorigin="anonymous" style="width: 35px; height: 35px;" class="md:w-[40px] md:h-[40px]">
                                     </div>
                                 </div>
                             </div>
@@ -107,7 +107,7 @@
                         </div>
 
                         <!-- Action Buttons dengan Modern Design -->
-                        <div class="flex flex-col w-full gap-3 px-4 max-w-[350px]">
+                        <div class="flex flex-col w-full gap-3 px-2 max-w-[320px] md:max-w-[350px]">
                             <button onclick="generateAndDownload()" id="dlBtn" class="group/btn w-full py-4 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-[#0992C2] hover:to-[#0992C2] text-white font-bold rounded-2xl transition-all duration-300 border border-white/10 hover:border-[#0992C2] uppercase text-[10px] tracking-widest shadow-lg hover:shadow-[0_10px_30px_-10px_rgba(9,146,194,0.5)] transform hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden">
                                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-700"></div>
                                 <span class="relative flex items-center justify-center gap-2">
