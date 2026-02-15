@@ -328,26 +328,64 @@
 
         // Copy text to clipboard
         function copyText(text) {
-            navigator.clipboard.writeText(text).then(function() {
-                // Show toast notification
-                const toast = document.createElement('div');
-                toast.className = 'fixed top-6 right-6 bg-[#0992C2] text-black px-6 py-3 rounded-xl font-bold text-sm z-[10000] shadow-2xl';
-                toast.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Nomor rekening disalin!';
-                document.body.appendChild(toast);
-                
-                // Animasi masuk
-                setTimeout(() => {
-                    toast.style.opacity = '1';
-                }, 10);
-                
-                // Hapus setelah 2 detik
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    setTimeout(() => toast.remove(), 300);
-                }, 2000);
-            }).catch(function(err) {
-                alert('Gagal menyalin: ' + err);
-            });
+            // Method 1: Modern Clipboard API (untuk HTTPS)
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(function() {
+                    showCopyToast();
+                }).catch(function(err) {
+                    // Fallback jika gagal
+                    copyTextFallback(text);
+                });
+            } else {
+                // Method 2: Fallback untuk HTTP atau browser lama
+                copyTextFallback(text);
+            }
+        }
+
+        // Fallback method untuk copy text
+        function copyTextFallback(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showCopyToast();
+                } else {
+                    alert('Gagal menyalin nomor rekening. Silakan salin manual: ' + text);
+                }
+            } catch (err) {
+                alert('Gagal menyalin nomor rekening. Silakan salin manual: ' + text);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        // Show toast notification
+        function showCopyToast() {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-6 right-6 bg-[#0992C2] text-black px-6 py-3 rounded-xl font-bold text-sm z-[10000] shadow-2xl';
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s';
+            toast.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Nomor rekening disalin!';
+            document.body.appendChild(toast);
+            
+            // Animasi masuk
+            setTimeout(() => {
+                toast.style.opacity = '1';
+            }, 10);
+            
+            // Hapus setelah 2 detik
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
         }
 
         // Confirm payment (untuk Transfer dan Cash)
