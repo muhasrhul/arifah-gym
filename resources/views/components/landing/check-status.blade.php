@@ -1,23 +1,23 @@
-<section id="cek-status" class="py-24 bg-gray-950">
+<section id="cek-status" class="py-16 md:py-24 bg-gray-950">
     <div class="max-w-2xl mx-auto px-6" data-aos="zoom-in">
-        <div class="glass-card p-8 md:p-12 rounded-[3rem] border-white/10 shadow-3xl relative overflow-hidden">
+        <div class="glass-card p-6 md:p-12 rounded-2xl md:rounded-[3rem] border-white/10 shadow-3xl relative overflow-hidden">
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-[#0992C2]/10 rounded-full blur-3xl"></div>
 
-            <div class="text-center mb-10 relative z-10">
-                <h3 class="text-3xl md:text-4xl font-black italic mb-4 uppercase tracking-tighter text-white leading-none">
+            <div class="text-center mb-8 md:mb-10 relative z-10">
+                <h3 class="text-2xl md:text-4xl font-black italic mb-3 md:mb-4 uppercase tracking-tighter text-white leading-none">
                     CHECK <span class="text-[#0992C2]">MEMBERSHIP</span>
                 </h3>
-                <div class="h-1.5 w-16 bg-[#0992C2] mx-auto rounded-full mb-6"></div>
+                <div class="h-1 md:h-1.5 w-12 md:w-16 bg-[#0992C2] mx-auto rounded-full mb-4 md:mb-6"></div>
                 
-                <p class="text-gray-500 text-[10px] md:text-xs uppercase tracking-[0.3em] font-bold">
+                <p class="text-gray-500 text-[9px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold">
                     Akses Kartu Digital & Pantau Masa Aktif Anda
                 </p>
             </div>
 
-            <form action="{{ url()->current() }}#cek-status" method="GET" class="relative mb-8 z-10">
+            <form action="{{ url()->current() }}#cek-status" method="GET" class="relative mb-6 md:mb-8 z-10">
                 <div class="relative group">
-                    <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-phone text-gray-500 group-focus-within:text-[#0992C2] transition-colors"></i>
+                    <div class="absolute inset-y-0 left-0 pl-4 md:pl-5 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-phone text-gray-500 group-focus-within:text-[#0992C2] transition-colors text-sm md:text-base"></i>
                     </div>
                     <input type="tel" 
                            name="search" 
@@ -26,9 +26,9 @@
                            placeholder="Masukan nomor telpon anda" 
                            inputmode="numeric"
                            oninput="this.value = this.value.replace(/[^0-9]/g, '');"
-                           class="w-full pl-12 pr-24 md:pr-32 py-4 md:py-5 rounded-2xl bg-white/5 border border-white/10 focus:border-[#0992C2] focus:bg-white/10 focus:ring-4 focus:ring-[#0992C2]/20 outline-none transition-all font-bold text-white placeholder:text-gray-600 uppercase tracking-widest text-xs md:text-sm">
+                           class="w-full pl-10 md:pl-12 pr-20 md:pr-32 py-3.5 md:py-5 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 focus:border-[#0992C2] focus:bg-white/10 focus:ring-4 focus:ring-[#0992C2]/20 outline-none transition-all font-bold text-white placeholder:text-gray-600 uppercase tracking-widest text-[11px] md:text-sm">
                     
-                    <button type="submit" class="absolute right-2 top-2 bottom-2 px-4 md:px-8 bg-[#0992C2] hover:bg-[#0992C2] rounded-xl font-black uppercase text-[10px] md:text-xs transition-all shadow-lg active:scale-95">
+                    <button type="submit" class="absolute right-1.5 md:right-2 top-1.5 md:top-2 bottom-1.5 md:bottom-2 px-3 md:px-8 bg-[#0992C2] hover:bg-[#0992C2] rounded-lg md:rounded-xl font-black uppercase text-[9px] md:text-xs transition-all shadow-lg active:scale-95">
                         Cari
                     </button>
                 </div>
