@@ -117,11 +117,11 @@ class UpdateExpiredMembers extends Command
      */
     private function sendWhatsAppNotification($expiredMembers, $today)
     {
-        $ownerPhone = env('OWNER_WHATSAPP');
+        $ownerPhone = config('services.whatsapp.owner');
         
         if (!$ownerPhone) {
             $this->warn('⚠️  OWNER_WHATSAPP belum dikonfigurasi. Notifikasi WhatsApp tidak terkirim.');
-            Log::warning('[WhatsApp] OWNER_WHATSAPP belum diset di .env');
+            Log::warning('[WhatsApp] OWNER_WHATSAPP belum diset di config');
             return;
         }
         
