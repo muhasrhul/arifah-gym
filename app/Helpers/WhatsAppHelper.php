@@ -299,11 +299,7 @@ class WhatsAppHelper
         $message .= "📦 *Produk:* {$transaction->type}\n";
         $message .= "💵 *Harga:* Rp " . number_format($transaction->amount, 0, ',', '.') . "\n";
         $message .= "💳 *Metode:* {$transaction->payment_method}\n";
-        
-        // Status
-        $statusEmoji = in_array($transaction->status, ['completed', 'paid']) ? '✅' : '⏳';
-        $statusText = in_array($transaction->status, ['completed', 'paid']) ? 'Lunas' : 'Pending';
-        $message .= "{$statusEmoji} *Status:* {$statusText}\n\n";
+        $message .= "✅ *Status:* Lunas\n\n";
         
         $message .= "Terima kasih!\n\n";
         $message .= "ARIFAH Gym System";
