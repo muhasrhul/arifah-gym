@@ -17,9 +17,9 @@ class WhatsAppHelper
     public static function sendMessage($phone, $message)
     {
         // Validasi API token
-        $token = config('services.fonnte.token');
+        $token = env('FONNTE_TOKEN');
         if (!$token) {
-            Log::error('FONNTE_TOKEN tidak ditemukan di config');
+            Log::error('FONNTE_TOKEN tidak ditemukan di .env');
             return [
                 'success' => false,
                 'message' => 'FONNTE_TOKEN tidak dikonfigurasi'
@@ -191,10 +191,10 @@ class WhatsAppHelper
      */
     public static function sendDailyReportToOwner($membersExpiredToday)
     {
-        $ownerPhone = config('services.whatsapp.owner');
+        $ownerPhone = env('OWNER_WHATSAPP');
         
         if (!$ownerPhone) {
-            Log::warning('OWNER_WHATSAPP tidak ditemukan di config');
+            Log::warning('OWNER_WHATSAPP tidak ditemukan di .env');
             return [
                 'success' => false,
                 'message' => 'OWNER_WHATSAPP tidak dikonfigurasi'
@@ -232,10 +232,10 @@ class WhatsAppHelper
      */
     public static function sendReminderReportToOwner($membersH1)
     {
-        $ownerPhone = config('services.whatsapp.owner');
+        $ownerPhone = env('OWNER_WHATSAPP');
         
         if (!$ownerPhone) {
-            Log::warning('OWNER_WHATSAPP tidak ditemukan di config');
+            Log::warning('OWNER_WHATSAPP tidak ditemukan di .env');
             return [
                 'success' => false,
                 'message' => 'OWNER_WHATSAPP tidak dikonfigurasi'
@@ -273,10 +273,10 @@ class WhatsAppHelper
      */
     public static function sendTransactionNotification($transaction)
     {
-        $ownerPhone = config('services.whatsapp.owner');
+        $ownerPhone = env('OWNER_WHATSAPP');
         
         if (!$ownerPhone) {
-            Log::warning('OWNER_WHATSAPP tidak ditemukan di config');
+            Log::warning('OWNER_WHATSAPP tidak ditemukan di .env');
             return [
                 'success' => false,
                 'message' => 'OWNER_WHATSAPP tidak dikonfigurasi'
@@ -316,10 +316,10 @@ class WhatsAppHelper
      */
     public static function sendPendaftaranBaru($member, $paket)
     {
-        $ownerPhone = config('services.whatsapp.owner');
+        $ownerPhone = env('OWNER_WHATSAPP');
         
         if (!$ownerPhone) {
-            Log::warning('OWNER_WHATSAPP tidak ditemukan di config');
+            Log::warning('OWNER_WHATSAPP tidak ditemukan di .env');
             return [
                 'success' => false,
                 'message' => 'OWNER_WHATSAPP tidak dikonfigurasi'
@@ -345,10 +345,10 @@ class WhatsAppHelper
      */
     public static function sendAktivasiMember($member, $transaction)
     {
-        $ownerPhone = config('services.whatsapp.owner');
+        $ownerPhone = env('OWNER_WHATSAPP');
         
         if (!$ownerPhone) {
-            Log::warning('OWNER_WHATSAPP tidak ditemukan di config');
+            Log::warning('OWNER_WHATSAPP tidak ditemukan di .env');
             return [
                 'success' => false,
                 'message' => 'OWNER_WHATSAPP tidak dikonfigurasi'
@@ -383,10 +383,10 @@ class WhatsAppHelper
      */
     public static function sendPerpanjanganMember($member, $transaction)
     {
-        $ownerPhone = config('services.whatsapp.owner');
+        $ownerPhone = env('OWNER_WHATSAPP');
         
         if (!$ownerPhone) {
-            Log::warning('OWNER_WHATSAPP tidak ditemukan di config');
+            Log::warning('OWNER_WHATSAPP tidak ditemukan di .env');
             return [
                 'success' => false,
                 'message' => 'OWNER_WHATSAPP tidak dikonfigurasi'
