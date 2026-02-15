@@ -301,8 +301,8 @@ class WhatsAppHelper
         $message .= "💳 *Metode:* {$transaction->payment_method}\n";
         
         // Status
-        $statusEmoji = $transaction->status === 'completed' ? '✅' : '⏳';
-        $statusText = $transaction->status === 'completed' ? 'Lunas' : 'Pending';
+        $statusEmoji = in_array($transaction->status, ['completed', 'paid']) ? '✅' : '⏳';
+        $statusText = in_array($transaction->status, ['completed', 'paid']) ? 'Lunas' : 'Pending';
         $message .= "{$statusEmoji} *Status:* {$statusText}\n\n";
         
         $message .= "Terima kasih!\n\n";
