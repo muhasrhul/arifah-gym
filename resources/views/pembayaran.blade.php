@@ -274,7 +274,7 @@
                     </div>
                 @endif
                 
-                <h2 class="text-5xl font-hero text-white mb-4 tracking-tighter">
+                <h2 class="text-3xl md:text-5xl font-hero text-white mb-4 tracking-tighter">
                     Rp {{ number_format($amount, 0, ',', '.') }}
                 </h2>
                 <div class="inline-block px-5 py-2 bg-[#0992C2]/10 rounded-2xl border border-[#0992C2]/20">
