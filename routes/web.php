@@ -18,6 +18,11 @@ use Filament\Notifications\Notification;
 |--------------------------------------------------------------------------
 */
 
+// ROUTE LOGIN ALIAS (untuk mencegah error "Route [login] not defined")
+Route::get('/login', function () {
+    return redirect('/admin/login');
+})->name('login');
+
 // 1. HALAMAN UTAMA & SEARCH
 Route::get('/', [FrontMemberController::class, 'index'])->name('home');
 

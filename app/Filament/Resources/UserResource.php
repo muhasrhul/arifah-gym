@@ -12,7 +12,6 @@ use Filament\Resources\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
@@ -78,8 +77,6 @@ class UserResource extends Resource
                         ->label('Password')
                         ->password()
                         ->required(fn ($livewire) => $livewire instanceof Pages\CreateUser)
-                        ->dehydrateStateUsing(fn ($state) => !empty($state) ? Hash::make($state) : null)
-                        ->dehydrated(fn ($state) => !empty($state))
                         ->helperText(fn ($livewire) => $livewire instanceof Pages\EditUser 
                             ? 'Kosongkan jika tidak ingin mengubah password' 
                             : 'Minimal 8 karakter')
