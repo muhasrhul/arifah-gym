@@ -52,9 +52,10 @@ class UpdateExpiredMembers extends Command
             Log::info('[Scheduler] Tidak ada member expired', [
                 'checked_at' => $today->format('Y-m-d H:i:s')
             ]);
-            
-            // Kirim notifikasi ke Telegram (opsional)
-            $this->sendTelegramNotification("✅ Pengecekan Member Expired\n\nTidak ada member yang expired hari ini.\n\nWaktu: " . $today->format('d M Y H:i'));
+    
+            // Kirim notifikasi WhatsApp ke owner (meskipun tidak ada member expired)
+            $this->sendWhatsAppNotification(collect([]), $today);
+            $this->info('📱 Notifikasi WhatsApp terkirim.');
             
             return Command::SUCCESS;
         }
