@@ -460,7 +460,7 @@
         // Send to WhatsApp
         function sendToWhatsApp(method) {
             // GANTI NOMOR INI DENGAN NOMOR WHATSAPP KASIR ANDA
-            const waNumber = '6285341769151'; // Format: 62xxx (tanpa +, tanpa spasi)
+            const waNumber = '6281943622015'; // Format: 62xxx (tanpa +, tanpa spasi)
             
             let message = '';
             const memberName = '{{ $member->name }}';
