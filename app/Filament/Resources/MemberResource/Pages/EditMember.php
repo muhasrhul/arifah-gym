@@ -162,6 +162,15 @@ class EditMember extends EditRecord
     {
         $now = Carbon::now('Asia/Makassar');
         
+        // VALIDASI BACKEND: Paksa set biaya admin = 0 untuk paket harian
+        if (isset($data['type'])) {
+            $paket = Paket::where('nama_paket', $data['type'])->first();
+            if ($paket && $paket->durasi_hari < 30) {
+                // Paket harian → Paksa set 0 meskipun ada input dari form
+                $data['biaya_registrasi_info'] = 0;
+            }
+        }
+        
         // Simpan nilai dari form untuk digunakan dalam transaksi
         $this->formBiayaPaket = isset($data['biaya_paket_info']) ? (int)$data['biaya_paket_info'] : 0;
         $this->formBiayaRegistrasi = isset($data['biaya_registrasi_info']) ? (int)$data['biaya_registrasi_info'] : 0;

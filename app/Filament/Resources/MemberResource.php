@@ -265,7 +265,23 @@ class MemberResource extends Resource
                                 ->prefix('Rp')
                                 ->reactive()
                                 ->dehydrated(false)
-                                ->disabled(fn ($record) => $record && ($record->is_active || $record->expiry_date)) // Disable jika sudah aktif ATAU sudah pernah punya expiry_date
+                                ->disabled(function ($record, $get) {
+                                    // Disable jika sudah aktif ATAU sudah pernah punya expiry_date
+                                    if ($record && ($record->is_active || $record->expiry_date)) {
+                                        return true;
+                                    }
+                                    
+                                    // Disable jika paket harian (durasi < 30 hari)
+                                    $paketName = $get('type');
+                                    if ($paketName) {
+                                        $paket = Paket::where('nama_paket', $paketName)->first();
+                                        if ($paket && $paket->durasi_hari < 30) {
+                                            return true; // Disable untuk paket harian
+                                        }
+                                    }
+                                    
+                                    return false;
+                                })
                                 ->afterStateUpdated(function ($state, $set, $get) {
                                     // Update total saat biaya registrasi diubah manual
                                     $biayaPaket = $get('biaya_paket_info') ?? 0;
@@ -276,6 +292,12 @@ class MemberResource extends Resource
                                     if ($record && $record->type) {
                                         $paket = Paket::where('nama_paket', $record->type)->first();
                                         $registrationFee = $paket ? (int)$paket->registration_fee : 0;
+                                        
+                                        // Paksa set 0 untuk paket harian
+                                        if ($paket && $paket->durasi_hari < 30) {
+                                            $set('biaya_registrasi_info', 0);
+                                            return;
+                                        }
                                         
                                         // LOGIKA PINTAR:
                                         // Cek apakah member ini sudah pernah perpanjangan (berarti sudah pernah expired)
@@ -303,8 +325,18 @@ class MemberResource extends Resource
                                         }
                                     }
                                 })
-                                ->helperText(function ($record) {
-                                    if (!$record) return 'Hanya untuk pendaftar baru (bisa diedit)';
+                                ->helperText(function ($record, $get) {
+                                    if (!$record) {
+                                        // Untuk create member baru
+                                        $paketName = $get('type');
+                                        if ($paketName) {
+                                            $paket = Paket::where('nama_paket', $paketName)->first();
+                                            if ($paket && $paket->durasi_hari < 30) {
+                                                return '⚠️ Paket harian tidak dikenakan biaya admin';
+                                            }
+                                        }
+                                        return 'Hanya untuk pendaftar baru (bisa diedit)';
+                                    }
                                     
                                     // Cek apakah member sudah pernah perpanjangan
                                     $sudahPernahPerpanjangan = \App\Models\Transaction::where('member_id', $record->id)

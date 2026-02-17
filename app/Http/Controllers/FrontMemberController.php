@@ -103,7 +103,11 @@ class FrontMemberController extends Controller
             // B. Ambil Data Paket
             $paket = Paket::findOrFail($request->paket_id);
             $hargaPaket = $paket->harga;
-            $registrationFee = $paket->registration_fee ?? 0;
+            
+            // Hanya paket bulanan (durasi >= 30 hari) yang kena registration fee
+            // Paket harian (durasi < 30 hari) tidak kena fee
+            $registrationFee = ($paket->durasi_hari >= 30) ? ($paket->registration_fee ?? 0) : 0;
+            
             $amount = $hargaPaket + $registrationFee; // Total = Harga Paket + Fee
             $typeName = $paket->nama_paket;
 
