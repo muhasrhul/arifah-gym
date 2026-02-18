@@ -115,6 +115,10 @@ class MemberResource extends Resource
                             ->options(Paket::all()->pluck('nama_paket', 'nama_paket'))
                             ->reactive() 
                             ->required()
+                            ->disabled(fn ($record) => $record && $record->is_active)
+                            ->helperText(fn ($record) => $record && $record->is_active 
+                                ? '⚠️ Tipe member tidak bisa diubah untuk member yang sudah aktif' 
+                                : 'Pilih tipe membership')
                             ->afterStateHydrated(function ($state, $set, $get, $record) {
                                 // Isi expiry_date saat form pertama kali dibuka (untuk preview/referensi)
                                 if ($state && !$get('expiry_date')) {
@@ -168,11 +172,24 @@ class MemberResource extends Resource
                                 // 3. Update Breakdown Biaya
                                 // Jika member sudah pernah punya expiry_date (perpanjangan), fee = 0
                                 // Jika belum pernah punya expiry_date (pendaftar baru), tampilkan fee
+                                // TAMBAHAN: Jika paket harian (durasi < 30), fee = 0
+                                // TAMBAHAN: Jika member sudah aktif, fee = 0 (tidak boleh charge lagi)
                                 $isPerpanjangan = $record && $record->expiry_date;
+                                $isMemberAktif = $record && $record->is_active;
+                                
+                                // Cek apakah paket harian
+                                $isPaketHarian = $paket && $paket->durasi_hari < 30;
                                 
                                 $set('biaya_paket_info', $harga);
-                                $set('biaya_registrasi_info', $isPerpanjangan ? 0 : $registrationFee);
-                                $set('harga_paket_info', $isPerpanjangan ? $harga : ($harga + $registrationFee));
+                                
+                                // Set biaya registrasi: 0 jika perpanjangan ATAU paket harian ATAU member sudah aktif
+                                if ($isPerpanjangan || $isPaketHarian || $isMemberAktif) {
+                                    $set('biaya_registrasi_info', 0);
+                                    $set('harga_paket_info', $harga);
+                                } else {
+                                    $set('biaya_registrasi_info', $registrationFee);
+                                    $set('harga_paket_info', $harga + $registrationFee);
+                                }
                             }),
 
                         // --- FIELD METODE PEMBAYARAN ---
@@ -292,10 +309,12 @@ class MemberResource extends Resource
                                     if ($record && $record->type) {
                                         $paket = Paket::where('nama_paket', $record->type)->first();
                                         $registrationFee = $paket ? (int)$paket->registration_fee : 0;
+                                        $hargaPaket = $paket ? (int)$paket->harga : 0;
                                         
-                                        // Paksa set 0 untuk paket harian
+                                        // Paksa set 0 untuk paket harian DAN update total
                                         if ($paket && $paket->durasi_hari < 30) {
                                             $set('biaya_registrasi_info', 0);
+                                            $set('harga_paket_info', $hargaPaket); // Total = harga paket saja
                                             return;
                                         }
                                         
@@ -367,6 +386,12 @@ class MemberResource extends Resource
                                         $paket = Paket::where('nama_paket', $record->type)->first();
                                         $harga = $paket ? (int)$paket->harga : 0;
                                         $registrationFee = $paket ? (int)$paket->registration_fee : 0;
+                                        
+                                        // PENTING: Paksa set 0 untuk paket harian (durasi < 30 hari)
+                                        if ($paket && $paket->durasi_hari < 30) {
+                                            $set('harga_paket_info', $harga); // Total = harga paket saja, tanpa fee
+                                            return;
+                                        }
                                         
                                         // LOGIKA PINTAR:
                                         // Cek apakah member ini sudah pernah perpanjangan
