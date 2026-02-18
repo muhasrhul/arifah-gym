@@ -79,10 +79,15 @@ class CreateMember extends CreateRecord
             $registrationFee = $this->formBiayaRegistrasi;
             
             // Jika form kosong, ambil dari database paket (fallback)
-            if ($hargaPaket == 0 && $registrationFee == 0) {
+            if ($hargaPaket == 0) {
                 $paket = Paket::where('nama_paket', $member->type)->first();
                 $hargaPaket = $paket ? (int)$paket->harga : 0;
-                $registrationFee = $paket ? (int)$paket->registration_fee : 0;
+                
+                // PENTING: Hanya set registration fee jika belum di-set DAN bukan paket harian
+                if ($registrationFee == 0 && $paket && $paket->durasi_hari >= 30) {
+                    $registrationFee = $paket ? (int)$paket->registration_fee : 0;
+                }
+                // Jika paket harian (durasi < 30), registrationFee tetap 0 (sudah di-set di mutateFormDataBeforeCreate)
             }
             
             $totalHarga = $hargaPaket + $registrationFee; // Total termasuk fee untuk pendaftar baru

@@ -210,12 +210,18 @@ class EditMember extends EditRecord
             $registrationFee = $this->formBiayaRegistrasi;
             
             // Jika form kosong, ambil dari database paket (fallback)
-            if ($hargaPaket == 0 && $registrationFee == 0) {
+            if ($hargaPaket == 0) {
                 $paket = Paket::where('nama_paket', $data['type'])->first();
                 $hargaPaket = $paket ? (int)$paket->harga : 0;
                 
-                // Hanya tambahkan fee jika member belum punya expiry_date (pendaftar baru)
-                $registrationFee = (!$record->expiry_date && $paket) ? (int)$paket->registration_fee : 0;
+                // PENTING: Hanya set registration fee jika:
+                // 1. Belum di-set (registrationFee == 0)
+                // 2. Member belum punya expiry_date (pendaftar baru, bukan perpanjangan)
+                // 3. Bukan paket harian (durasi >= 30)
+                if ($registrationFee == 0 && !$record->expiry_date && $paket && $paket->durasi_hari >= 30) {
+                    $registrationFee = $paket ? (int)$paket->registration_fee : 0;
+                }
+                // Jika paket harian ATAU perpanjangan, registrationFee tetap 0
             }
             
             $totalHarga = $hargaPaket + $registrationFee;
