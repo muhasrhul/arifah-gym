@@ -119,55 +119,14 @@ class MemberResource extends Resource
                             ->helperText(fn ($record) => $record && $record->is_active 
                                 ? '⚠️ Tipe member tidak bisa diubah untuk member yang sudah aktif' 
                                 : 'Pilih tipe membership')
-                            ->afterStateHydrated(function ($state, $set, $get, $record) {
-                                // Isi expiry_date saat form pertama kali dibuka (untuk preview/referensi)
-                                if ($state && !$get('expiry_date')) {
-                                    $paket = Paket::where('nama_paket', $state)->first();
-                                    $durasi = $paket ? (int)$paket->durasi_hari : 0;
-                                    
-                                    if ($record && $record->expiry_date) {
-                                        // Perpanjangan: dari hari ini
-                                        $startDate = Carbon::now('Asia/Makassar');
-                                    } else {
-                                        // Pendaftar baru: dari join_date
-                                        $joinDate = $get('join_date') ?: ($record ? $record->join_date : null);
-                                        $startDate = $joinDate ? Carbon::parse($joinDate, 'Asia/Makassar') : Carbon::now('Asia/Makassar');
-                                    }
-                                    
-                                    if ($durasi > 1) {
-                                        $bulan = round($durasi / 30);
-                                        $set('expiry_date', $startDate->copy()->addMonths($bulan)->format('Y-m-d'));
-                                    } else {
-                                        $set('expiry_date', $startDate->format('Y-m-d'));
-                                    }
-                                }
-                            })
                             ->afterStateUpdated(function ($state, $set, $get, $record) {
                                 // 1. Cari Paket di Database
                                 $paket = Paket::where('nama_paket', $state)->first();
-                                $durasi = $paket ? (int)$paket->durasi_hari : 0;
                                 $harga = $paket ? (int)$paket->harga : 0;
                                 $registrationFee = $paket ? (int)$paket->registration_fee : 0;
 
-                                // 2. Update Tanggal Berakhir Otomatis (SELALU tampilkan di form sebagai preview)
-                                if ($record && $record->expiry_date) {
-                                    // Perpanjangan: dari hari ini (Asia/Makassar timezone)
-                                    $startDate = Carbon::now('Asia/Makassar');
-                                } else {
-                                    // Pendaftar baru: dari join_date
-                                    $joinDate = $get('join_date');
-                                    $startDate = $joinDate ? Carbon::parse($joinDate, 'Asia/Makassar') : Carbon::now('Asia/Makassar');
-                                }
-                                
-                                if ($durasi > 1) {
-                                    // Paket bulanan: hitung bulan dari durasi_hari
-                                    // 30 hari = 1 bulan, 60 hari = 2 bulan, 90 hari = 3 bulan
-                                    $bulan = round($durasi / 30);
-                                    $set('expiry_date', $startDate->copy()->addMonths($bulan)->format('Y-m-d'));
-                                } else {
-                                    // Jika harian, expired date = start date
-                                    $set('expiry_date', $startDate->format('Y-m-d'));
-                                }
+                                // 2. TIDAK ada update expiry_date otomatis!
+                                // Admin harus input manual
 
                                 // 3. Update Breakdown Biaya
                                 // Jika member sudah pernah punya expiry_date (perpanjangan), fee = 0
@@ -207,31 +166,29 @@ class MemberResource extends Resource
                             Forms\Components\DatePicker::make('join_date')
                                 ->label('Tanggal Mulai')
                                 ->default(now())
-                                ->reactive()
-                                ->afterStateUpdated(function ($state, $set, $get, $record) {
-                                    // Hanya update expiry_date jika pendaftar baru (belum punya expiry_date)
-                                    // Jika perpanjangan, jangan update (tetap hitung dari hari ini)
-                                    if (!$record || !$record->expiry_date) {
-                                        $paket = Paket::where('nama_paket', $get('type'))->first();
-                                        $durasi = $paket ? (int)$paket->durasi_hari : 0;
-
-                                        if ($durasi > 1 && $state) {
-                                            $joinDate = Carbon::parse($state, 'Asia/Makassar');
-                                            // Paket bulanan: hitung bulan dari durasi_hari
-                                            $bulan = round($durasi / 30);
-                                            $set('expiry_date', $joinDate->copy()->addMonths($bulan)->format('Y-m-d'));
-                                        } elseif ($state) {
-                                            $set('expiry_date', Carbon::parse($state, 'Asia/Makassar')->format('Y-m-d'));
-                                        }
-                                    }
-                                }),
+                                ->reactive(),
 
                             Forms\Components\DatePicker::make('expiry_date')
                                 ->label('Tanggal Berakhir')
-                                ->placeholder('Otomatis sesuai paket')
+                                ->placeholder('Input manual tanggal berakhir')
                                 ->reactive()
-                                ->dehydrated(fn ($get) => $get('is_active') === true) // Hanya simpan ke DB jika toggle aktif dinyalakan
-                                ->helperText(fn ($record) => $record && $record->expiry_date ? 'Perpanjangan dihitung dari hari ini' : 'Dihitung dari tanggal mulai'),
+                                ->required(fn ($get) => $get('is_active') === true)
+                                ->helperText(function ($record) {
+                                    if (!$record) return 'WAJIB diisi jika toggle Status Aktif dinyalakan.';
+                                    
+                                    if ($record->expiry_date) {
+                                        $expiredDate = \Carbon\Carbon::parse($record->expiry_date)->format('d/m/Y');
+                                        
+                                        // Jika member expired (tidak aktif tapi punya expiry_date)
+                                        if (!$record->is_active) {
+                                            return "⚠️ Member expired pada: {$expiredDate}. WAJIB ubah tanggal berakhir yang baru untuk perpanjangan.";
+                                        }
+                                        
+                                        return "Tanggal berakhir saat ini: {$expiredDate}";
+                                    }
+                                    
+                                    return 'WAJIB diisi jika toggle Status Aktif dinyalakan.';
+                                }),
                         ]),
 
                         // --- KOLOM TAGIHAN KASIR (BREAKDOWN) ---
@@ -387,6 +344,12 @@ class MemberResource extends Resource
                                         $harga = $paket ? (int)$paket->harga : 0;
                                         $registrationFee = $paket ? (int)$paket->registration_fee : 0;
                                         
+                                        // PENTING: Jika member EXPIRED (tidak aktif tapi punya expiry_date), set 0
+                                        if (!$record->is_active && $record->expiry_date) {
+                                            $set('harga_paket_info', 0);
+                                            return;
+                                        }
+                                        
                                         // PENTING: Paksa set 0 untuk paket harian (durasi < 30 hari)
                                         if ($paket && $paket->durasi_hari < 30) {
                                             $set('harga_paket_info', $harga); // Total = harga paket saja, tanpa fee
@@ -401,8 +364,7 @@ class MemberResource extends Resource
                                         
                                         // 1. Jika member AKTIF dan BELUM pernah perpanjangan → Total = harga + fee (member baru)
                                         // 2. Jika member AKTIF dan SUDAH pernah perpanjangan → Total = harga saja (member lama)
-                                        // 3. Jika member EXPIRED → Total = 0 (akan terisi otomatis saat ganti paket)
-                                        // 4. Jika member PENDAFTAR BARU → Total = harga + fee
+                                        // 3. Jika member PENDAFTAR BARU → Total = harga + fee
                                         
                                         if ($record->is_active && !$sudahPernahPerpanjangan) {
                                             // Member aktif dan belum pernah perpanjangan: total dengan fee (member baru)
@@ -410,9 +372,6 @@ class MemberResource extends Resource
                                         } elseif ($record->is_active && $sudahPernahPerpanjangan) {
                                             // Member aktif dan sudah pernah perpanjangan: total tanpa fee (member lama)
                                             $totalTagihan = $harga;
-                                        } elseif ($record->expiry_date) {
-                                            // Member expired: set 0 (akan terisi otomatis saat ganti paket)
-                                            $totalTagihan = 0;
                                         } else {
                                             // Pendaftar baru: harga paket + fee
                                             $totalTagihan = $harga + $registrationFee;
@@ -433,31 +392,8 @@ class MemberResource extends Resource
                         Forms\Components\Toggle::make('is_active')
                             ->label('Status Aktif')
                             ->reactive()
-                            ->afterStateUpdated(function ($state, $set, $get, $record) {
-                                // Jika toggle dinyalakan, pastikan expiry_date terisi
-                                if ($state && $get('type') && !$get('expiry_date')) {
-                                    $paket = Paket::where('nama_paket', $get('type'))->first();
-                                    $durasi = $paket ? (int)$paket->durasi_hari : 0;
-                                    
-                                    if ($record && $record->expiry_date) {
-                                        // Perpanjangan: dari hari ini
-                                        $startDate = Carbon::now('Asia/Makassar');
-                                    } else {
-                                        // Pendaftar baru: dari join_date
-                                        $joinDate = $get('join_date');
-                                        $startDate = $joinDate ? Carbon::parse($joinDate, 'Asia/Makassar') : Carbon::now('Asia/Makassar');
-                                    }
-                                    
-                                    if ($durasi > 1) {
-                                        $bulan = round($durasi / 30);
-                                        $set('expiry_date', $startDate->copy()->addMonths($bulan)->format('Y-m-d'));
-                                    } else {
-                                        $set('expiry_date', $startDate->format('Y-m-d'));
-                                    }
-                                }
-                            })
                             ->helperText(function ($record) {
-                                if (!$record) return 'Nyalakan ini hanya jika member sudah membayar lunas.';
+                                if (!$record) return 'Nyalakan ini hanya jika member sudah membayar lunas. PENTING: Anda harus mengisi Tanggal Berakhir secara manual sebelum mengaktifkan.';
                                 
                                 // Jika member sedang aktif dan sudah pernah punya transaksi
                                 if ($record->is_active) {
@@ -475,7 +411,7 @@ class MemberResource extends Resource
                                     return 'Member expired. Nyalakan toggle untuk perpanjangan membership.';
                                 }
                                 
-                                return 'Nyalakan ini hanya jika member sudah membayar lunas.';
+                                return 'Nyalakan ini hanya jika member sudah membayar lunas. PENTING: Anda harus mengisi Tanggal Berakhir secara manual sebelum mengaktifkan.';
                             })
                             ->disabled(function ($record) {
                                 if (!$record) return false;

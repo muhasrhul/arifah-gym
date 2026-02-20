@@ -162,6 +162,48 @@ class EditMember extends EditRecord
     {
         $now = Carbon::now('Asia/Makassar');
         
+        // VALIDASI 1: Jika toggle aktif, expiry_date WAJIB diisi
+        if (!empty($data['is_active']) && empty($data['expiry_date'])) {
+            Notification::make()
+                ->title('Validasi Gagal')
+                ->body('Tanggal berakhir harus diisi jika member diaktifkan.')
+                ->danger()
+                ->send();
+            
+            $this->halt();
+        }
+        
+        // VALIDASI 2: Jika member expired (punya expiry_date lama) dan toggle diaktifkan,
+        // expiry_date HARUS DIUBAH (tidak boleh sama dengan yang lama)
+        if (!empty($data['is_active']) && !$record->is_active && $record->expiry_date) {
+            // Member sedang expired dan akan diaktifkan (perpanjangan)
+            $oldDate = Carbon::parse($record->expiry_date)->format('Y-m-d');
+            $newDate = isset($data['expiry_date']) ? Carbon::parse($data['expiry_date'])->format('Y-m-d') : null;
+            
+            if ($newDate && $newDate == $oldDate) {
+                Notification::make()
+                    ->title('Perpanjangan Membership')
+                    ->body('Untuk perpanjangan, Anda harus mengubah tanggal berakhir yang baru. Tanggal lama: ' . Carbon::parse($record->expiry_date)->format('d/m/Y'))
+                    ->warning()
+                    ->send();
+                
+                $this->halt();
+            }
+        }
+        
+        // DEBUG: Log data yang masuk
+        \Log::info('=== EDIT MEMBER DEBUG ===');
+        \Log::info('Data dari form:', [
+            'expiry_date_dari_form' => $data['expiry_date'] ?? 'TIDAK ADA',
+            'join_date_dari_form' => $data['join_date'] ?? 'TIDAK ADA',
+            'is_active_dari_form' => $data['is_active'] ?? 'TIDAK ADA',
+        ]);
+        \Log::info('Data di database:', [
+            'expiry_date_di_db' => $record->expiry_date,
+            'join_date_di_db' => $record->join_date,
+            'is_active_di_db' => $record->is_active,
+        ]);
+        
         // VALIDASI BACKEND: Paksa set biaya admin = 0 untuk paket harian
         // Simpan ke property untuk digunakan dalam transaksi
         if (isset($data['type'])) {
@@ -180,6 +222,11 @@ class EditMember extends EditRecord
             $this->formBiayaRegistrasi = isset($data['biaya_registrasi_info']) ? (int)$data['biaya_registrasi_info'] : 0;
         }
         
+        // HAPUS field info dari $data agar tidak masuk ke database (field ini hanya untuk tampilan)
+        unset($data['biaya_paket_info']);
+        unset($data['biaya_registrasi_info']);
+        unset($data['harga_paket_info']);
+        
         // PENTING: Jika member sudah punya expiry_date (bukan pendaftar baru), set fee ke 0
         if ($record->expiry_date) {
             $this->formBiayaRegistrasi = 0;
@@ -188,19 +235,32 @@ class EditMember extends EditRecord
         // 1. Cek apakah status diubah dari Mati ke Aktif
         $sedangDiaktifkan = !empty($data['is_active']) && !$record->is_active;
 
-        // 2. Jika TIDAK diaktifkan DAN expiry_date tidak diubah manual, kembalikan ke nilai lama
-        // Tapi jika user mengubah expiry_date manual, biarkan tersimpan
-        if (!$sedangDiaktifkan && $record->expiry_date) {
-            // Cek apakah expiry_date diubah manual oleh user
-            $expiryDiubah = isset($data['expiry_date']) && $data['expiry_date'] != $record->expiry_date;
-            $joinDiubah = isset($data['join_date']) && $data['join_date'] != $record->join_date;
+        // 2. PROTEKSI: Hanya simpan expiry_date dan join_date jika toggle aktif
+        if (empty($data['is_active'])) {
+            // Jika toggle mati, kembalikan ke nilai lama (atau null jika belum pernah ada)
+            $data['expiry_date'] = $record->expiry_date;
+            $data['join_date'] = $record->join_date;
             
-            // Jika tidak diubah, kembalikan ke nilai lama
-            if (!$expiryDiubah) {
-                $data['expiry_date'] = $record->expiry_date;
-            }
-            if (!$joinDiubah) {
-                $data['join_date'] = $record->join_date;
+            \Log::info('Toggle mati, expiry_date dan join_date dikembalikan ke nilai lama');
+        } else {
+            // Toggle aktif, cek apakah user mengubah expiry_date manual
+            if ($record->expiry_date) {
+                $expiryDiubah = isset($data['expiry_date']) && $data['expiry_date'] != $record->expiry_date;
+                $joinDiubah = isset($data['join_date']) && $data['join_date'] != $record->join_date;
+                
+                \Log::info('Toggle aktif, proteksi expiry_date:', [
+                    'expiry_diubah' => $expiryDiubah ? 'YA' : 'TIDAK',
+                    'join_diubah' => $joinDiubah ? 'YA' : 'TIDAK',
+                ]);
+                
+                // Jika tidak diubah manual, kembalikan ke nilai lama
+                if (!$expiryDiubah) {
+                    $data['expiry_date'] = $record->expiry_date;
+                    \Log::info('PROTEKSI: expiry_date dikembalikan ke nilai lama: ' . $record->expiry_date);
+                }
+                if (!$joinDiubah) {
+                    $data['join_date'] = $record->join_date;
+                }
             }
         }
 
@@ -226,22 +286,15 @@ class EditMember extends EditRecord
             
             $totalHarga = $hargaPaket + $registrationFee;
 
-            // 3. Update Tanggal Expired untuk Perpanjangan
-            // Jika member sudah punya expiry_date (perpanjangan), perpanjang dari tanggal sekarang
+            // 3. Set join_date untuk perpanjangan
+            // Jika member sudah punya expiry_date (perpanjangan), set join_date ke hari ini
             if ($record->expiry_date) {
-                $paket = Paket::where('nama_paket', $data['type'])->first();
-                $durasi = $paket ? (int)$paket->durasi_hari : 1;
-                
-                // Perpanjang dari hari ini (Asia/Makassar timezone)
-                if ($durasi > 1) {
-                    // Paket bulanan: hitung bulan dari durasi_hari
-                    $bulan = round($durasi / 30);
-                    $data['expiry_date'] = $now->copy()->addMonths($bulan)->format('Y-m-d');
-                } else {
-                    $data['expiry_date'] = $now->format('Y-m-d');
-                }
                 $data['join_date'] = $now->format('Y-m-d');
             }
+            
+            // PENTING: TIDAK ada perhitungan otomatis expiry_date di sini!
+            // Biarkan nilai dari form (yang sudah diinput admin) langsung masuk ke database
+            // Perhitungan otomatis hanya untuk referensi di form, bukan di backend
 
             // 4. CEK DATABASE: Apakah sudah ada uang masuk (Pendaftaran Baru) untuk member ini?
             $sudahAdaUang = Transaction::where('member_id', $record->id)
@@ -319,19 +372,14 @@ class EditMember extends EditRecord
                 cache()->forget('stats_total_omzet');
                 cache()->forget('stats_total_member');
 
-                // Update Tanggal jika pendaftaran baru (expiry masih kosong)
+                // Set join_date untuk pendaftar baru
                 if (empty($record->expiry_date)) {
-                    $paket = Paket::where('nama_paket', $data['type'])->first();
-                    $durasi = $paket ? (int)$paket->durasi_hari : 1;
-                    if ($durasi > 1) {
-                        // Paket bulanan: hitung bulan dari durasi_hari
-                        $bulan = round($durasi / 30);
-                        $data['expiry_date'] = $now->copy()->addMonths($bulan)->format('Y-m-d');
-                    } else {
-                        $data['expiry_date'] = $now->format('Y-m-d');
-                    }
                     $data['join_date'] = $now->format('Y-m-d');
                 }
+                
+                // PENTING: TIDAK ada perhitungan otomatis expiry_date di sini!
+                // Biarkan nilai dari form (yang sudah diinput admin) langsung masuk ke database
+                // Jika expiry_date sudah ada di $data (user ubah manual), biarkan nilai dari user
             } else {
                 // Jika sudah ada transaksi pendaftaran (perpanjangan), catat transaksi perpanjangan
                 if ($record->expiry_date) {

@@ -23,6 +23,17 @@ class CreateMember extends CreateRecord
     {
         $now = Carbon::now('Asia/Makassar');
 
+        // VALIDASI: Jika toggle aktif, expiry_date WAJIB diisi
+        if (!empty($data['is_active']) && empty($data['expiry_date'])) {
+            Notification::make()
+                ->title('Validasi Gagal')
+                ->body('Tanggal berakhir harus diisi jika member diaktifkan.')
+                ->danger()
+                ->send();
+            
+            $this->halt();
+        }
+
         // VALIDASI BACKEND: Paksa set biaya admin = 0 untuk paket harian
         // Simpan ke property untuk digunakan di afterCreate
         if (isset($data['type'])) {
@@ -44,24 +55,14 @@ class CreateMember extends CreateRecord
         // AWALAN REG: Agar serasi di semua tabel
         $data['order_id'] = 'REG-' . strtoupper(uniqid());
 
-        // Jika Bapak TIDAK mencentang tombol "Active"
-        if (empty($data['is_active'])) {
-            $data['expiry_date'] = null;
-        } 
-        // Jika Bapak mencentang "Active"
-        else {
-            $paket = Paket::where('nama_paket', $data['type'])->first();
-            $durasi = $paket ? (int)$paket->durasi_hari : 1;
-
-            if ($durasi > 1) {
-                // Paket bulanan: hitung bulan dari durasi_hari
-                $bulan = round($durasi / 30);
-                $data['expiry_date'] = $now->copy()->addMonths($bulan)->format('Y-m-d');
-            } else {
-                $data['expiry_date'] = $now->format('Y-m-d'); 
-            }
-            
+        // PENTING: Hanya simpan expiry_date dan join_date jika toggle aktif dinyalakan
+        if (!empty($data['is_active'])) {
             $data['join_date'] = $now->format('Y-m-d');
+            // expiry_date tetap dari input manual user
+        } else {
+            // Jika toggle mati, hapus expiry_date dan join_date agar tidak tersimpan
+            unset($data['expiry_date']);
+            unset($data['join_date']);
         }
 
         return $data;

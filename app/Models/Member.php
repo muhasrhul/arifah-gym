@@ -61,7 +61,9 @@ class Member extends Model
         parent::boot();
 
         static::updating(function ($model) {
-            /** * LOGIKA AKTIVASI PENDAFTAR BARU
+            /** * LOGIKA AKTIVASI PENDAFTAR BARU - DIMATIKAN
+             * Perhitungan expiry_date sekarang dilakukan manual oleh admin
+             * Model Observer hanya untuk transaksi
              */
             if ($model->isDirty('is_active') && $model->is_active == true && empty($model->getOriginal('expiry_date'))) {
                 
@@ -72,15 +74,8 @@ class Member extends Model
                     $durasi = $paket->durasi_hari;
                     $harga  = $paket->harga;
 
-                    // 1. Set Tanggal Join & Expiry (Berlaku untuk QRIS maupun Kasir)
-                    $model->join_date = $now->format('Y-m-d');
-                    if ($durasi <= 1) {
-                        $model->expiry_date = $model->join_date;
-                    } else {
-                        // Paket bulanan: hitung bulan dari durasi_hari
-                        $bulan = round($durasi / 30);
-                        $model->expiry_date = $now->copy()->addMonths($bulan)->format('Y-m-d');
-                    }
+                    // TIDAK ADA PERHITUNGAN OTOMATIS expiry_date DAN join_date
+                    // Admin harus input manual di form
 
                     /**
                      * 2. LOGIKA ANTI-DOUBLE KRUSIAL:
