@@ -331,7 +331,7 @@ class MemberResource extends Resource
                                     if ($record->is_active && !$sudahPernahPerpanjangan) {
                                         return 'Biaya admin yang sudah dibayar saat pendaftaran pertama kali';
                                     } elseif ($record->is_active && $sudahPernahPerpanjangan) {
-                                        return 'Tidak dikenakan biaya admin';
+                                        return 'Member lama tidak dikenakan biaya admin';
                                     } elseif ($record->expiry_date) {
                                         return 'Tidak dikenakan biaya admin (perpanjangan membership)';
                                     }
