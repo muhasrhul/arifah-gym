@@ -183,7 +183,7 @@ return [
 
     'database_notifications' => [
         'enabled' => true,
-        'polling_interval' => '60s', // Dari 10s ke 60s untuk mengurangi beban
+        'polling_interval' => '10s', // Polling setiap 10 detik untuk notifikasi real-time
     ],
 
     /*

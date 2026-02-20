@@ -308,10 +308,19 @@ class MemberResource extends Resource
                                         if ($paketName) {
                                             $paket = Paket::where('nama_paket', $paketName)->first();
                                             if ($paket && $paket->durasi_hari < 30) {
-                                                return '⚠️ Paket harian tidak dikenakan biaya admin';
+                                                return '⚠️ Tamu harian tidak dikenakan biaya admin';
                                             }
                                         }
                                         return 'Hanya untuk pendaftar baru (bisa diedit)';
+                                    }
+                                    
+                                    // Cek apakah paket yang dipilih adalah paket harian
+                                    $paketName = $get('type') ?? $record->type;
+                                    if ($paketName) {
+                                        $paket = Paket::where('nama_paket', $paketName)->first();
+                                        if ($paket && $paket->durasi_hari < 30) {
+                                            return '⚠️ Tamu harian tidak dikenakan biaya admin';
+                                        }
                                     }
                                     
                                     // Cek apakah member sudah pernah perpanjangan
