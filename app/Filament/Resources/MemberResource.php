@@ -463,8 +463,9 @@ class MemberResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 
                 Tables\Columns\TextColumn::make('fingerprint_id')
-                    ->label('Fingerprint ID')
+                    ->label('Fingerprint ID ⇅')
                     ->searchable()
+                    ->sortable()
                     ->default('-')
                     ->color('primary')
                     ->weight('medium')
