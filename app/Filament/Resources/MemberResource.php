@@ -345,6 +345,8 @@ class MemberResource extends Resource
                                 ->placeholder('Otomatis...')
                                 ->numeric()
                                 ->prefix('Rp')
+                                ->formatStateUsing(fn ($state) => $state ? number_format($state, 0, ',', '.') : '0')
+                                ->reactive()
                                 ->disabled()
                                 ->dehydrated(false)
                                 ->afterStateHydrated(function ($set, $get, $record) {

@@ -67,18 +67,18 @@ class PaketResource extends Resource
                                 Forms\Components\TextInput::make('harga')
                                     ->label('Harga Paket (Membership)')
                                     ->numeric()
-                                    ->prefix('Rp')
-                                    ->placeholder('200000')
+                                    ->placeholder('200.000')
                                     ->required()
+                                    ->mask(fn (Forms\Components\TextInput\Mask $mask) => $mask->money(prefix: 'Rp ', thousandsSeparator: '.', decimalPlaces: 0))
                                     ->helperText('Harga membership bulanan/tahunan'),
 
                                 Forms\Components\TextInput::make('registration_fee')
                                     ->label('Biaya Registrasi (Fee)')
                                     ->numeric()
-                                    ->prefix('Rp')
-                                    ->placeholder('50000')
-                                    ->default(0)
-                                    ->helperText('Biaya registrasi untuk pendaftar baru (opsional)'),
+                                    ->placeholder('0')
+                                    ->nullable()
+                                    ->mask(fn (Forms\Components\TextInput\Mask $mask) => $mask->money(prefix: 'Rp ', thousandsSeparator: '.', decimalPlaces: 0))
+                                    ->helperText('Biaya registrasi untuk pendaftar baru (kosongkan jika tidak ada)'),
 
                                 Forms\Components\TextInput::make('durasi_hari')
                                     ->label('Durasi (Hari)')
@@ -124,7 +124,7 @@ class PaketResource extends Resource
 
                 Tables\Columns\TextColumn::make('registration_fee')
                     ->label('Fee Registrasi')
-                    ->formatStateUsing(fn ($state) => $state > 0 ? 'Rp ' . number_format($state, 0, ',', '.') : '-') 
+                    ->formatStateUsing(fn ($state) => ($state && $state > 0) ? 'Rp ' . number_format($state, 0, ',', '.') : '-') 
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('durasi_hari')

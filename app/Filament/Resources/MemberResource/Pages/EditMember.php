@@ -146,6 +146,8 @@ class EditMember extends EditRecord
                                     })
                                     ->numeric()
                                     ->prefix('Rp')
+                                    ->formatStateUsing(fn ($state) => $state ? number_format($state, 0, ',', '.') : '0')
+                                    ->reactive()
                                     ->disabled()
                                     ->dehydrated(false)
                                     ->helperText('Total untuk perpanjangan')

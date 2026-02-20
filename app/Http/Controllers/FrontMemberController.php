@@ -21,10 +21,14 @@ class FrontMemberController extends Controller
             return Paket::where('is_active', true)->orderBy('harga', 'asc')->get();
         });
 
-        // B. Ambil Registration Fee (dari paket pertama yang aktif)
-        $registrationFee = cache()->remember('registration_fee_display', 600, function () use ($pakets) {
-            $firstPaket = $pakets->first();
-            return $firstPaket ? (int)$firstPaket->registration_fee : 100000;
+        // B. Ambil Registration Fee terendah yang tidak null/0 dari paket aktif
+        $registrationFee = cache()->remember('registration_fee_display', 600, function () {
+            $paket = Paket::where('is_active', true)
+                ->whereNotNull('registration_fee')
+                ->where('registration_fee', '>', 0)
+                ->orderBy('registration_fee', 'asc')
+                ->first();
+            return $paket ? (int)$paket->registration_fee : 100000;
         });
 
         // C. Persiapan Variabel Cek Status
