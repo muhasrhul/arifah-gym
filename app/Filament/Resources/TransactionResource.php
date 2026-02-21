@@ -109,7 +109,13 @@ class TransactionResource extends Resource
                 Tables\Columns\TextColumn::make('customer_name')
                     ->label('Nama Customer')
                     ->getStateUsing(fn ($record) => $record->member ? $record->member->name : ($record->guest_name ?? 'Umum'))
-                    ->searchable(),
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query
+                            ->where('guest_name', 'like', "%{$search}%")
+                            ->orWhereHas('member', function (Builder $query) use ($search) {
+                                $query->where('name', 'like', "%{$search}%");
+                            });
+                    }),
                 
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Nominal')
