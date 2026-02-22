@@ -346,10 +346,10 @@ Route::get('/export-attendance', function (Request $request) {
 
 // 7. BACKUP DATABASE
 Route::get('/backup-database', function () {
-    $dbName = env('DB_DATABASE');
-    $dbUser = env('DB_USERNAME');
-    $dbPass = env('DB_PASSWORD');
-    $dbHost = env('DB_HOST', '127.0.0.1');
+    $dbName = config('database.connections.mysql.database');
+    $dbUser = config('database.connections.mysql.username');
+    $dbPass = config('database.connections.mysql.password');
+    $dbHost = config('database.connections.mysql.host', '127.0.0.1');
     $filename = "backup_arifahgym_" . date('Y-m-d_His') . ".sql";
     $filePath = storage_path('app/' . $filename);
     
