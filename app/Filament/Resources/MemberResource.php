@@ -486,6 +486,7 @@ class MemberResource extends Resource
 
                 Tables\Columns\TextColumn::make('expiry_date')
                     ->label('Berakhir ⇅')
+                    ->searchable()
                     ->sortable()
                     ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->format('d/m/Y') : '-')
                     ->color(function ($record) {
@@ -496,6 +497,7 @@ class MemberResource extends Resource
 
                 Tables\Columns\TextColumn::make('phone')
                     ->label('WA')
+                    ->searchable()
                     ->icon('heroicon-o-chat-alt')
                     ->color('success')
                     ->url(function ($record) {
