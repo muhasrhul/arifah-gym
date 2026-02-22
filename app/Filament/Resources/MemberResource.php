@@ -584,7 +584,30 @@ class MemberResource extends Resource
                         });
                     }),
 
-                // Filter 2: Data yang dihapus
+                // Filter 2: Tipe Paket
+                Tables\Filters\SelectFilter::make('type')
+                    ->label('Tipe Paket')
+                    ->options(function () {
+                        return \App\Models\Paket::where('is_active', true)
+                            ->pluck('nama_paket', 'nama_paket')
+                            ->toArray();
+                    })
+                    ->placeholder('Semua Paket'),
+
+                // Filter 3: Berakhir Bulan Ini
+                Tables\Filters\Filter::make('expiry_this_month')
+                    ->label('Berakhir Bulan Ini')
+                    ->query(fn ($query) => $query->whereMonth('expiry_date', Carbon::now()->month)
+                        ->whereYear('expiry_date', Carbon::now()->year))
+                    ->toggle(),
+
+                // Filter 4: Punya Fingerprint
+                Tables\Filters\Filter::make('has_fingerprint')
+                    ->label('Punya Fingerprint')
+                    ->query(fn ($query) => $query->whereNotNull('fingerprint_id'))
+                    ->toggle(),
+
+                // Filter 5: Data yang dihapus
                 TrashedFilter::make(),
             ])
             ->headerActions([
