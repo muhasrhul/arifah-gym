@@ -362,23 +362,60 @@ Route::get('/backup-database', function () {
         $mysqldumpPath = "mysqldump";
     }
     
-    // Build command dengan proper escaping
+    // Buat file konfigurasi sementara untuk credentials (lebih aman)
+    $configFile = storage_path('app/.my.cnf.tmp');
+    $configContent = "[client]\n";
+    $configContent .= "user={$dbUser}\n";
+    $configContent .= "password=\"{$dbPass}\"\n";
+    $configContent .= "host={$dbHost}\n";
+    file_put_contents($configFile, $configContent);
+    chmod($configFile, 0600); // Set permission agar hanya owner yang bisa baca
+    
+    // Build command menggunakan config file
     if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-        $command = "\"{$mysqldumpPath}\" --user={$dbUser} --password={$dbPass} --host={$dbHost} {$dbName} > \"{$filePath}\"";
+        $command = "\"{$mysqldumpPath}\" --defaults-extra-file=\"{$configFile}\" {$dbName} > \"{$filePath}\" 2>&1";
     } else {
-        $command = "{$mysqldumpPath} --user={$dbUser} --password='{$dbPass}' --host={$dbHost} {$dbName} > {$filePath}";
+        $command = "{$mysqldumpPath} --defaults-extra-file={$configFile} {$dbName} > {$filePath} 2>&1";
     }
     
     // Execute command
     exec($command, $output, $returnVar);
     
+    // Hapus file konfigurasi sementara
+    if (file_exists($configFile)) {
+        unlink($configFile);
+    }
+    
     // Check if backup was successful
     if (file_exists($filePath) && filesize($filePath) > 0) {
+        // Cek apakah file berisi error message
+        $firstLine = fgets(fopen($filePath, 'r'));
+        if (strpos($firstLine, 'Usage:') !== false || strpos($firstLine, 'Error:') !== false) {
+            // File berisi error, bukan backup
+            $errorContent = file_get_contents($filePath);
+            unlink($filePath);
+            
+            \Log::error('Backup database failed - mysqldump error', [
+                'command' => str_replace($dbPass, '***', $command),
+                'error_content' => $errorContent,
+                'return_var' => $returnVar
+            ]);
+            
+            return response()->json([
+                'error' => 'Gagal melakukan backup database.',
+                'message' => 'Terjadi error saat menjalankan mysqldump.',
+                'debug' => config('app.debug') ? [
+                    'error' => $errorContent,
+                    'return_code' => $returnVar
+                ] : null
+            ], 500);
+        }
+        
         return response()->download($filePath)->deleteFileAfterSend(true);
     } else {
         // Log error untuk debugging
-        \Log::error('Backup database failed', [
-            'command' => $command,
+        \Log::error('Backup database failed - file not created', [
+            'command' => str_replace($dbPass, '***', $command),
             'return_var' => $returnVar,
             'output' => $output,
             'file_exists' => file_exists($filePath),
@@ -387,7 +424,7 @@ Route::get('/backup-database', function () {
         
         return response()->json([
             'error' => 'Gagal melakukan backup database.',
-            'message' => 'Silakan hubungi administrator.',
+            'message' => 'File backup tidak berhasil dibuat.',
             'debug' => config('app.debug') ? [
                 'return_code' => $returnVar,
                 'output' => $output
