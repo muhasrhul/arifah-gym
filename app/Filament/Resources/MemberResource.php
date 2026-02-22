@@ -623,7 +623,61 @@ class MemberResource extends Resource
                     ->visible(fn () => request()->has('tableSort') || request()->has('tableSortDirection')),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->label(function ($record) {
+                        // 1. Pendaftar Baru (belum pernah aktif)
+                        if (!$record->is_active && !$record->expiry_date) {
+                            return 'Aktivasi Sekarang';
+                        }
+                        
+                        // 2. Masa Aktif Habis (expired)
+                        if (!$record->is_active && $record->expiry_date) {
+                            $today = Carbon::now('Asia/Makassar')->startOfDay();
+                            $expiry = Carbon::parse($record->expiry_date)->startOfDay();
+                            if ($today->gt($expiry)) {
+                                return 'Perpanjang';
+                            }
+                        }
+                        
+                        // 3. Aktif atau status lainnya
+                        return 'Ubah';
+                    })
+                    ->icon(function ($record) {
+                        // 1. Pendaftar Baru
+                        if (!$record->is_active && !$record->expiry_date) {
+                            return 'heroicon-o-check-circle';
+                        }
+                        
+                        // 2. Masa Aktif Habis
+                        if (!$record->is_active && $record->expiry_date) {
+                            $today = Carbon::now('Asia/Makassar')->startOfDay();
+                            $expiry = Carbon::parse($record->expiry_date)->startOfDay();
+                            if ($today->gt($expiry)) {
+                                return 'heroicon-o-refresh';
+                            }
+                        }
+                        
+                        // 3. Aktif atau status lainnya
+                        return 'heroicon-o-pencil';
+                    })
+                    ->color(function ($record) {
+                        // 1. Pendaftar Baru - Hijau
+                        if (!$record->is_active && !$record->expiry_date) {
+                            return 'success';
+                        }
+                        
+                        // 2. Masa Aktif Habis - Hijau
+                        if (!$record->is_active && $record->expiry_date) {
+                            $today = Carbon::now('Asia/Makassar')->startOfDay();
+                            $expiry = Carbon::parse($record->expiry_date)->startOfDay();
+                            if ($today->gt($expiry)) {
+                                return 'success';
+                            }
+                        }
+                        
+                        // 3. Aktif atau status lainnya - Biru (default)
+                        return 'primary';
+                    }),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
             ])
