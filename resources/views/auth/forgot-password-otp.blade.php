@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lupa Password - ARIFAH Gym</title>
+    <title>Reset Password - ARIFAH Gym</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -30,10 +30,10 @@
         <div class="glass-card rounded-3xl p-10 shadow-2xl">
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-[#0992C2]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fa-solid fa-key text-[#0992C2] text-2xl"></i>
+                    <i class="fa-brands fa-whatsapp text-[#0992C2] text-2xl"></i>
                 </div>
-                <h2 class="text-2xl font-black italic uppercase tracking-tight mb-2">Lupa Password</h2>
-                <p class="text-zinc-400 text-sm">Masukkan email admin untuk reset password</p>
+                <h2 class="text-2xl font-black italic uppercase tracking-tight mb-2">Reset Password</h2>
+                <p class="text-zinc-400 text-sm">Masukkan nomor WhatsApp admin untuk menerima kode OTP</p>
             </div>
 
             @if(session('success'))
@@ -50,18 +50,23 @@
                 </div>
             @endif
 
-            <form action="{{ route('password.email') }}" method="POST" class="space-y-6">
+            <form action="{{ route('password.send.otp') }}" method="POST" class="space-y-6">
                 @csrf
                 <div>
-                    <label class="block text-sm font-bold text-zinc-400 mb-2 uppercase tracking-wider">Email Admin</label>
-                    <input type="email" name="email" required 
+                    <label class="block text-sm font-bold text-zinc-400 mb-2 uppercase tracking-wider">Nomor WhatsApp</label>
+                    <input type="text" name="phone" required 
                            class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-[#0992C2] focus:ring-2 focus:ring-[#0992C2]/20 outline-none transition-all text-white"
-                           placeholder="admin@arifahgym.com">
+                           placeholder="08xxxxxxxxxx"
+                           value="{{ old('phone') }}">
+                    <p class="text-zinc-500 text-xs mt-2">
+                        <i class="fa-solid fa-info-circle mr-1"></i>
+                        Kode OTP akan dikirim ke WhatsApp Anda
+                    </p>
                 </div>
 
                 <button type="submit" class="w-full bg-gradient-to-r from-[#0992C2] to-[#0992C2] hover:from-[#0992C2] hover:to-[#0992C2] text-black font-black py-4 rounded-xl uppercase tracking-wider transition-all shadow-lg hover:shadow-[#0992C2]/50 transform hover:scale-[1.02]">
                     <i class="fa-solid fa-paper-plane mr-2"></i>
-                    Kirim Link Reset
+                    Kirim Kode OTP
                 </button>
             </form>
 

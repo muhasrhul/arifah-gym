@@ -62,6 +62,13 @@ class UserResource extends Resource
                         ->unique(ignorable: fn ($record) => $record)
                         ->maxLength(255),
 
+                    Forms\Components\TextInput::make('phone')
+                        ->label('Nomor WhatsApp')
+                        ->tel()
+                        ->placeholder('08xxxxxxxxxx atau 628xxxxxxxxxx')
+                        ->helperText('Diperlukan untuk reset password via OTP WhatsApp')
+                        ->maxLength(20),
+
                     Forms\Components\Select::make('role')
                         ->label('Role / Jabatan')
                         ->options([
@@ -98,6 +105,13 @@ class UserResource extends Resource
                     ->label('Email')
                     ->searchable()
                     ->icon('heroicon-o-mail'),
+
+                Tables\Columns\TextColumn::make('phone')
+                    ->label('WhatsApp')
+                    ->searchable()
+                    ->icon('heroicon-o-phone')
+                    ->default('-')
+                    ->formatStateUsing(fn ($state) => $state ?? '-'),
 
                 Tables\Columns\BadgeColumn::make('role')
                     ->label('Role')

@@ -32,44 +32,44 @@
                 <div class="w-16 h-16 bg-[#0992C2]/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i class="fa-solid fa-lock text-[#0992C2] text-2xl"></i>
                 </div>
-                <h2 class="text-2xl font-black italic uppercase tracking-tight mb-2">Reset Password</h2>
-                <p class="text-zinc-400 text-sm">Masukkan password baru Anda</p>
+                <h2 class="text-2xl font-black italic uppercase tracking-tight mb-2">Password Baru</h2>
+                <p class="text-zinc-400 text-sm">Masukkan password baru untuk akun Anda</p>
             </div>
+
+            @if(session('success'))
+                <div class="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400 text-sm">
+                    <i class="fa-solid fa-check-circle mr-2"></i>
+                    {{ session('success') }}
+                </div>
+            @endif
 
             @if($errors->any())
                 <div class="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
                     <i class="fa-solid fa-exclamation-circle mr-2"></i>
-                    {{ $errors->first() }}
+                    @foreach($errors->all() as $error)
+                        <div>{{ $error }}</div>
+                    @endforeach
                 </div>
             @endif
 
-            <form action="{{ route('password.update') }}" method="POST" class="space-y-6">
+            <form action="{{ route('password.reset.submit') }}" method="POST" class="space-y-6">
                 @csrf
-                <input type="hidden" name="token" value="{{ $token }}">
-
-                <div>
-                    <label class="block text-sm font-bold text-zinc-400 mb-2 uppercase tracking-wider">Email Admin</label>
-                    <input type="email" name="email" required 
-                           class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-[#0992C2] focus:ring-2 focus:ring-[#0992C2]/20 outline-none transition-all text-white"
-                           placeholder="admin@arifahgym.com">
-                </div>
-
                 <div>
                     <label class="block text-sm font-bold text-zinc-400 mb-2 uppercase tracking-wider">Password Baru</label>
-                    <input type="password" name="password" required minlength="8"
+                    <input type="password" name="password" required 
                            class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-[#0992C2] focus:ring-2 focus:ring-[#0992C2]/20 outline-none transition-all text-white"
                            placeholder="Minimal 8 karakter">
                 </div>
 
                 <div>
                     <label class="block text-sm font-bold text-zinc-400 mb-2 uppercase tracking-wider">Konfirmasi Password</label>
-                    <input type="password" name="password_confirmation" required minlength="8"
+                    <input type="password" name="password_confirmation" required 
                            class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-[#0992C2] focus:ring-2 focus:ring-[#0992C2]/20 outline-none transition-all text-white"
-                           placeholder="Ketik ulang password">
+                           placeholder="Ulangi password baru">
                 </div>
 
                 <button type="submit" class="w-full bg-gradient-to-r from-[#0992C2] to-[#0992C2] hover:from-[#0992C2] hover:to-[#0992C2] text-black font-black py-4 rounded-xl uppercase tracking-wider transition-all shadow-lg hover:shadow-[#0992C2]/50 transform hover:scale-[1.02]">
-                    <i class="fa-solid fa-check-circle mr-2"></i>
+                    <i class="fa-solid fa-check mr-2"></i>
                     Reset Password
                 </button>
             </form>

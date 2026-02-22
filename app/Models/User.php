@@ -20,6 +20,7 @@ class User extends Authenticatable implements FilamentUser // <--- TAMBAHAN: Imp
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
         'role',
     ];

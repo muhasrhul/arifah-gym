@@ -9,7 +9,6 @@ use App\Models\Attendance;
 use App\Models\Transaction; 
 use App\Http\Controllers\FrontMemberController;
 use App\Http\Controllers\ForgotPasswordController;
-use App\Http\Controllers\ResetPasswordController;
 use Filament\Notifications\Notification;
 
 /*
@@ -26,11 +25,13 @@ Route::get('/login', function () {
 // 1. HALAMAN UTAMA & SEARCH
 Route::get('/', [FrontMemberController::class, 'index'])->name('home');
 
-// 1.1 FORGOT PASSWORD & RESET PASSWORD (KHUSUS ADMIN/OWNER)
-Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
-Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
-Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
-Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
+// 1.1 FORGOT PASSWORD & RESET PASSWORD (KHUSUS ADMIN/OWNER) - OTP VIA WHATSAPP
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showOtpRequestForm'])->name('password.request.otp');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendOtp'])->name('password.send.otp');
+Route::get('/verify-otp', [ForgotPasswordController::class, 'showVerifyOtpForm'])->name('password.verify.otp.form');
+Route::post('/verify-otp', [ForgotPasswordController::class, 'verifyOtp'])->name('password.verify.otp');
+Route::get('/reset-password', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset.form');
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset.submit');
 
 // 2. PROSES PENDAFTARAN
 Route::get('/daftar', function () {

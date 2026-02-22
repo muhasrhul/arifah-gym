@@ -51,74 +51,143 @@ class AppServiceProvider extends ServiceProvider
                     ->sort(10),
             ]);
 
-            // 2. STYLE CUSTOM UNTUK TAMPILAN LOGIN PREMIUM
-            // DISABLED: Google Fonts untuk performa lebih baik
-            // Filament::registerStyles([
-            //     'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap',
-            // ]);
-
+            // 2. STYLE CUSTOM UNTUK TAMPILAN LOGIN MODERN
             Filament::pushMeta([
                 new HtmlString('
                 <style>
-                    /* Latar Belakang Full Screen dengan Overlay Gelap */
+                    /* Import Font */
+                    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap");
+
+                    /* Latar Belakang Modern dengan Gradient + Gambar Gym */
                     .filament-login-page {
-                        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), 
                                     url("/images/bg-login.jpg") no-repeat center center fixed !important;
                         background-size: cover !important;
-                        font-family: "Poppins", sans-serif !important;
+                        font-family: "Inter", sans-serif !important;
                         display: flex;
                         align-items: center;
                         justify-content: center;
+                        min-height: 100vh;
                     }
 
-                    /* Kartu Login Glassmorphism (Efek Kaca) */
+                    /* Kartu Login Glassmorphism Modern */
                     .filament-login-page .filament-forms-card-component {
-                        background: rgba(255, 255, 255, 0.08) !important;
-                        backdrop-filter: blur(12px) !important;
-                        -webkit-backdrop-filter: blur(12px) !important;
-                        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                        background: rgba(24, 24, 27, 0.8) !important;
+                        backdrop-filter: blur(15px) !important;
+                        -webkit-backdrop-filter: blur(15px) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.05) !important;
                         border-radius: 24px !important;
-                        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
-                        padding: 2rem !important;
+                        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5) !important;
+                        padding: 2.5rem !important;
+                        max-width: 420px !important;
+                        width: 100% !important;
                     }
 
-                    /* Judul Heading Login */
+                    /* Judul Heading Login (MASUK) */
                     .filament-login-page h2 {
                         color: #ffffff !important;
-                        font-weight: 800 !important;
-                        letter-spacing: -0.5px !important;
+                        font-weight: 900 !important;
+                        font-style: italic !important;
+                        letter-spacing: -1px !important;
                         text-align: center !important;
-                        margin-bottom: 1.5rem !important;
-                        font-size: 1.8rem !important;
+                        margin-bottom: 2rem !important;
+                        font-size: 1.75rem !important;
+                        text-transform: uppercase !important;
                     }
 
-                    /* Styling Input Field agar Mewah */
+                    /* Label Input */
+                    .filament-login-page label {
+                        color: #a1a1aa !important;
+                        font-weight: 700 !important;
+                        font-size: 0.875rem !important;
+                        text-transform: uppercase !important;
+                        letter-spacing: 0.05em !important;
+                        margin-bottom: 0.5rem !important;
+                    }
+
+                    /* Styling Input Field Modern */
                     .filament-login-page input {
-                        background: rgba(0, 0, 0, 0.5) !important;
-                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        background: rgba(255, 255, 255, 0.05) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.1) !important;
                         color: #ffffff !important;
                         border-radius: 12px !important;
                         padding: 0.75rem 1rem !important;
                         transition: all 0.3s ease !important;
+                        font-size: 1rem !important;
+                    }
+
+                    .filament-login-page input::placeholder {
+                        color: #52525b !important;
                     }
 
                     .filament-login-page input:focus {
-                        border-color: #fbbf24 !important;
-                        box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2) !important;
+                        border-color: #0992C2 !important;
+                        box-shadow: 0 0 0 3px rgba(9, 146, 194, 0.2) !important;
+                        background: rgba(255, 255, 255, 0.08) !important;
+                        outline: none !important;
                     }
 
-                    /* Tombol Submit Login Premium */
+                    /* Checkbox "Ingat Saya" */
+                    .filament-login-page input[type="checkbox"] {
+                        width: 1.25rem !important;
+                        height: 1.25rem !important;
+                        border-radius: 6px !important;
+                        cursor: pointer !important;
+                    }
+
+                    .filament-login-page input[type="checkbox"]:checked {
+                        background-color: #0992C2 !important;
+                        border-color: #0992C2 !important;
+                    }
+
+                    /* Text "Ingat Saya" */
+                    .filament-login-page .filament-forms-field-wrapper-label {
+                        color: #d4d4d8 !important;
+                    }
+
+                    /* Tombol Submit Login Modern */
                     .filament-login-page button[type="submit"] {
-                        background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%) !important;
+                        background: linear-gradient(135deg, #0992C2 0%, #0992C2 100%) !important;
                         color: #000000 !important;
                         border: none !important;
                         border-radius: 12px !important;
-                        font-weight: 700 !important;
-                        padding: 0.75rem !important;
+                        font-weight: 900 !important;
+                        padding: 1rem !important;
                         text-transform: uppercase !important;
-                        letter-spacing: 1px !important;
+                        letter-spacing: 0.1em !important;
                         transition: all 0.3s ease !important;
                         width: 100% !important;
+                        box-shadow: 0 10px 25px rgba(9, 146, 194, 0.3) !important;
+                        margin-top: 1.5rem !important;
+                    }
+
+                    .filament-login-page button[type="submit"]:hover {
+                        transform: scale(1.02) !important;
+                        box-shadow: 0 15px 35px rgba(9, 146, 194, 0.5) !important;
+                    }
+
+                    /* Link "Lupa Password" */
+                    .filament-login-page a {
+                        color: #0992C2 !important;
+                        font-weight: 700 !important;
+                        text-decoration: none !important;
+                        transition: all 0.3s ease !important;
+                    }
+
+                    .filament-login-page a:hover {
+                        color: #0bb5e8 !important;
+                        text-decoration: underline !important;
+                    }
+
+                    /* Copyright Footer */
+                    .filament-login-page .filament-footer {
+                        color: #3f3f46 !important;
+                        font-size: 0.75rem !important;
+                        font-weight: 900 !important;
+                        letter-spacing: 0.2em !important;
+                        text-transform: uppercase !important;
+                        text-align: center !important;
+                        margin-top: 2rem !important;
                     }
 
                     /* =========================================
@@ -143,7 +212,7 @@ class AppServiceProvider extends ServiceProvider
                     /* Judul Modal (Hitam Slate) - LIGHT MODE */
                     .filament-modal-heading {
                         color: #1e293b !important;
-                        font-family: "Poppins", sans-serif !important;
+                        font-family: "Inter", sans-serif !important;
                         font-weight: 800 !important;
                     }
 
@@ -668,8 +737,118 @@ class AppServiceProvider extends ServiceProvider
                         setTimeout(addForgotPasswordLink, 500);
                         setTimeout(addForgotPasswordLink, 1000);
                         
-                        // Observer untuk perubahan DOM
-                        const observer = new MutationObserver(addForgotPasswordLink);
+                        // Livewire event listeners
+                        document.addEventListener("livewire:load", function() {
+                            setTimeout(addForgotPasswordLink, 100);
+                        });
+                        
+                        document.addEventListener("livewire:update", function() {
+                            setTimeout(addForgotPasswordLink, 100);
+                        });
+                        
+                        // Observer untuk perubahan DOM (dengan debounce)
+                        let timeoutId;
+                        const observer = new MutationObserver(function() {
+                            clearTimeout(timeoutId);
+                            timeoutId = setTimeout(addForgotPasswordLink, 100);
+                        });
+                        
+                        if (document.body) {
+                            observer.observe(document.body, { childList: true, subtree: true });
+                        }
+                    })();
+                </script>
+                
+                <script>
+                    // Toggle Show/Hide Password dengan Icon Mata
+                    (function() {
+                        function addPasswordToggle() {
+                            // Cek apakah ini halaman login
+                            if (!window.location.pathname.includes("/login")) {
+                                return;
+                            }
+                            
+                            // Cari input password
+                            const passwordInput = document.querySelector(".filament-login-page input[type=password]");
+                            if (!passwordInput || passwordInput.dataset.toggleAdded) {
+                                return;
+                            }
+                            
+                            // Tandai bahwa toggle sudah ditambahkan
+                            passwordInput.dataset.toggleAdded = "true";
+                            
+                            // Buat wrapper untuk input + icon
+                            const wrapper = document.createElement("div");
+                            wrapper.style.cssText = "position: relative; width: 100%;";
+                            
+                            // Pindahkan input ke dalam wrapper
+                            passwordInput.parentNode.insertBefore(wrapper, passwordInput);
+                            wrapper.appendChild(passwordInput);
+                            
+                            // Tambah padding kanan pada input untuk icon
+                            passwordInput.style.paddingRight = "3rem";
+                            
+                            // Buat button toggle
+                            const toggleButton = document.createElement("button");
+                            toggleButton.type = "button";
+                            toggleButton.style.cssText = "position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 0.25rem; color: #a1a1aa; transition: color 0.2s ease;";
+                            toggleButton.innerHTML = \'<svg class="eye-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg><svg class="eye-slash-icon" style="display: none;" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>\';
+                            
+                            // Hover effect
+                            toggleButton.addEventListener("mouseenter", function() {
+                                this.style.color = "#0992C2";
+                            });
+                            toggleButton.addEventListener("mouseleave", function() {
+                                this.style.color = "#a1a1aa";
+                            });
+                            
+                            // Toggle password visibility
+                            toggleButton.addEventListener("click", function() {
+                                const eyeIcon = this.querySelector(".eye-icon");
+                                const eyeSlashIcon = this.querySelector(".eye-slash-icon");
+                                
+                                if (passwordInput.type === "password") {
+                                    passwordInput.type = "text";
+                                    eyeIcon.style.display = "none";
+                                    eyeSlashIcon.style.display = "block";
+                                } else {
+                                    passwordInput.type = "password";
+                                    eyeIcon.style.display = "block";
+                                    eyeSlashIcon.style.display = "none";
+                                }
+                            });
+                            
+                            // Tambahkan button ke wrapper
+                            wrapper.appendChild(toggleButton);
+                        }
+                        
+                        // Jalankan saat DOM ready
+                        if (document.readyState === "loading") {
+                            document.addEventListener("DOMContentLoaded", addPasswordToggle);
+                        } else {
+                            addPasswordToggle();
+                        }
+                        
+                        // Jalankan lagi setelah delay (untuk Livewire)
+                        setTimeout(addPasswordToggle, 500);
+                        setTimeout(addPasswordToggle, 1000);
+                        
+                        // Livewire event listeners
+                        document.addEventListener("livewire:load", function() {
+                            setTimeout(addPasswordToggle, 100);
+                        });
+                        
+                        document.addEventListener("livewire:update", function() {
+                            setTimeout(addPasswordToggle, 100);
+                        });
+                        
+                        // Observer untuk perubahan DOM (dengan debounce)
+                        let timeoutId;
+                        const observer = new MutationObserver(function() {
+                            clearTimeout(timeoutId);
+                            timeoutId = setTimeout(addPasswordToggle, 100);
+                        });
+                        
                         if (document.body) {
                             observer.observe(document.body, { childList: true, subtree: true });
                         }
