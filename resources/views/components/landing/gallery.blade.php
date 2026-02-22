@@ -17,7 +17,7 @@
                 <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@arifah_gym/video/7569262752053726485" data-video-id="7569262752053726485" style="max-width: 100%; min-width: 100%; margin: 0;" > 
                     <section> 
                         <a target="_blank" title="@arifah_gym" href="https://www.tiktok.com/@arifah_gym?refer=embed">@arifah_gym</a> 
-                        Teeimakasih antusiasnya semua 🫰 
+                        Terimakasih antusiasnya semua 🫰 
                         <a title="gym" target="_blank" href="https://www.tiktok.com/tag/gym?refer=embed">#gym</a> 
                         <a title="makassar" target="_blank" href="https://www.tiktok.com/tag/makassar?refer=embed">#makassar</a> 
                         <a target="_blank" title="♬ ONE IN A MILLION - Shayla Hamady" href="https://www.tiktok.com/music/ONE-IN-A-MILLION-7507495268516399120?refer=embed">♬ ONE IN A MILLION - Shayla Hamady</a> 
