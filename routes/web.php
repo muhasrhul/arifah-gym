@@ -373,9 +373,9 @@ Route::get('/backup-database', function () {
     
     // Build command menggunakan config file
     if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-        $command = "\"{$mysqldumpPath}\" --defaults-extra-file=\"{$configFile}\" {$dbName} > \"{$filePath}\" 2>&1";
+        $command = "\"{$mysqldumpPath}\" --defaults-extra-file=\"{$configFile}\" \"{$dbName}\" > \"{$filePath}\" 2>&1";
     } else {
-        $command = "{$mysqldumpPath} --defaults-extra-file={$configFile} {$dbName} > {$filePath} 2>&1";
+        $command = "{$mysqldumpPath} --defaults-extra-file=\"{$configFile}\" \"{$dbName}\" > \"{$filePath}\" 2>&1";
     }
     
     // Execute command
