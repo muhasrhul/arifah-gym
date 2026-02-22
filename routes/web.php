@@ -349,14 +349,49 @@ Route::get('/backup-database', function () {
     $dbName = env('DB_DATABASE');
     $dbUser = env('DB_USERNAME');
     $dbPass = env('DB_PASSWORD');
-    $filename = "backup_irongym_" . date('Y-m-d_His') . ".sql";
+    $dbHost = env('DB_HOST', '127.0.0.1');
+    $filename = "backup_arifahgym_" . date('Y-m-d_His') . ".sql";
     $filePath = storage_path('app/' . $filename);
-    $mysqldumpPath = "C:\\xampp\\mysql\\bin\\mysqldump.exe";
-    $command = "{$mysqldumpPath} --user={$dbUser} --password={$dbPass} {$dbName} > \"{$filePath}\"";
-    exec($command);
+    
+    // Deteksi OS dan set path mysqldump
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        // Windows (XAMPP)
+        $mysqldumpPath = "C:\\xampp\\mysql\\bin\\mysqldump.exe";
+    } else {
+        // Linux/Unix
+        $mysqldumpPath = "mysqldump";
+    }
+    
+    // Build command dengan proper escaping
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        $command = "\"{$mysqldumpPath}\" --user={$dbUser} --password={$dbPass} --host={$dbHost} {$dbName} > \"{$filePath}\"";
+    } else {
+        $command = "{$mysqldumpPath} --user={$dbUser} --password='{$dbPass}' --host={$dbHost} {$dbName} > {$filePath}";
+    }
+    
+    // Execute command
+    exec($command, $output, $returnVar);
+    
+    // Check if backup was successful
     if (file_exists($filePath) && filesize($filePath) > 0) {
         return response()->download($filePath)->deleteFileAfterSend(true);
     } else {
-        return "Gagal melakukan backup. Silakan cek path XAMPP.";
+        // Log error untuk debugging
+        \Log::error('Backup database failed', [
+            'command' => $command,
+            'return_var' => $returnVar,
+            'output' => $output,
+            'file_exists' => file_exists($filePath),
+            'file_size' => file_exists($filePath) ? filesize($filePath) : 0
+        ]);
+        
+        return response()->json([
+            'error' => 'Gagal melakukan backup database.',
+            'message' => 'Silakan hubungi administrator.',
+            'debug' => config('app.debug') ? [
+                'return_code' => $returnVar,
+                'output' => $output
+            ] : null
+        ], 500);
     }
 })->name('backup-database');
