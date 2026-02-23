@@ -263,8 +263,8 @@ class MemberResource extends Resource
                                 ->disabled(fn ($record) => $record && $record->is_active) // Disable jika sudah aktif
                                 ->afterStateUpdated(function ($state, $set, $get) {
                                     // Update total saat biaya paket diubah manual
-                                    $biayaPaket = $state ?? 0;
-                                    $biayaRegistrasi = $get('biaya_registrasi_info') ?? 0;
+                                    $biayaPaket = (int)($state ?? 0);
+                                    $biayaRegistrasi = (int)($get('biaya_registrasi_info') ?? 0);
                                     $set('harga_paket_info', $biayaPaket + $biayaRegistrasi);
                                 })
                                 ->afterStateHydrated(function ($set, $get, $record) {
@@ -318,8 +318,8 @@ class MemberResource extends Resource
                                 })
                                 ->afterStateUpdated(function ($state, $set, $get) {
                                     // Update total saat biaya registrasi diubah manual
-                                    $biayaPaket = $get('biaya_paket_info') ?? 0;
-                                    $biayaRegistrasi = $state ?? 0;
+                                    $biayaPaket = (int)($get('biaya_paket_info') ?? 0);
+                                    $biayaRegistrasi = (int)($state ?? 0);
                                     $set('harga_paket_info', $biayaPaket + $biayaRegistrasi);
                                 })
                                 ->afterStateHydrated(function ($set, $get, $record) {
