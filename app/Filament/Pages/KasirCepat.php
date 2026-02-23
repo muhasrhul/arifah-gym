@@ -2,9 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\Member;
-use App\Models\Attendance;
-use App\Models\QuickTransaction; // GANTI: Pakai tabel terpisah
+use App\Models\QuickTransaction; // Tabel terpisah untuk kasir cepat
 use App\Models\Product;
 use App\Models\User;
 use Filament\Pages\Page;
@@ -34,8 +32,9 @@ class KasirCepat extends Page
     }
 
     /**
-     * SISTEM BARU: Transaksi Langsung Tanpa Member Bayangan
+     * SISTEM BARU: Transaksi Langsung 100% Tanpa Member Bayangan
      * Menggunakan tabel quick_transactions yang terpisah
+     * TIDAK ADA absensi untuk kasir cepat (tamu harian tidak perlu tracking detail)
      */
     public function bayarHarian($productId)
     {
@@ -64,35 +63,14 @@ class KasirCepat extends Page
         $itemName = $product->name;
         $nominal = "Rp " . number_format($amount, 0, ',', '.');
 
-        // 3. ABSENSI: Hanya untuk produk latihan/harian (perlu member sementara)
-        if (str_contains(strtolower($itemName), 'latihan') || str_contains(strtolower($itemName), 'harian')) {
-            // Untuk absensi, tetap perlu member (tapi cuma untuk tracking kehadiran)
-            $tempMember = Member::firstOrCreate(
-                ['name' => 'Tamu Latihan Harian'],
-                [
-                    'email' => 'tamu.latihan@arifahgym.local',
-                    'phone' => '000000000001',
-                    'type' => 'Temporary Attendance',
-                    'is_active' => true,
-                    'join_date' => now(),
-                    'expiry_date' => now()->addDays(1), // Expired besok
-                ]
-            );
-
-            Attendance::create([
-                'member_id' => $tempMember->id,
-                'created_at' => now(),
-            ]);
-        }
-
-        // 4. KURANGI STOCK PRODUK
+        // 3. KURANGI STOCK PRODUK
         $product->decrement('stock', 1);
         
         // Clear cache dashboard agar pendapatan update langsung
         cache()->forget('stats_omset_hari_ini');
         cache()->forget('stats_total_omzet');
 
-        // 5. SIMPAN KE TABEL QUICK_TRANSACTIONS (TANPA MEMBER!)
+        // 4. SIMPAN KE TABEL QUICK_TRANSACTIONS (TANPA MEMBER!)
         $quickTransaction = QuickTransaction::create([
             'guest_name'     => str_contains(strtolower($itemName), 'latihan') || str_contains(strtolower($itemName), 'harian') 
                                 ? 'Tamu Latihan' 
@@ -105,7 +83,7 @@ class KasirCepat extends Page
             'payment_date'   => now(),
         ]);
 
-        // 6. KIRIM NOTIFIKASI KE DATABASE ADMIN
+        // 5. KIRIM NOTIFIKASI KE DATABASE ADMIN
         $admins = User::all();
         foreach ($admins as $admin) {
             Notification::make()
@@ -116,13 +94,13 @@ class KasirCepat extends Page
                 ->sendToDatabase($admin);
         }
 
-        // 7. KIRIM NOTIFIKASI TELEGRAM
+        // 6. KIRIM NOTIFIKASI TELEGRAM
         \App\Helpers\TelegramHelper::sendTransaksiKasir($itemName, $amount, $product->stock);
 
-        // 8. KIRIM NOTIFIKASI WHATSAPP KE OWNER (Gunakan data quick transaction)
+        // 7. KIRIM NOTIFIKASI WHATSAPP KE OWNER (Gunakan data quick transaction)
         \App\Helpers\WhatsAppHelper::sendQuickTransactionNotification($quickTransaction);
 
-        // 9. Notifikasi melayang (Toast) di layar kasir
+        // 8. Notifikasi melayang (Toast) di layar kasir
         Notification::make()
             ->title('Transaksi Berhasil!')
             ->body("Pembayaran **{$itemName}** sebesar **{$nominal}** telah dicatat. Stock tersisa: **{$product->stock}**")
