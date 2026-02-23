@@ -70,6 +70,27 @@ class AppServiceProvider extends ServiceProvider
                         min-height: 100vh;
                     }
 
+                    /* FORCE DARK MODE UNTUK LOGIN PAGE - OVERRIDE SEMUA LIGHT MODE */
+                    body:has(.filament-login-page),
+                    html:has(.filament-login-page) {
+                        background: #000000 !important;
+                        color-scheme: dark !important;
+                    }
+
+                    /* Force dark class pada body saat di login page */
+                    body:has(.filament-login-page) {
+                        background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), 
+                                    url("/images/bg-login.jpg") no-repeat center center fixed !important;
+                        background-size: cover !important;
+                    }
+
+                    /* Override light mode variables untuk login page */
+                    .filament-login-page,
+                    .filament-login-page * {
+                        --tw-bg-opacity: 1 !important;
+                        --tw-text-opacity: 1 !important;
+                    }
+
                     /* Kartu Login Glassmorphism Modern */
                     .filament-login-page .filament-forms-card-component {
                         background: rgba(24, 24, 27, 0.8) !important;
@@ -658,6 +679,64 @@ class AppServiceProvider extends ServiceProvider
                                 resetAllTableParameters();
                             }
                         });
+                    })();
+                </script>
+                
+                <script>
+                    // FORCE DARK MODE UNTUK LOGIN PAGE
+                    (function() {
+                        function forceLoginDarkMode() {
+                            // Cek apakah ini halaman login
+                            if (window.location.pathname.includes(\'/login\')) {
+                                // Force add dark class ke html dan body
+                                document.documentElement.classList.add(\'dark\');
+                                document.body.classList.add(\'dark\');
+                                
+                                // Set localStorage untuk memastikan dark mode
+                                localStorage.setItem(\'theme\', \'dark\');
+                                
+                                // Override any light mode attempts
+                                const observer = new MutationObserver(function(mutations) {
+                                    mutations.forEach(function(mutation) {
+                                        if (mutation.type === \'attributes\' && mutation.attributeName === \'class\') {
+                                            if (window.location.pathname.includes(\'/login\')) {
+                                                document.documentElement.classList.add(\'dark\');
+                                                document.body.classList.add(\'dark\');
+                                            }
+                                        }
+                                    });
+                                });
+                                
+                                observer.observe(document.documentElement, {
+                                    attributes: true,
+                                    attributeFilter: [\'class\']
+                                });
+                                
+                                observer.observe(document.body, {
+                                    attributes: true,
+                                    attributeFilter: [\'class\']
+                                });
+                            }
+                        }
+                        
+                        // Jalankan segera
+                        forceLoginDarkMode();
+                        
+                        // Jalankan saat DOM ready
+                        if (document.readyState === \'loading\') {
+                            document.addEventListener(\'DOMContentLoaded\', forceLoginDarkMode);
+                        }
+                        
+                        // Jalankan saat window load
+                        window.addEventListener(\'load\', forceLoginDarkMode);
+                        
+                        // Jalankan berkala untuk memastikan
+                        setInterval(function() {
+                            if (window.location.pathname.includes(\'/login\')) {
+                                document.documentElement.classList.add(\'dark\');
+                                document.body.classList.add(\'dark\');
+                            }
+                        }, 100);
                     })();
                 </script>
                 
