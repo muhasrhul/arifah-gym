@@ -15,8 +15,10 @@ class TransactionResource extends Resource
 {
     protected static ?string $model = Transaction::class;
     protected static ?string $navigationIcon = 'heroicon-o-cash';
-    protected static ?string $navigationLabel = 'Laporan Transaksi';
-    protected static ?string $pluralLabel = 'Laporan Transaksi';
+    protected static ?int $navigationSort = 1; // Urutan pertama
+    protected static ?string $navigationLabel = 'Keuangan Member';
+    protected static ?string $pluralLabel = 'Keuangan Member';
+    protected static ?string $navigationGroup = 'Laporan Transaksi';
     
     // PERMISSION: Staff hanya bisa lihat, tidak bisa create/edit/delete
     public static function canCreate(): bool
@@ -39,10 +41,15 @@ class TransactionResource extends Resource
         return !auth()->user()->isStaff(); // Super Admin & Admin bisa
     }
     
-    // Eager loading untuk relasi member
+    // Filter otomatis: Hanya tampilkan transaksi member reguler (bukan kasir cepat)
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with('member');
+        return parent::getEloquentQuery()
+            ->with('member')
+            ->whereHas('member', function (Builder $query) {
+                $query->where('name', '!=', 'Tamu Harian')
+                      ->where('name', '!=', 'Tamu Latihan Harian');
+            });
     }
 
     public static function form(Form $form): Form
@@ -105,7 +112,14 @@ class TransactionResource extends Resource
     {
         return $table
             ->columns([
-                // LOGIKA: Tampilkan nama member, jika kosong tampilkan guest_name
+                // KOLOM PERTAMA: Sumber transaksi (selalu Member Reguler karena sudah difilter)
+                Tables\Columns\BadgeColumn::make('source')
+                    ->label('Sumber')
+                    ->getStateUsing(fn () => 'Member Reguler')
+                    ->color('primary')
+                    ->icon('heroicon-o-user-group'),
+
+                // KOLOM KEDUA: Nama customer
                 Tables\Columns\TextColumn::make('customer_name')
                     ->label('Nama Customer')
                     ->getStateUsing(fn ($record) => $record->member ? $record->member->name : ($record->guest_name ?? 'Umum'))

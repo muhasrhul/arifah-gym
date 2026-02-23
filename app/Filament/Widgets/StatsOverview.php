@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Models\Attendance;
 use App\Models\Member;
 use App\Models\Transaction; 
+use App\Models\QuickTransaction; // TAMBAHAN: Untuk kasir cepat 
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Card;
 
@@ -20,11 +21,17 @@ class StatsOverview extends BaseWidget
     {
         // Cache selama 30 detik untuk update lebih cepat
         $omsetHariIni = cache()->remember('stats_omset_hari_ini', 30, function () {
-            return Transaction::whereDate('payment_date', now())->sum('amount');
+            // Gabungkan dari kedua tabel
+            $memberTransactions = Transaction::whereDate('payment_date', now())->sum('amount');
+            $quickTransactions = QuickTransaction::whereDate('payment_date', now())->sum('amount');
+            return $memberTransactions + $quickTransactions;
         });
 
         $totalOmzet = cache()->remember('stats_total_omzet', 30, function () {
-            return Transaction::sum('amount');
+            // Gabungkan dari kedua tabel
+            $memberTransactions = Transaction::sum('amount');
+            $quickTransactions = QuickTransaction::sum('amount');
+            return $memberTransactions + $quickTransactions;
         });
 
         $totalMember = cache()->remember('stats_total_member', 30, function () {

@@ -308,6 +308,39 @@ class WhatsAppHelper
     }
 
     /**
+     * BARU: Kirim notifikasi untuk transaksi kasir cepat
+     */
+    public static function sendQuickTransactionNotification($quickTransaction)
+    {
+        $ownerPhone = config('services.whatsapp.owner');
+        
+        if (!$ownerPhone) {
+            Log::warning('OWNER_WHATSAPP tidak ditemukan di config');
+            return [
+                'success' => false,
+                'message' => 'OWNER_WHATSAPP tidak dikonfigurasi'
+            ];
+        }
+
+        $message = "⚡ *KASIR CEPAT - ARIFAH GYM*\n\n";
+        $message .= "Tanggal: " . \Carbon\Carbon::parse($quickTransaction->payment_date)->translatedFormat('d F Y H:i') . "\n\n";
+        
+        // Customer info
+        $message .= "👤 *Customer:* {$quickTransaction->guest_name}\n";
+        
+        // Transaction details
+        $message .= "📦 *Produk:* {$quickTransaction->product_name}\n";
+        $message .= "💵 *Harga:* Rp " . number_format($quickTransaction->amount, 0, ',', '.') . "\n";
+        $message .= "💳 *Metode:* {$quickTransaction->payment_method}\n";
+        $message .= "✅ *Status:* Lunas\n\n";
+        
+        $message .= "Terima kasih!\n\n";
+        $message .= "ARIFAH Gym System";
+
+        return self::sendMessage($ownerPhone, $message);
+    }
+
+    /**
      * Template: Notifikasi pendaftaran member baru ke owner
      */
     public static function sendPendaftaranBaru($member, $paket)
