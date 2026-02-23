@@ -41,93 +41,144 @@
                         $now = \Carbon\Carbon::now('Asia/Makassar')->startOfDay();
                         $expiredDate = \Carbon\Carbon::parse($member->expiry_date)->startOfDay();
                         $isExpired = $expiredDate->lt($now); 
+                        
+                        // Cek apakah member ini adalah member harian (durasi < 30 hari)
+                        $paket = \App\Models\Paket::where('nama_paket', $member->type)->first();
+                        $isMemberHarian = $paket && $paket->durasi_hari < 30;
                     @endphp
 
-                    <div class="flex flex-col items-center gap-6 py-4 w-full px-2">
-                        <!-- Modern Member Card dengan Glassmorphism -->
-                        <div id="memberCard" class="relative text-white font-sans rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl text-left w-full max-w-[320px] md:max-w-[350px] transition-all duration-500 hover:shadow-[0_20px_60px_-15px_rgba(9,146,194,0.5)] group" 
-                             style="aspect-ratio: 5/3; background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%); backdrop-filter: blur(20px);">
-                            
-                            <!-- Animated Background Pattern -->
-                            <div class="absolute inset-0 opacity-[0.03] pointer-events-none">
-                                <div class="absolute top-0 left-0 w-full h-full" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px);"></div>
-                            </div>
-
-                            <!-- Dumbbell Watermark dengan Animasi -->
-                            <div class="absolute -bottom-6 -left-6 opacity-[0.06] transform -rotate-12 pointer-events-none transition-all duration-700 group-hover:opacity-[0.12] group-hover:scale-110">
-                                <i class="fa-solid fa-dumbbell text-[180px]"></i>
-                            </div>
-
-                            <!-- Glowing Orb Effect -->
-                            <div class="absolute top-0 right-0 w-40 h-40 opacity-30 transition-all duration-700 group-hover:opacity-50 group-hover:scale-125" style="background: radial-gradient(circle, #0992C2 0%, transparent 70%); filter: blur(30px);"></div>
-                            
-                            <!-- Shimmer Effect on Hover -->
-                            <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" style="background: linear-gradient(90deg, transparent 0%, rgba(9, 146, 194, 0.1) 50%, transparent 100%); animation: shimmer 2s infinite;"></div>
-
-                            @if($isExpired || !$member->is_active)
-                                <div class="absolute inset-0 z-50 flex items-center justify-center pointer-events-none bg-black/50 backdrop-blur-sm">
-                                    <div class="stamp-expired animate-pulse" style="border: 0.3rem solid #ef4444; color: #ef4444; font-size: 2rem; font-weight: 900; text-transform: uppercase; padding: 0.6rem 2rem; transform: rotate(-15deg); border-radius: 0.75rem; box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); background: rgba(0, 0, 0, 0.3);">EXPIRED</div>
+                    @if($isMemberHarian)
+                        <!-- Tampilan untuk Member Harian (Tanpa Card Digital) -->
+                        <div class="flex flex-col items-center gap-6 py-8 w-full px-2">
+                            <div class="w-full max-w-[350px] p-8 bg-gradient-to-r from-gray-800/50 to-gray-900/50 border border-gray-600/50 rounded-3xl text-center backdrop-blur-sm">
+                                <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center border border-amber-500/30">
+                                    <i class="fa-solid fa-clock text-3xl text-amber-400"></i>
                                 </div>
-                            @endif
-
-                            <div class="p-4 md:p-6 h-full flex flex-col justify-between relative z-10">
-                                <!-- Header Section -->
-                                <div class="flex justify-between items-start gap-2">
-                                    <div class="flex-1 min-w-0">
-                                        <h2 class="text-xs md:text-[14px] font-extrabold italic leading-tight tracking-tighter transition-all duration-300 group-hover:text-[#0992C2]" style="color: #0992C2; font-family: 'Poppins', sans-serif; text-shadow: 0 0 20px rgba(9, 146, 194, 0.5);">ARIFAH GYM</h2>
-                                        <p class="text-[7px] md:text-[8px] uppercase tracking-[0.15em] md:tracking-[0.2em] opacity-70 font-bold transition-all duration-300 group-hover:opacity-100" style="font-family: 'Poppins', sans-serif;">Official Member</p>
-                                    </div>
-                                    <span class="px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[6px] md:text-[7px] font-bold uppercase border whitespace-nowrap transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg" style="border-color: #0992C2; color: #0992C2; background: rgba(9, 146, 194, 0.15); font-family: 'Poppins', sans-serif; box-shadow: 0 0 15px rgba(9, 146, 194, 0.3);">
-                                        {{ $member->type }}
-                                    </span>
-                                </div>
-
-                                <!-- Member Info Section -->
-                                <div class="mt-2 transform transition-all duration-300 group-hover:translate-x-1">
-                                    <h3 class="text-base md:text-xl font-bold uppercase truncate transition-all duration-300 group-hover:text-[#0992C2]" style="font-family: 'Poppins', sans-serif; letter-spacing: 0.05em;">{{ $member->name }}</h3>
-                                    <p class="text-[8px] md:text-[10px] opacity-50 font-mono tracking-widest transition-all duration-300 group-hover:opacity-70">{{ $member->order_id }}</p>
-                                </div>
-
-                                <!-- Footer Section -->
-                                <div class="flex justify-between items-end border-t border-white/20 pt-2 md:pt-3 transition-all duration-300 group-hover:border-[#0992C2]/30">
-                                    <div class="transform transition-all duration-300 group-hover:translate-y-[-2px]">
-                                        <p class="text-[8px] md:text-[9px] uppercase opacity-50 font-medium mb-1 transition-all duration-300 group-hover:opacity-70" style="font-family: 'Poppins', sans-serif; letter-spacing: 0.1em;">Berlaku Hingga</p>
-                                        <p class="text-xs md:text-sm font-bold {{ $isExpired ? 'text-red-400' : 'text-white' }} transition-all duration-300 group-hover:text-[#0992C2]" style="font-family: 'Poppins', sans-serif;">
-                                            {{ \Carbon\Carbon::parse($member->expiry_date)->format('d M Y') }}
-                                        </p>
-                                    </div>
-                                    <div class="bg-white p-1 md:p-1.5 rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-2xl" style="box-shadow: 0 4px 20px rgba(9, 146, 194, 0.3);">
-                                        <img id="qrSource" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ $member->order_id }}" crossorigin="anonymous" style="width: 35px; height: 35px;" class="md:w-[40px] md:h-[40px]">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Subtle Border Glow -->
-                            <div class="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style="box-shadow: inset 0 0 30px rgba(9, 146, 194, 0.2);"></div>
-                        </div>
-
-                        <!-- Action Buttons dengan Modern Design -->
-                        <div class="flex flex-col w-full gap-3 px-2 max-w-[320px] md:max-w-[350px]">
-                            <button onclick="generateAndDownload()" id="dlBtn" class="group/btn w-full py-4 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-[#0992C2] hover:to-[#0992C2] text-white font-bold rounded-2xl transition-all duration-300 border border-white/10 hover:border-[#0992C2] uppercase text-[10px] tracking-widest shadow-lg hover:shadow-[0_10px_30px_-10px_rgba(9,146,194,0.5)] transform hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden">
-                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-700"></div>
-                                <span class="relative flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-download transition-transform duration-300 group-hover/btn:scale-110"></i> 
-                                    <span>Simpan Kartu ke HP</span>
-                                </span>
-                            </button>
-
-                            @if($isExpired || !$member->is_active)
-                                <div class="w-full px-6 py-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 text-amber-400 font-bold rounded-2xl text-center shadow-lg backdrop-blur-sm transform transition-all duration-300 hover:scale-[1.02]">
-                                    <i class="fa-solid fa-info-circle animate-pulse"></i>
-                                    <p class="text-xs uppercase tracking-wide mt-2 leading-relaxed">
-                                        Silakan menuju kasir untuk<br>perpanjangan dan aktivasi ulang
+                                
+                                <h3 class="text-xl font-bold text-white mb-2 uppercase tracking-wide">{{ $member->name }}</h3>
+                                <p class="text-sm text-gray-400 mb-4 font-mono">{{ $member->order_id }}</p>
+                                
+                                <div class="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-2xl p-4 mb-4">
+                                    <p class="text-amber-400 font-bold text-sm uppercase tracking-wide mb-2">{{ $member->type }}</p>
+                                    <p class="text-xs text-amber-300/80">
+                                        Berlaku: {{ \Carbon\Carbon::parse($member->expiry_date)->format('d M Y') }}
                                     </p>
                                 </div>
-                            @endif
+
+                                @if($isExpired || !$member->is_active)
+                                    <div class="bg-gradient-to-r from-red-500/10 to-red-600/10 border border-red-500/30 text-red-400 font-bold rounded-2xl p-4 mb-4">
+                                        <i class="fa-solid fa-exclamation-triangle animate-pulse mb-2"></i>
+                                        <p class="text-xs uppercase tracking-wide">
+                                            EXPIRED - Silakan perpanjang di kasir
+                                        </p>
+                                    </div>
+                                @else
+                                    <div class="bg-gradient-to-r from-green-500/10 to-green-600/10 border border-green-500/30 text-green-400 font-bold rounded-2xl p-4 mb-4">
+                                        <i class="fa-solid fa-check-circle mb-2"></i>
+                                        <p class="text-xs uppercase tracking-wide">
+                                            AKTIF - Selamat berlatih!
+                                        </p>
+                                    </div>
+                                @endif
+                                
+                                <div class="bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/30 text-blue-400 rounded-xl p-3">
+                                    <i class="fa-solid fa-info-circle mb-2"></i>
+                                    <p class="text-xs leading-relaxed">
+                                        Kartu digital tidak tersedia untuk member harian. 
+                                        Tunjukkan QR code atau nama Anda ke petugas gym.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <canvas id="hiddenCanvas" width="1050" height="630" style="display:none;"></canvas>
-                    </div>
+                    @else
+                        <!-- Tampilan Card Digital untuk Member Bulanan -->
+                        <div class="flex flex-col items-center gap-6 py-4 w-full px-2">
+                            <!-- Modern Member Card dengan Glassmorphism -->
+                            <div id="memberCard" class="relative text-white font-sans rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl text-left w-full max-w-[320px] md:max-w-[350px] transition-all duration-500 hover:shadow-[0_20px_60px_-15px_rgba(9,146,194,0.5)] group" 
+                                 style="aspect-ratio: 5/3; background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%); backdrop-filter: blur(20px);">
+                                
+                                <!-- Animated Background Pattern -->
+                                <div class="absolute inset-0 opacity-[0.03] pointer-events-none">
+                                    <div class="absolute top-0 left-0 w-full h-full" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px);"></div>
+                                </div>
+
+                                <!-- Dumbbell Watermark dengan Animasi -->
+                                <div class="absolute -bottom-6 -left-6 opacity-[0.06] transform -rotate-12 pointer-events-none transition-all duration-700 group-hover:opacity-[0.12] group-hover:scale-110">
+                                    <i class="fa-solid fa-dumbbell text-[180px]"></i>
+                                </div>
+
+                                <!-- Glowing Orb Effect -->
+                                <div class="absolute top-0 right-0 w-40 h-40 opacity-30 transition-all duration-700 group-hover:opacity-50 group-hover:scale-125" style="background: radial-gradient(circle, #0992C2 0%, transparent 70%); filter: blur(30px);"></div>
+                                
+                                <!-- Shimmer Effect on Hover -->
+                                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" style="background: linear-gradient(90deg, transparent 0%, rgba(9, 146, 194, 0.1) 50%, transparent 100%); animation: shimmer 2s infinite;"></div>
+
+                                @if($isExpired || !$member->is_active)
+                                    <div class="absolute inset-0 z-50 flex items-center justify-center pointer-events-none bg-black/50 backdrop-blur-sm">
+                                        <div class="stamp-expired animate-pulse" style="border: 0.3rem solid #ef4444; color: #ef4444; font-size: 2rem; font-weight: 900; text-transform: uppercase; padding: 0.6rem 2rem; transform: rotate(-15deg); border-radius: 0.75rem; box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); background: rgba(0, 0, 0, 0.3);">EXPIRED</div>
+                                    </div>
+                                @endif
+
+                                <div class="p-4 md:p-6 h-full flex flex-col justify-between relative z-10">
+                                    <!-- Header Section -->
+                                    <div class="flex justify-between items-start gap-2">
+                                        <div class="flex-1 min-w-0">
+                                            <h2 class="text-xs md:text-[14px] font-extrabold italic leading-tight tracking-tighter transition-all duration-300 group-hover:text-[#0992C2]" style="color: #0992C2; font-family: 'Poppins', sans-serif; text-shadow: 0 0 20px rgba(9, 146, 194, 0.5);">ARIFAH GYM</h2>
+                                            <p class="text-[7px] md:text-[8px] uppercase tracking-[0.15em] md:tracking-[0.2em] opacity-70 font-bold transition-all duration-300 group-hover:opacity-100" style="font-family: 'Poppins', sans-serif;">Official Member</p>
+                                        </div>
+                                        <span class="px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[6px] md:text-[7px] font-bold uppercase border whitespace-nowrap transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg" style="border-color: #0992C2; color: #0992C2; background: rgba(9, 146, 194, 0.15); font-family: 'Poppins', sans-serif; box-shadow: 0 0 15px rgba(9, 146, 194, 0.3);">
+                                            {{ $member->type }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Member Info Section -->
+                                    <div class="mt-2 transform transition-all duration-300 group-hover:translate-x-1">
+                                        <h3 class="text-base md:text-xl font-bold uppercase truncate transition-all duration-300 group-hover:text-[#0992C2]" style="font-family: 'Poppins', sans-serif; letter-spacing: 0.05em;">{{ $member->name }}</h3>
+                                        <p class="text-[8px] md:text-[10px] opacity-50 font-mono tracking-widest transition-all duration-300 group-hover:opacity-70">{{ $member->order_id }}</p>
+                                    </div>
+
+                                    <!-- Footer Section -->
+                                    <div class="flex justify-between items-end border-t border-white/20 pt-2 md:pt-3 transition-all duration-300 group-hover:border-[#0992C2]/30">
+                                        <div class="transform transition-all duration-300 group-hover:translate-y-[-2px]">
+                                            <p class="text-[8px] md:text-[9px] uppercase opacity-50 font-medium mb-1 transition-all duration-300 group-hover:opacity-70" style="font-family: 'Poppins', sans-serif; letter-spacing: 0.1em;">Berlaku Hingga</p>
+                                            <p class="text-xs md:text-sm font-bold {{ $isExpired ? 'text-red-400' : 'text-white' }} transition-all duration-300 group-hover:text-[#0992C2]" style="font-family: 'Poppins', sans-serif;">
+                                                {{ \Carbon\Carbon::parse($member->expiry_date)->format('d M Y') }}
+                                            </p>
+                                        </div>
+                                        <div class="bg-white p-1 md:p-1.5 rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-2xl" style="box-shadow: 0 4px 20px rgba(9, 146, 194, 0.3);">
+                                            <img id="qrSource" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ $member->order_id }}" crossorigin="anonymous" style="width: 35px; height: 35px;" class="md:w-[40px] md:h-[40px]">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Subtle Border Glow -->
+                                <div class="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style="box-shadow: inset 0 0 30px rgba(9, 146, 194, 0.2);"></div>
+                            </div>
+
+                            <!-- Action Buttons dengan Modern Design -->
+                            <div class="flex flex-col w-full gap-3 px-2 max-w-[320px] md:max-w-[350px]">
+                                <!-- Tombol Download untuk Member Bulanan -->
+                                <button onclick="generateAndDownload()" id="dlBtn" class="group/btn w-full py-4 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-[#0992C2] hover:to-[#0992C2] text-white font-bold rounded-2xl transition-all duration-300 border border-white/10 hover:border-[#0992C2] uppercase text-[10px] tracking-widest shadow-lg hover:shadow-[0_10px_30px_-10px_rgba(9,146,194,0.5)] transform hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-700"></div>
+                                    <span class="relative flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-download transition-transform duration-300 group-hover/btn:scale-110"></i> 
+                                        <span>Simpan Kartu ke HP</span>
+                                    </span>
+                                </button>
+
+                                @if($isExpired || !$member->is_active)
+                                    <div class="w-full px-6 py-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 text-amber-400 font-bold rounded-2xl text-center shadow-lg backdrop-blur-sm transform transition-all duration-300 hover:scale-[1.02]">
+                                        <i class="fa-solid fa-info-circle animate-pulse"></i>
+                                        <p class="text-xs uppercase tracking-wide mt-2 leading-relaxed">
+                                            Silakan menuju kasir untuk<br>perpanjangan dan aktivasi ulang
+                                        </p>
+                                    </div>
+                                @endif
+                            </div>
+                            
+                            <canvas id="hiddenCanvas" width="1050" height="630" style="display:none;"></canvas>
+                        </div>
+                    @endif
 
                     <style>
                         @keyframes shimmer {
