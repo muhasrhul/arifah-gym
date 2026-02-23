@@ -165,16 +165,76 @@ class MemberResource extends Resource
                         Forms\Components\Grid::make(2)->schema([
                             Forms\Components\DatePicker::make('join_date')
                                 ->label('Tanggal Mulai')
-                                ->default(now())
-                                ->reactive(),
+                                ->placeholder('Pilih tanggal mulai membership')
+                                ->helperText('Input manual tanggal mulai membership (untuk data lama atau baru)')
+                                ->required()
+                                ->reactive()
+                                ->rule('required', 'Tanggal mulai membership wajib diisi'),
 
                             Forms\Components\DatePicker::make('expiry_date')
                                 ->label('Tanggal Berakhir')
-                                ->placeholder('Input manual tanggal berakhir')
                                 ->reactive()
                                 ->required(fn ($get) => $get('is_active') === true)
-                                ->helperText(function ($record) {
-                                    if (!$record) return 'WAJIB diisi jika toggle Status Aktif dinyalakan.';
+                                ->placeholder(function ($get) {
+                                    $joinDate = $get('join_date');
+                                    $paketType = $get('type');
+                                    
+                                    if ($joinDate && $paketType) {
+                                        $paket = \App\Models\Paket::where('nama_paket', $paketType)->first();
+                                        if ($paket) {
+                                            $durasi = $paket->durasi_hari;
+                                            $tanggalMulai = \Carbon\Carbon::parse($joinDate);
+                                            
+                                            if ($durasi >= 30) {
+                                                // Paket bulanan: hitung bulan dari durasi_hari
+                                                $bulan = round($durasi / 30);
+                                                $rekomendasiExpiry = $tanggalMulai->copy()->addMonths($bulan);
+                                            } else {
+                                                // Paket harian: expired di hari yang sama (durasi = 1) atau sesuai durasi
+                                                if ($durasi == 1) {
+                                                    // Member harian expired di hari yang sama
+                                                    $rekomendasiExpiry = $tanggalMulai->copy();
+                                                } else {
+                                                    // Paket beberapa hari (misal 3 hari, 7 hari)
+                                                    $rekomendasiExpiry = $tanggalMulai->copy()->addDays($durasi - 1);
+                                                }
+                                            }
+                                            
+                                            return 'Rekomendasi: ' . $rekomendasiExpiry->format('d/m/Y');
+                                        }
+                                    }
+                                    
+                                    return 'Pilih tanggal mulai dan paket dulu';
+                                })
+                                ->helperText(function ($record, $get) {
+                                    if (!$record) {
+                                        $joinDate = $get('join_date');
+                                        $paketType = $get('type');
+                                        
+                                        if ($joinDate && $paketType) {
+                                            $paket = \App\Models\Paket::where('nama_paket', $paketType)->first();
+                                            if ($paket) {
+                                                $durasi = $paket->durasi_hari;
+                                                $tanggalMulai = \Carbon\Carbon::parse($joinDate);
+                                                
+                                                if ($durasi >= 30) {
+                                                    $bulan = round($durasi / 30);
+                                                    $rekomendasiExpiry = $tanggalMulai->copy()->addMonths($bulan);
+                                                    return "💡 Rekomendasi otomatis: {$rekomendasiExpiry->format('d/m/Y')} (dari tanggal mulai + {$bulan} bulan). WAJIB diisi jika toggle Status Aktif dinyalakan.";
+                                                } else {
+                                                    if ($durasi == 1) {
+                                                        $rekomendasiExpiry = $tanggalMulai->copy();
+                                                        return "💡 Rekomendasi otomatis: {$rekomendasiExpiry->format('d/m/Y')} (member harian expired di hari yang sama). WAJIB diisi jika toggle Status Aktif dinyalakan.";
+                                                    } else {
+                                                        $rekomendasiExpiry = $tanggalMulai->copy()->addDays($durasi - 1);
+                                                        return "💡 Rekomendasi otomatis: {$rekomendasiExpiry->format('d/m/Y')} (dari tanggal mulai + {$durasi} hari). WAJIB diisi jika toggle Status Aktif dinyalakan.";
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        return 'WAJIB diisi jika toggle Status Aktif dinyalakan. Pilih tanggal mulai dan paket untuk melihat rekomendasi.';
+                                    }
                                     
                                     if ($record->expiry_date) {
                                         $expiredDate = \Carbon\Carbon::parse($record->expiry_date)->format('d/m/Y');

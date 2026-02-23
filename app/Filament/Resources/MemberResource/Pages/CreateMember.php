@@ -57,7 +57,7 @@ class CreateMember extends CreateRecord
 
         // PENTING: Hanya simpan expiry_date dan join_date jika toggle aktif dinyalakan
         if (!empty($data['is_active'])) {
-            $data['join_date'] = $now->format('Y-m-d');
+            // join_date tetap dari input manual user, tidak otomatis hari ini
             // expiry_date tetap dari input manual user
         } else {
             // Jika toggle mati, hapus expiry_date dan join_date agar tidak tersimpan

@@ -288,10 +288,11 @@ class EditMember extends EditRecord
             
             $totalHarga = $hargaPaket + $registrationFee;
 
-            // 3. Set join_date untuk perpanjangan
-            // Jika member sudah punya expiry_date (perpanjangan), set join_date ke hari ini
+            // 3. join_date tetap dari input manual user untuk perpanjangan
+            // Tidak perlu set otomatis ke hari ini
             if ($record->expiry_date) {
-                $data['join_date'] = $now->format('Y-m-d');
+                // Untuk perpanjangan, join_date bisa tetap yang lama atau diubah manual oleh admin
+                // $data['join_date'] = $now->format('Y-m-d'); // DIHAPUS: tidak otomatis
             }
             
             // PENTING: TIDAK ada perhitungan otomatis expiry_date di sini!
@@ -374,9 +375,10 @@ class EditMember extends EditRecord
                 cache()->forget('stats_total_omzet');
                 cache()->forget('stats_total_member');
 
-                // Set join_date untuk pendaftar baru
+                // join_date tetap dari input manual user untuk pendaftar baru
+                // Tidak perlu set otomatis ke hari ini
                 if (empty($record->expiry_date)) {
-                    $data['join_date'] = $now->format('Y-m-d');
+                    // $data['join_date'] = $now->format('Y-m-d'); // DIHAPUS: tidak otomatis
                 }
                 
                 // PENTING: TIDAK ada perhitungan otomatis expiry_date di sini!

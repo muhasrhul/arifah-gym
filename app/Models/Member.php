@@ -32,13 +32,19 @@ class Member extends Model
 
         $tanggalLama = $this->expiry_date ? Carbon::parse($this->expiry_date) : now();
         
-        if ($durasi > 1) {
+        if ($durasi >= 30) {
             // Paket bulanan: hitung bulan dari durasi_hari
             $bulan = round($durasi / 30);
             $tanggalBaru = $tanggalLama->isPast() ? now()->addMonths($bulan) : $tanggalLama->addMonths($bulan);
         } else {
-            // Paket harian
-            $tanggalBaru = $tanggalLama->isPast() ? now()->addDays($durasi) : $tanggalLama->addDays($durasi);
+            // Paket harian: expired di hari yang sama untuk durasi = 1
+            if ($durasi == 1) {
+                // Member harian expired di hari yang sama
+                $tanggalBaru = $tanggalLama->isPast() ? now() : $tanggalLama->addDays(1);
+            } else {
+                // Paket beberapa hari (misal 3 hari, 7 hari)
+                $tanggalBaru = $tanggalLama->isPast() ? now()->addDays($durasi - 1) : $tanggalLama->addDays($durasi);
+            }
         }
 
         $this->update([
