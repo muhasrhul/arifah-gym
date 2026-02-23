@@ -134,8 +134,13 @@ Route::post('/absen', function (Request $request) {
     ]);
 });
 
-// 4. LAPORAN KEUANGAN
-Route::get('/cetak-laporan', function (Request $request) {
+// ========================================
+// PROTECTED EXPORT ROUTES (ADMIN ONLY)
+// ========================================
+Route::middleware(['auth:web'])->group(function () {
+    
+    // 4. LAPORAN KEUANGAN MEMBER
+    Route::get('/cetak-laporan', function (Request $request) {
     // FILTER: Hanya transaksi member reguler (bukan kasir cepat)
     $data = Transaction::with('member')
         ->whereHas('member', function ($query) {
@@ -499,3 +504,5 @@ Route::get('/backup-database', function () {
         ], 500);
     }
 })->name('backup-database');
+
+}); // End of auth middleware group
