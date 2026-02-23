@@ -46,18 +46,8 @@ class EditMember extends EditRecord
                                         $set('biaya_paket_info', $paket->harga);
                                         $set('harga_paket_info', $paket->harga);
                                         
-                                        // Update tanggal berakhir
-                                        $record = $this->record;
-                                        $durasi = $paket->durasi_hari;
-                                        $tanggalLama = Carbon::parse($record->expiry_date);
-                                        
-                                        if ($durasi > 1) {
-                                            $tanggalBaru = $tanggalLama->copy()->addDays(30);
-                                        } else {
-                                            $tanggalBaru = $tanggalLama->copy();
-                                        }
-                                        
-                                        $set('expiry_date_preview', $tanggalBaru->format('Y-m-d'));
+                                        // TIDAK auto-update tanggal berakhir
+                                        // Biarkan admin input manual, hanya update placeholder
                                     }
                                 }),
                             
@@ -74,51 +64,76 @@ class EditMember extends EditRecord
                             Forms\Components\Grid::make(2)->schema([
                                 Forms\Components\DatePicker::make('join_date_preview')
                                     ->label('Tanggal Mulai')
-                                    ->default(fn () => $this->record->expiry_date)
+                                    ->default(fn () => $this->record->expiry_date) // Mulai dari expired date lama
                                     ->required()
                                     ->reactive()
+                                    ->helperText('Perpanjangan dimulai dari tanggal expired lama agar tidak kehilangan sisa waktu')
                                     ->afterStateUpdated(function ($state, $set, $get) {
-                                        // Update tanggal berakhir ketika tanggal mulai diubah
-                                        $selectedType = $get('type') ?? $this->record->type;
-                                        $paket = Paket::where('nama_paket', $selectedType)->first();
-                                        
-                                        if ($paket && $state) {
-                                            $durasi = $paket->durasi_hari;
-                                            $tanggalMulai = Carbon::parse($state);
-                                            
-                                            if ($durasi > 1) {
-                                                $tanggalBaru = $tanggalMulai->copy()->addDays(30);
-                                            } else {
-                                                $tanggalBaru = $tanggalMulai->copy();
-                                            }
-                                            
-                                            $set('expiry_date_preview', $tanggalBaru->format('Y-m-d'));
-                                        }
+                                        // TIDAK auto-update tanggal berakhir
+                                        // Biarkan admin input manual, hanya update placeholder dan helper text
                                     }),
                                 
                                 Forms\Components\DatePicker::make('expiry_date_preview')
                                     ->label('Tanggal Berakhir')
-                                    ->default(function () {
-                                        $record = $this->record;
-                                        $paket = Paket::where('nama_paket', $record->type)->first();
-                                        
-                                        if (!$paket) {
-                                            return $record->expiry_date;
-                                        }
-                                        
-                                        $durasi = $paket->durasi_hari;
-                                        $tanggalLama = Carbon::parse($record->expiry_date);
-                                        
-                                        if ($durasi > 1) {
-                                            $tanggalBaru = $tanggalLama->copy()->addDays(30);
-                                        } else {
-                                            $tanggalBaru = $tanggalLama->copy();
-                                        }
-                                        
-                                        return $tanggalBaru->format('Y-m-d');
-                                    })
+                                    ->reactive()
                                     ->required()
-                                    ->helperText('Perpanjangan dihitung dari hari ini'),
+                                    ->placeholder(function ($get) {
+                                        $joinDate = $get('join_date_preview');
+                                        $paketType = $get('type') ?? $this->record->type;
+                                        
+                                        if ($joinDate && $paketType) {
+                                            $paket = \App\Models\Paket::where('nama_paket', $paketType)->first();
+                                            if ($paket) {
+                                                $durasi = $paket->durasi_hari;
+                                                $tanggalMulai = \Carbon\Carbon::parse($joinDate);
+                                                
+                                                if ($durasi >= 30) {
+                                                    // Paket bulanan: hitung bulan dari durasi_hari
+                                                    $bulan = round($durasi / 30);
+                                                    $rekomendasiExpiry = $tanggalMulai->copy()->addMonths($bulan);
+                                                } else {
+                                                    // Paket harian: expired di hari yang sama (durasi = 1) atau sesuai durasi
+                                                    if ($durasi == 1) {
+                                                        $rekomendasiExpiry = $tanggalMulai->copy();
+                                                    } else {
+                                                        $rekomendasiExpiry = $tanggalMulai->copy()->addDays($durasi - 1);
+                                                    }
+                                                }
+                                                
+                                                return 'Rekomendasi: ' . $rekomendasiExpiry->format('d/m/Y');
+                                            }
+                                        }
+                                        
+                                        return 'Pilih tanggal mulai dan paket dulu';
+                                    })
+                                    ->helperText(function ($get) {
+                                        $joinDate = $get('join_date_preview');
+                                        $paketType = $get('type') ?? $this->record->type;
+                                        
+                                        if ($joinDate && $paketType) {
+                                            $paket = \App\Models\Paket::where('nama_paket', $paketType)->first();
+                                            if ($paket) {
+                                                $durasi = $paket->durasi_hari;
+                                                $tanggalMulai = \Carbon\Carbon::parse($joinDate);
+                                                
+                                                if ($durasi >= 30) {
+                                                    $bulan = round($durasi / 30);
+                                                    $rekomendasiExpiry = $tanggalMulai->copy()->addMonths($bulan);
+                                                    return "💡 Rekomendasi otomatis: {$rekomendasiExpiry->format('d/m/Y')} (dari tanggal mulai + {$bulan} bulan). Input manual tanggal berakhir yang diinginkan.";
+                                                } else {
+                                                    if ($durasi == 1) {
+                                                        $rekomendasiExpiry = $tanggalMulai->copy();
+                                                        return "💡 Rekomendasi otomatis: {$rekomendasiExpiry->format('d/m/Y')} (member harian expired di hari yang sama). Input manual tanggal berakhir yang diinginkan.";
+                                                    } else {
+                                                        $rekomendasiExpiry = $tanggalMulai->copy()->addDays($durasi - 1);
+                                                        return "💡 Rekomendasi otomatis: {$rekomendasiExpiry->format('d/m/Y')} (dari tanggal mulai + {$durasi} hari). Input manual tanggal berakhir yang diinginkan.";
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        return 'Input manual tanggal berakhir yang diinginkan. Pilih tanggal mulai dan paket untuk melihat rekomendasi otomatis.';
+                                    }),
                             ]),
                             
                             Forms\Components\Grid::make(2)->schema([
@@ -150,7 +165,7 @@ class EditMember extends EditRecord
                                     ->reactive()
                                     ->disabled()
                                     ->dehydrated(false)
-                                    ->helperText('Total untuk perpanjangan')
+                                    ->helperText('Total untuk perpanjangan (tanpa biaya admin)')
                                     ->extraInputAttributes(['style' => 'font-weight: 900; color: #000000; font-size: 1.5rem; background-color: #fef3c7;']),
                             ]),
                         ])
@@ -561,6 +576,7 @@ class EditMember extends EditRecord
             $selectedType = $data['type'] ?? $record->type;
             $selectedPaymentMethod = $data['payment_method'] ?? 'cash';
             $customBiayaPaket = isset($data['biaya_paket_info']) ? (int)$data['biaya_paket_info'] : null;
+            $customJoinDate = $data['join_date_preview'] ?? null;
             $customExpiryDate = $data['expiry_date_preview'] ?? null;
             
             $paket = Paket::where('nama_paket', $selectedType)->first();
@@ -575,18 +591,26 @@ class EditMember extends EditRecord
             // Gunakan harga custom jika ada, jika tidak gunakan harga dari paket
             $harga = $customBiayaPaket ?? $paket->harga;
             
-            // Gunakan tanggal expired custom jika ada
-            if ($customExpiryDate) {
+            // Gunakan tanggal yang sudah dipilih di form
+            if ($customJoinDate && $customExpiryDate) {
+                $tanggalMulai = Carbon::parse($customJoinDate);
                 $tanggalBaru = Carbon::parse($customExpiryDate);
             } else {
-                // Calculate new expiry date from old expiry date (NOT from today)
+                // Fallback ke logika lama jika tidak ada input
                 $durasi = $paket->durasi_hari;
-                $tanggalLama = Carbon::parse($record->expiry_date);
+                $tanggalMulai = Carbon::parse($record->expiry_date);
                 
-                if ($durasi > 1) {
-                    $tanggalBaru = $tanggalLama->copy()->addDays(30);
+                if ($durasi >= 30) {
+                    // Paket bulanan: hitung bulan dari durasi_hari
+                    $bulan = round($durasi / 30);
+                    $tanggalBaru = $tanggalMulai->copy()->addMonths($bulan);
                 } else {
-                    $tanggalBaru = $tanggalLama->copy();
+                    // Paket harian: expired di hari yang sama (durasi = 1) atau sesuai durasi
+                    if ($durasi == 1) {
+                        $tanggalBaru = $tanggalMulai->copy();
+                    } else {
+                        $tanggalBaru = $tanggalMulai->copy()->addDays($durasi - 1);
+                    }
                 }
             }
             
