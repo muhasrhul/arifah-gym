@@ -16,7 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Actions\ForceDeleteAction;
+// use Filament\Tables\Actions\ForceDeleteAction; // DIHAPUS: Tidak digunakan lagi
 use Filament\Tables\Filters\TrashedFilter;
 
 class MemberResource extends Resource
@@ -764,7 +764,7 @@ class MemberResource extends Resource
                         return 'primary';
                     }),
                 RestoreAction::make(),
-                ForceDeleteAction::make(),
+                // ForceDeleteAction::make(), // DIHAPUS: Terlalu berbahaya untuk data keuangan
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
