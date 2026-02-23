@@ -93,7 +93,7 @@ class MemberResource extends Resource
                         Forms\Components\TextInput::make('email')
                             ->email()
                             ->label('Email')
-                            ->required()
+                            ->helperText('Email bersifat opsional. Jika diisi, akan digunakan untuk notifikasi.')
                             ->unique(ignorable: fn ($record) => $record),
 
                         Forms\Components\TextInput::make('phone')

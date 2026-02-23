@@ -98,7 +98,7 @@ class FrontMemberController extends Controller
             // A. Validasi Input
             $validated = $request->validate([
                 'name'      => 'required|string|min:3', 
-                'email'     => 'required|email|unique:members,email', 
+                'email'     => 'nullable|email|unique:members,email', 
                 'phone'     => 'required|unique:members,phone',
                 'paket_id'  => 'required|exists:pakets,id',
                 'nik'       => 'nullable|digits:16|unique:members,nik', 
