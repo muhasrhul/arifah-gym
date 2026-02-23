@@ -136,7 +136,14 @@ Route::post('/absen', function (Request $request) {
 
 // 4. LAPORAN KEUANGAN
 Route::get('/cetak-laporan', function (Request $request) {
-    $data = Transaction::with('member')->orderBy('payment_date', 'desc')->get();
+    // FILTER: Hanya transaksi member reguler (bukan kasir cepat)
+    $data = Transaction::with('member')
+        ->whereHas('member', function ($query) {
+            $query->where('name', '!=', 'Tamu Harian')
+                  ->where('name', '!=', 'Tamu Latihan Harian');
+        })
+        ->orderBy('payment_date', 'desc')
+        ->get();
     
     $data->transform(function ($item) {
         $item->type = preg_replace('/[^\x20-\x7E]/', '', $item->type);
@@ -148,14 +155,14 @@ Route::get('/cetak-laporan', function (Request $request) {
         return view('laporan_pdf', compact('data'));
     }
 
-    $filename = "Laporan_Keuangan_ARIFAH_GYM_" . date('d-m-Y') . ".xls";
+    $filename = "Laporan_Keuangan_Member_ARIFAH_GYM_" . date('d-m-Y') . ".xls";
     header("Content-Type: application/vnd.ms-excel");
     header("Content-Disposition: attachment; filename=\"$filename\"");
     
     $total = 0;
     $output = "<table border='1'>
                 <tr>
-                    <th colspan='10' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LAPORAN KEUANGAN ARIFAH GYM</th>
+                    <th colspan='10' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LAPORAN KEUANGAN MEMBER - ARIFAH GYM</th>
                 </tr>
                 <tr style='background-color: #eeeeee;'>
                     <th>No</th>
@@ -203,13 +210,73 @@ Route::get('/cetak-laporan', function (Request $request) {
     }
     
     $output .= "<tr>
-                <th colspan='9' style='text-align:right; background-color: #eeeeee;'>TOTAL PENDAPATAN:</th>
+                <th colspan='9' style='text-align:right; background-color: #eeeeee;'>TOTAL PENDAPATAN MEMBER:</th>
                 <th style='background-color: #2ecc71; text-align: right;'>Rp " . number_format($total, 0, ',', '.') . "</th>
               </tr>";
     $output .= "</table>";
 
     return Response::make($output);
 })->name('cetak-laporan');
+
+// 4.1 LAPORAN KEUANGAN KASIR CEPAT
+Route::get('/cetak-laporan-kasir', function (Request $request) {
+    $data = \App\Models\QuickTransaction::orderBy('payment_date', 'desc')->get();
+    
+    $data->transform(function ($item) {
+        $item->type = preg_replace('/[^\x20-\x7E]/', '', $item->type);
+        $item->type = trim($item->type);
+        return $item;
+    });
+
+    if ($request->query('format') == 'pdf') {
+        return view('laporan_kasir_pdf', compact('data'));
+    }
+
+    $filename = "Laporan_Kasir_Cepat_ARIFAH_GYM_" . date('d-m-Y') . ".xls";
+    header("Content-Type: application/vnd.ms-excel");
+    header("Content-Disposition: attachment; filename=\"$filename\"");
+    
+    $total = 0;
+    $output = "<table border='1'>
+                <tr>
+                    <th colspan='8' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LAPORAN KEUANGAN KASIR CEPAT - ARIFAH GYM</th>
+                </tr>
+                <tr style='background-color: #eeeeee;'>
+                    <th>No</th>
+                    <th>ID</th>
+                    <th>Order ID</th>
+                    <th>Tanggal Bayar</th>
+                    <th>Nama Tamu</th>
+                    <th>Produk</th>
+                    <th>Metode</th>
+                    <th>Nominal</th>
+                </tr>";
+                
+    $no = 1;
+    foreach ($data as $row) {
+        $total += $row->amount;
+        
+        $output .= "<tr>
+                        <td style='text-align: center;'>{$no}</td>
+                        <td style='text-align: center;'>{$row->id}</td>
+                        <td>{$row->order_id}</td>
+                        <td>" . \Carbon\Carbon::parse($row->payment_date)->format('d/m/Y H:i') . "</td>
+                        <td>" . $row->guest_name . "</td>
+                        <td>" . $row->product_name . "</td>
+                        <td>" . $row->payment_method . "</td>
+                        <td style='text-align: right;'>Rp " . number_format($row->amount, 0, ',', '.') . "</td>
+                    </tr>";
+        $no++;
+    }
+    
+    $output .= "<tr>
+                <th colspan='7' style='text-align:right; background-color: #eeeeee;'>TOTAL PENDAPATAN KASIR CEPAT:</th>
+                <th style='background-color: #2ecc71; text-align: right;'>Rp " . number_format($total, 0, ',', '.') . "</th>
+              </tr>";
+    $output .= "</table>";
+
+    return Response::make($output);
+})->name('cetak-laporan-kasir');
 
 // 5. EXPORT DAFTAR MEMBER
 Route::get('/export-members', function (Request $request) {

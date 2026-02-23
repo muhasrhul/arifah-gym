@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Laporan Keuangan Member - ARIFAH GYM</title>
+    <title>Laporan Keuangan Kasir Cepat - ARIFAH GYM</title>
     <style>
         @page {
             size: A4 landscape;
@@ -14,10 +14,6 @@
         .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #444; padding-bottom: 10px; }
         .total { font-weight: bold; background-color: #eee; }
         .nominal { text-align: right; }
-        .status-paid { color: #10b981; font-weight: bold; }
-        .status-pending { color: #fbbf24; font-weight: bold; }
-        .status-failed { color: #ef4444; font-weight: bold; }
-        .status-refund { color: #ef4444; font-weight: bold; }
         @media print { 
             .no-print { display: none; }
             body { padding: 0; }
@@ -27,23 +23,21 @@
 <body onload="window.print()">
     <div class="header">
         <h1 style="margin: 0;">ARIFAH GYM MAKASSAR</h1>
-        <h2 style="margin: 5px 0; color: #555;">LAPORAN KEUANGAN MEMBER</h2>
+        <h2 style="margin: 5px 0; color: #555;">LAPORAN KEUANGAN KASIR CEPAT</h2>
         <p style="margin: 0; font-size: 12px;">Tanggal Cetak: {{ date('d F Y, H:i') }} WITA</p>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th style="width: 4%; text-align: center;">No</th>
-                <th style="width: 5%; text-align: center;">ID</th>
-                <th style="width: 10%;">Order ID</th>
-                <th style="width: 10%; text-align: center;">Waktu</th>
-                <th style="width: 15%;">Nama Customer</th>
-                <th style="width: 7%; text-align: center;">Member ID</th>
-                <th style="width: 15%;">Kategori</th>
-                <th style="width: 8%; text-align: center;">Status</th>
+                <th style="width: 6%; text-align: center;">No</th>
+                <th style="width: 7%; text-align: center;">ID</th>
+                <th style="width: 15%;">Order ID</th>
+                <th style="width: 15%; text-align: center;">Waktu</th>
+                <th style="width: 20%;">Nama Tamu</th>
+                <th style="width: 22%;">Produk</th>
                 <th style="width: 10%;">Metode</th>
-                <th style="width: 12%; text-align: right;">Nominal</th>
+                <th style="width: 15%; text-align: right;">Nominal</th>
             </tr>
         </thead>
         <tbody>
@@ -54,29 +48,20 @@
             @foreach($data as $row)
             @php 
                 $total += $row->amount;
-                $statusText = ucfirst($row->status ?? 'paid');
-                $statusClass = 'status-paid';
-                if ($row->status === 'pending') {
-                    $statusClass = 'status-pending';
-                } elseif ($row->status === 'failed' || $row->status === 'refund') {
-                    $statusClass = 'status-failed';
-                }
             @endphp
             <tr>
                 <td style="text-align: center;">{{ $no++ }}</td>
                 <td style="text-align: center;">{{ $row->id }}</td>
                 <td>{{ $row->order_id }}</td>
                 <td style="text-align: center;">{{ \Carbon\Carbon::parse($row->payment_date)->format('d/m/Y H:i') }}</td>
-                <td>{{ $row->member ? $row->member->name : ($row->guest_name ?? 'Umum/Tamu') }}</td>
-                <td style="text-align: center;">{{ $row->member_id ?? '-' }}</td>
-                <td>{{ $row->type }}</td>
-                <td style="text-align: center;" class="{{ $statusClass }}">{{ $statusText }}</td>
+                <td>{{ $row->guest_name }}</td>
+                <td>{{ $row->product_name }}</td>
                 <td>{{ $row->payment_method }}</td>
                 <td class="nominal">Rp {{ number_format($row->amount, 0, ',', '.') }}</td>
             </tr>
             @endforeach
             <tr class="total">
-                <td colspan="9" style="text-align: right;">TOTAL PENDAPATAN MEMBER:</td>
+                <td colspan="7" style="text-align: right;">TOTAL PENDAPATAN KASIR CEPAT:</td>
                 <td class="nominal">Rp {{ number_format($total, 0, ',', '.') }}</td>
             </tr>
         </tbody>

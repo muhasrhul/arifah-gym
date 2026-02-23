@@ -114,10 +114,6 @@ class QuickTransactionResource extends Resource
                     ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->color('success')
                     ->weight('bold'),
-
-                Tables\Columns\BadgeColumn::make('type')
-                    ->label('Kategori')
-                    ->color('primary'),
                 
                 Tables\Columns\TextColumn::make('payment_method')
                     ->label('Metode'),
@@ -127,7 +123,22 @@ class QuickTransactionResource extends Resource
                     ->dateTime('d M Y, H:i')
                     ->sortable(),
             ])
-            ->defaultSort('payment_date', 'desc');
+            ->defaultSort('payment_date', 'desc')
+            ->headerActions([
+                Tables\Actions\Action::make('export_excel')
+                    ->label('Export Excel')
+                    ->color('success')
+                    ->icon('heroicon-o-document-download')
+                    ->url(fn () => route('cetak-laporan-kasir', ['format' => 'excel']))
+                    ->openUrlInNewTab(),
+
+                Tables\Actions\Action::make('print_pdf')
+                    ->label('Cetak PDF')
+                    ->color('warning')
+                    ->icon('heroicon-o-printer')
+                    ->url(fn () => route('cetak-laporan-kasir', ['format' => 'pdf']))
+                    ->openUrlInNewTab(),
+            ]);
     }
 
     public static function getPages(): array
