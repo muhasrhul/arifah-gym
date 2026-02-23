@@ -191,28 +191,69 @@ class UpdateExpiredMembers extends Command
         }
         
         try {
-            $response = Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
-                'chat_id' => $chatId,
-                'text' => $message,
-                'parse_mode' => 'Markdown',
-            ]);
+            $response = Http::timeout(30)
+                ->retry(3, 1000) // Retry 3x dengan delay 1 detik
+                ->post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+                    'chat_id' => $chatId,
+                    'text' => $message,
+                    'parse_mode' => 'Markdown',
+                ]);
             
-            if ($response->successful()) {
+            // Cek status HTTP response
+            if (!$response->successful()) {
+                Log::error('[Telegram] HTTP Error', [
+                    'status_code' => $response->status(),
+                    'response_body' => $response->body()
+                ]);
+                $this->error('❌ Gagal kirim notifikasi Telegram (HTTP ' . $response->status() . ')');
+                return;
+            }
+
+            $result = $response->json();
+            
+            // Validasi response structure
+            if (!is_array($result) || !isset($result['ok'])) {
+                Log::error('[Telegram] Invalid Response Format', [
+                    'response' => $response->body()
+                ]);
+                $this->error('❌ Format response Telegram tidak valid');
+                return;
+            }
+
+            // Cek status dari API Telegram
+            if ($result['ok'] === true) {
                 Log::info('[Telegram] Notifikasi berhasil dikirim', [
                     'chat_id' => $chatId,
+                    'message_id' => $result['result']['message_id'] ?? null,
                     'message_length' => strlen($message)
                 ]);
             } else {
-                Log::error('[Telegram] Gagal kirim notifikasi', [
-                    'response' => $response->body()
+                Log::error('[Telegram] API returned failure', [
+                    'error_code' => $result['error_code'] ?? null,
+                    'description' => $result['description'] ?? 'Unknown error'
                 ]);
-                $this->error('❌ Gagal kirim notifikasi Telegram. Cek log untuk detail.');
+                $this->error('❌ Telegram API Error: ' . ($result['description'] ?? 'Unknown error'));
             }
-        } catch (\Exception $e) {
-            Log::error('[Telegram] Error kirim notifikasi', [
+
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('[Telegram] Connection Error', [
                 'error' => $e->getMessage()
             ]);
-            $this->error('❌ Error: ' . $e->getMessage());
+            $this->error('❌ Koneksi ke Telegram gagal: ' . $e->getMessage());
+
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            Log::error('[Telegram] Request Error', [
+                'error' => $e->getMessage(),
+                'response' => $e->response ? $e->response->body() : null
+            ]);
+            $this->error('❌ Request ke Telegram gagal: ' . $e->getMessage());
+
+        } catch (\Exception $e) {
+            Log::error('[Telegram] Unexpected Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            $this->error('❌ Error tidak terduga: ' . $e->getMessage());
         }
     }
 }

@@ -39,6 +39,31 @@ class ForgotPasswordController extends Controller
             $phone = '62' . substr($phone, 1);
         }
 
+        // KEAMANAN: Cek rate limiting (maksimal 3 request per 15 menit)
+        $recentRequests = DB::table('password_reset_otps')
+            ->where('phone', $phone)
+            ->where('created_at', '>', Carbon::now()->subMinutes(15))
+            ->count();
+
+        if ($recentRequests >= 3) {
+            return back()->withErrors([
+                'phone' => 'Terlalu banyak permintaan OTP. Silakan tunggu 15 menit sebelum mencoba lagi.'
+            ]);
+        }
+
+        // KEAMANAN: Cek cooldown (minimal 2 menit antar request)
+        $lastRequest = DB::table('password_reset_otps')
+            ->where('phone', $phone)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($lastRequest && Carbon::parse($lastRequest->created_at)->addMinutes(2)->isFuture()) {
+            $waitTime = Carbon::parse($lastRequest->created_at)->addMinutes(2)->diffInSeconds(Carbon::now());
+            return back()->withErrors([
+                'phone' => "Silakan tunggu {$waitTime} detik sebelum meminta OTP baru."
+            ]);
+        }
+
         // Cek apakah nomor HP terdaftar sebagai admin/owner
         $user = User::where('phone', 'like', '%' . substr($phone, -10) . '%')
                     ->whereIn('role', ['super_admin', 'admin'])
@@ -50,8 +75,8 @@ class ForgotPasswordController extends Controller
             ]);
         }
 
-        // Generate OTP 6 digit
-        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        // Generate OTP 6 digit yang lebih aman
+        $otp = str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
 
         // Hapus OTP lama untuk nomor ini
         DB::table('password_reset_otps')->where('phone', $phone)->delete();

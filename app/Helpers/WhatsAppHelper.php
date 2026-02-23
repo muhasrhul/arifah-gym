@@ -30,16 +30,45 @@ class WhatsAppHelper
         $phone = self::formatPhoneNumber($phone);
 
         try {
-            // Kirim request ke Fonnte API
-            $response = Http::withHeaders([
-                'Authorization' => $token,
-            ])->post('https://api.fonnte.com/send', [
-                'target' => $phone,
-                'message' => $message,
-                'countryCode' => '62', // Indonesia
-            ]);
+            // Kirim request ke Fonnte API dengan timeout dan retry
+            $response = Http::timeout(30)
+                ->retry(3, 1000) // Retry 3x dengan delay 1 detik
+                ->withHeaders([
+                    'Authorization' => $token,
+                ])->post('https://api.fonnte.com/send', [
+                    'target' => $phone,
+                    'message' => $message,
+                    'countryCode' => '62', // Indonesia
+                ]);
+
+            // Cek status HTTP response
+            if (!$response->successful()) {
+                Log::error('WhatsApp API HTTP Error', [
+                    'phone' => $phone,
+                    'status_code' => $response->status(),
+                    'response_body' => $response->body()
+                ]);
+
+                return [
+                    'success' => false,
+                    'message' => 'API WhatsApp tidak merespons dengan benar'
+                ];
+            }
 
             $result = $response->json();
+
+            // Validasi response structure
+            if (!is_array($result)) {
+                Log::error('WhatsApp API Invalid Response Format', [
+                    'phone' => $phone,
+                    'response' => $response->body()
+                ]);
+
+                return [
+                    'success' => false,
+                    'message' => 'Format response API tidak valid'
+                ];
+            }
 
             // Log response
             Log::info('WhatsApp sent', [
@@ -48,20 +77,55 @@ class WhatsAppHelper
                 'message' => substr($message, 0, 50) . '...'
             ]);
 
+            // Cek status dari API Fonnte
+            $isSuccess = ($result['status'] ?? false) === true;
+            
+            if (!$isSuccess) {
+                Log::warning('WhatsApp API returned failure', [
+                    'phone' => $phone,
+                    'api_response' => $result
+                ]);
+            }
+
             return [
-                'success' => ($result['status'] ?? false) === true,
-                'data' => $result
+                'success' => $isSuccess,
+                'data' => $result,
+                'message' => $result['reason'] ?? ($isSuccess ? 'Berhasil' : 'Gagal mengirim pesan')
             ];
 
-        } catch (\Exception $e) {
-            Log::error('WhatsApp send failed', [
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('WhatsApp Connection Error', [
                 'phone' => $phone,
                 'error' => $e->getMessage()
             ]);
 
             return [
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Koneksi ke server WhatsApp gagal'
+            ];
+
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            Log::error('WhatsApp Request Error', [
+                'phone' => $phone,
+                'error' => $e->getMessage(),
+                'response' => $e->response ? $e->response->body() : null
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Permintaan ke API WhatsApp gagal'
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('WhatsApp Unexpected Error', [
+                'phone' => $phone,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem saat mengirim pesan'
             ];
         }
     }
