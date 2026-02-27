@@ -28,7 +28,7 @@ class FrontMemberController extends Controller
                 ->where('registration_fee', '>', 0)
                 ->orderBy('registration_fee', 'asc')
                 ->first();
-            return $paket ? (int)$paket->registration_fee : 100000;
+            return $paket ? (int)$paket->registration_fee : 0; // Return 0 jika tidak ada paket aktif
         });
 
         // C. Persiapan Variabel Cek Status

@@ -81,12 +81,12 @@
                             <div class="text-2xl md:text-4xl font-black text-[#0992C2] italic tracking-tighter">
                                 @php
                                     // Ambil registration fee terendah yang tidak null/0 dari paket aktif
-                                    $regFee = \App\Models\Paket::where('is_active', true)
+                                    $paket = \App\Models\Paket::where('is_active', true)
                                         ->whereNotNull('registration_fee')
                                         ->where('registration_fee', '>', 0)
                                         ->orderBy('registration_fee', 'asc')
-                                        ->first()
-                                        ->registration_fee ?? 100000;
+                                        ->first();
+                                    $regFee = $paket ? $paket->registration_fee : 0; // Return 0 jika tidak ada paket aktif
                                 @endphp
                                 Rp {{ number_format($regFee, 0, ',', '.') }}
                             </div>
