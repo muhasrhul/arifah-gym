@@ -51,7 +51,15 @@ class AppServiceProvider extends ServiceProvider
                     ->sort(10),
             ]);
 
-            // 2. STYLE CUSTOM UNTUK TAMPILAN LOGIN MODERN
+            // 2. ATUR URUTAN GRUP NAVIGASI
+            Filament::registerNavigationGroups([
+                'Laporan Transaksi',
+                'Master Data', 
+                'Sistem',
+                'Pengaturan',
+            ]);
+
+            // 3. STYLE CUSTOM UNTUK TAMPILAN LOGIN MODERN
             Filament::pushMeta([
                 new HtmlString('
                 <style>
