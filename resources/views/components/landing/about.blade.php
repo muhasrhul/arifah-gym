@@ -49,15 +49,15 @@
             <!-- Right Content - Image Grid -->
             <div class="relative" data-aos="fade-left">
                 <div class="grid grid-cols-2 gap-4">
-                    <!-- Main large image -->
+                    <!-- Main large image - Foto komunitas ARIFAH Gym -->
                     <div class="col-span-2 relative group overflow-hidden rounded-2xl">
-                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80" 
-                             alt="ARIFAH Gym Interior" 
+                        <img src="/images/arifah-gym-community.jpg" 
+                             alt="Komunitas ARIFAH Gym - Member dan Trainer" 
                              class="w-full h-64 md:h-80 object-cover transition-transform duration-700 group-hover:scale-110">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     </div>
                     
-                    <!-- Two smaller images -->
+                    <!-- Two smaller images - Tetap pakai stock photo untuk variasi -->
                     <div class="relative group overflow-hidden rounded-2xl">
                         <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=400&q=80" 
                              alt="Modern Equipment" 
