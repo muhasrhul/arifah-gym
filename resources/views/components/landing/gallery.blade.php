@@ -10,10 +10,9 @@
             <p class="text-gray-500 uppercase tracking-[0.15em] md:tracking-[0.2em] text-[10px] md:text-sm font-bold">Lihat fasilitas standar internasional kami</p>
         </div>
 
-        <!-- TikTok Videos Grid (3 Columns) - DIMATIKAN SEMENTARA KARENA TERLALU BERAT -->
-        <!--
+        <!-- TikTok Videos Grid (3 Columns) - DIMATIKAN SEMENTARA KARENA TERLALU BERAT
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-12 md:mb-16">
-            <!-- Video 1 -->
+            Video 1
             <div class="relative overflow-hidden rounded-2xl md:rounded-3xl bg-zinc-950 max-h-[600px] shadow-2xl" data-aos="fade-up" data-aos-delay="100">
                 <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@arifah_gym/video/7569262752053726485" data-video-id="7569262752053726485" style="max-width: 100%; min-width: 100%; margin: 0;" > 
                     <section> 
@@ -26,7 +25,7 @@
                 </blockquote>
             </div>
 
-            <!-- Video 2 -->
+            Video 2
             <div class="relative overflow-hidden rounded-2xl md:rounded-3xl bg-zinc-950 max-h-[600px] shadow-2xl" data-aos="fade-up" data-aos-delay="200">
                 <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@arifah_gym/video/7584978847922261268" data-video-id="7584978847922261268" style="max-width: 100%; min-width: 100%; margin: 0;" > 
                     <section> 
@@ -41,7 +40,7 @@
                 </blockquote>
             </div>
 
-            <!-- Video 3 -->
+            Video 3
             <div class="relative overflow-hidden rounded-2xl md:rounded-3xl bg-zinc-950 max-h-[600px] shadow-2xl" data-aos="fade-up" data-aos-delay="300">
                 <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@arifah_gym/video/7585452094740499732" data-video-id="7585452094740499732" style="max-width: 100%; min-width: 100%; margin: 0;" > 
                     <section> 
