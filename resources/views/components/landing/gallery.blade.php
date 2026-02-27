@@ -10,7 +10,8 @@
             <p class="text-gray-500 uppercase tracking-[0.15em] md:tracking-[0.2em] text-[10px] md:text-sm font-bold">Lihat fasilitas standar internasional kami</p>
         </div>
 
-        <!-- TikTok Videos Grid (3 Columns) -->
+        <!-- TikTok Videos Grid (3 Columns) - DIMATIKAN SEMENTARA KARENA TERLALU BERAT -->
+        <!--
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-12 md:mb-16">
             <!-- Video 1 -->
             <div class="relative overflow-hidden rounded-2xl md:rounded-3xl bg-zinc-950 max-h-[600px] shadow-2xl" data-aos="fade-up" data-aos-delay="100">
@@ -56,6 +57,7 @@
                 </blockquote>
             </div>
         </div>
+        -->
 
         <!-- Photo Gallery Grid -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 auto-rows-[150px] md:auto-rows-[250px]">

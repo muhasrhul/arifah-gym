@@ -46,7 +46,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script async src="https://www.tiktok.com/embed.js"></script>
+    <!-- TikTok Embed Script - DIMATIKAN SEMENTARA KARENA TERLALU BERAT -->
+    <!-- <script async src="https://www.tiktok.com/embed.js"></script> -->
     <script>
         AOS.init({ once: true, duration: 800 });
 
