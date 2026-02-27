@@ -37,7 +37,10 @@
                     </div>
                     <div class="text-center" data-aos="fade-up" data-aos-delay="200">
                         <div class="text-2xl md:text-4xl font-black text-[#0992C2] mb-2">3+</div>
-                        <div class="text-xs md:text-sm section-subtitle uppercase tracking-wider font-bold">Tahun Berpengalaman</div>
+                        <div class="text-xs md:text-sm section-subtitle uppercase tracking-wider font-bold">
+                            <span class="block sm:inline">Tahun</span>
+                            <span class="block sm:inline">Berpengalaman</span>
+                        </div>
                     </div>
                     <div class="text-center" data-aos="fade-up" data-aos-delay="300">
                         <div class="text-lg md:text-2xl font-black text-[#0992C2] mb-2">07.00-01.00</div>
