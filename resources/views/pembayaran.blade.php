@@ -242,8 +242,8 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-6 text-white">
 
-    <!-- Theme Toggle Button -->
-    <div class="fixed top-6 right-6 md:top-8 md:right-8 z-50">
+    <!-- Theme Toggle Button - Hidden (theme follows welcome page) -->
+    <div class="fixed top-6 right-6 md:top-8 md:right-8 z-50 hidden">
         <button id="theme-toggle" class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all" title="Toggle Light/Dark Mode">
             <i class="fas fa-sun" id="theme-icon"></i>
         </button>
