@@ -57,10 +57,10 @@
                         <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     </div>
                     
-                    <!-- Two smaller images - Tetap pakai stock photo untuk variasi -->
+                    <!-- Two smaller images - Mix of authentic and stock photos -->
                     <div class="relative group overflow-hidden rounded-2xl">
-                        <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=400&q=80" 
-                             alt="Modern Equipment" 
+                        <img src="/images/arifah-gym-interior.jpg" 
+                             alt="ARIFAH Gym Interior - Modern Equipment & LED Lighting" 
                              class="w-full h-32 md:h-40 object-cover transition-transform duration-700 group-hover:scale-110">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     </div>
