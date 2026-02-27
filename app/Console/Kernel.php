@@ -30,9 +30,9 @@ class Kernel extends ConsoleKernel
         
         // TESTING: Uncomment baris di bawah untuk test (jalankan setiap menit)
         // Setelah test berhasil, comment lagi dan gunakan yang dailyAt
-        // $schedule->command('members:update-expired')
-        //     ->everyMinute()
-        //     ->appendOutputTo(storage_path('logs/scheduler.log'));
+        $schedule->command('members:update-expired')
+            ->everyMinute()
+            ->appendOutputTo(storage_path('logs/scheduler.log'));
 
         // ========================================
         // AUTO KIRIM REMINDER WHATSAPP MEMBERSHIP

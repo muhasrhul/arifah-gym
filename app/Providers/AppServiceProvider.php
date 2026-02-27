@@ -617,8 +617,19 @@ class AppServiceProvider extends ServiceProvider
                 <script>
                     // Auto reset SEMUA (sort + filter + search) saat refresh halaman
                     (function() {
-                        // Fungsi untuk reset semua parameter tabel
-                        function resetAllTableParameters() {
+                        // Fungsi untuk reset parameter tabel HANYA saat refresh (F5)
+                        function resetTableParametersOnRefresh() {
+                            // Cek apakah ini adalah refresh (F5) atau navigasi normal
+                            const isRefresh = (
+                                performance.navigation && performance.navigation.type === 1 || // TYPE_RELOAD
+                                (performance.getEntriesByType && performance.getEntriesByType("navigation")[0] && performance.getEntriesByType("navigation")[0].type === "reload")
+                            );
+                            
+                            // Jika bukan refresh, jangan lakukan apa-apa
+                            if (!isRefresh) {
+                                return;
+                            }
+                            
                             // Cek flag untuk mencegah infinite loop
                             if (sessionStorage.getItem("tableResetInProgress")) {
                                 // Hapus flag setelah reload selesai
@@ -655,30 +666,11 @@ class AppServiceProvider extends ServiceProvider
                         
                         // Jalankan saat DOM ready
                         if (document.readyState === "loading") {
-                            document.addEventListener("DOMContentLoaded", resetAllTableParameters);
+                            document.addEventListener("DOMContentLoaded", resetTableParametersOnRefresh);
                         } else {
                             // DOM sudah ready, jalankan langsung
-                            resetAllTableParameters();
+                            resetTableParametersOnRefresh();
                         }
-                        
-                        // Backup: jalankan juga saat window load (untuk kasus Livewire)
-                        window.addEventListener("load", function() {
-                            const url = new URL(window.location.href);
-                            const hasSort = url.searchParams.has("tableSort") || url.searchParams.has("tableSortDirection");
-                            const hasSearch = url.searchParams.has("tableSearch");
-                            let hasFilter = false;
-                            for (let key of url.searchParams.keys()) {
-                                if (key.startsWith("tableFilters")) {
-                                    hasFilter = true;
-                                    break;
-                                }
-                            }
-                            
-                            // Hanya jalankan jika belum pernah dijalankan dan ada parameter
-                            if (!sessionStorage.getItem("tableResetInProgress") && (hasSort || hasFilter || hasSearch)) {
-                                resetAllTableParameters();
-                            }
-                        });
                     })();
                 </script>
                 

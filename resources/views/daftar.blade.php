@@ -9,7 +9,17 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #000; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #000; 
+            transition: all 0.3s ease;
+        }
+        
+        /* Light Mode Styles */
+        body.light {
+            background-color: #ffffff;
+            color: #0f172a;
+        }
         
         .font-hero { 
             font-weight: 900; 
@@ -23,30 +33,145 @@
             background-image: linear-gradient(to bottom, rgba(0,0,0,0.85), rgba(0,0,0,0.95)), url('https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=2000');
             background-size: cover; background-position: center;
             background-attachment: fixed;
+            transition: all 0.3s ease;
         }
+        
+        /* Light mode background */
+        body.light .bg-gym {
+            background-image: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(248,250,252,0.98)), url('https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=2000');
+        }
+        
         .glass-card {
             background: rgba(24, 24, 27, 0.85);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
         }
+        
+        /* Light mode glass card */
+        body.light .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
         .orange-glow {
             text-shadow: 0 0 20px rgba(9, 146, 194, 0.6);
         }
+        
+        /* Form elements */
         input, select {
             background: rgba(0, 0, 0, 0.5) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             color: white !important;
             transition: all 0.3s ease;
         }
+        
+        /* Light mode form elements */
+        body.light input, body.light select {
+            background: rgba(255, 255, 255, 0.8) !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            color: #0f172a !important;
+        }
+        
+        body.light input::placeholder {
+            color: #64748b !important;
+        }
+        
         .is-invalid {
             border-color: #ef4444 !important;
             background: rgba(127, 29, 29, 0.3) !important;
         }
+        
+        body.light .is-invalid {
+            background: rgba(254, 226, 226, 0.8) !important;
+        }
+        
         input:focus, select:focus {
             border-color: #0992C2 !important;
             box-shadow: 0 0 15px rgba(9, 146, 194, 0.2) !important;
             background: rgba(0, 0, 0, 0.7) !important;
         }
+        
+        body.light input:focus, body.light select:focus {
+            background: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 0 15px rgba(9, 146, 194, 0.3) !important;
+        }
+        
+        /* Text colors */
+        .text-zinc-500 {
+            color: rgb(113 113 122);
+            transition: color 0.3s ease;
+        }
+        
+        body.light .text-zinc-500 {
+            color: rgb(71 85 105);
+        }
+        
+        .text-zinc-400 {
+            color: rgb(161 161 170);
+            transition: color 0.3s ease;
+        }
+        
+        body.light .text-zinc-400 {
+            color: rgb(100 116 139);
+        }
+        
+        .text-zinc-300 {
+            color: rgb(212 212 216);
+            transition: color 0.3s ease;
+        }
+        
+        body.light .text-zinc-300 {
+            color: rgb(51 65 85);
+        }
+        
+        .text-white {
+            color: white;
+            transition: color 0.3s ease;
+        }
+        
+        body.light .text-white {
+            color: #0f172a;
+        }
+        
+        /* Modal styles */
+        #rulesModal {
+            background: rgba(0, 0, 0, 0.95);
+            transition: all 0.3s ease;
+        }
+        
+        body.light #rulesModal {
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .bg-zinc-900 {
+            background-color: rgb(24 24 27);
+            transition: background-color 0.3s ease;
+        }
+        
+        body.light .bg-zinc-900 {
+            background-color: rgb(255 255 255);
+        }
+        
+        /* Back button */
+        .back-btn {
+            color: rgb(113 113 122);
+            transition: color 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            color: #0992C2;
+        }
+        
+        body.light .back-btn {
+            color: rgb(71 85 105);
+        }
+        
+        body.light .back-btn:hover {
+            color: #0992C2;
+        }
+        
         .success-anim { animation: successPop 0.6s cubic-bezier(0.17, 0.89, 0.32, 1.49); }
         @keyframes successPop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         #rulesModal { display: none; }
@@ -56,14 +181,23 @@
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
         .custom-scroll::-webkit-scrollbar-thumb { background: #0992C2; border-radius: 10px; }
+        
+        body.light .custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
     </style>
 </head>
 <body class="bg-gym min-h-screen flex flex-col items-center justify-center p-4 md:p-8 text-white">
 
     <div class="fixed top-6 left-6 md:top-8 md:left-8 z-50">
-        <a href="/" class="flex items-center gap-2 text-zinc-500 hover:text-[#0992C2] transition-all font-black uppercase text-[9px] md:text-[10px] tracking-[0.2em] md:tracking-[0.3em]">
+        <a href="/" class="flex items-center gap-2 back-btn hover:text-[#0992C2] transition-all font-black uppercase text-[9px] md:text-[10px] tracking-[0.2em] md:tracking-[0.3em]">
             <i class="fa-solid fa-arrow-left"></i> Beranda
         </a>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <div class="fixed top-6 right-6 md:top-8 md:right-8 z-50">
+        <button id="theme-toggle" class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all" title="Toggle Light/Dark Mode">
+            <i class="fas fa-sun" id="theme-icon"></i>
+        </button>
     </div>
 
     <div class="w-full max-w-xl glass-card rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-14 shadow-2xl my-10 relative overflow-hidden">
@@ -220,6 +354,41 @@
     </div>
 
     <script>
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const body = document.body;
+        
+        // Check for saved theme preference or default to 'dark'
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        
+        // Apply saved theme on page load
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                body.classList.remove('dark');
+                body.classList.add('light');
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            } else {
+                body.classList.remove('light');
+                body.classList.add('dark');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+        }
+        
+        // Apply theme on page load
+        applyTheme(currentTheme);
+        
+        // Theme toggle click handler
+        themeToggle.addEventListener('click', () => {
+            const isLight = body.classList.contains('light');
+            const newTheme = isLight ? 'dark' : 'light';
+            
+            applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+        
         function toggleModal() { document.getElementById('rulesModal').classList.toggle('active'); }
         
         function switchTab(tabName) {

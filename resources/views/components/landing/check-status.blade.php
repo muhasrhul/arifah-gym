@@ -1,15 +1,15 @@
-<section id="cek-status" class="py-16 md:py-24 bg-gray-950">
+<section id="cek-status" class="py-16 md:py-24 section-bg">
     <div class="max-w-2xl mx-auto px-6" data-aos="zoom-in">
-        <div class="glass-card p-6 md:p-12 rounded-2xl md:rounded-[3rem] border-white/10 shadow-3xl relative overflow-hidden">
+        <div class="glass-card dark p-6 md:p-12 rounded-2xl md:rounded-[3rem] border-white/10 shadow-3xl relative overflow-hidden">
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-[#0992C2]/10 rounded-full blur-3xl"></div>
 
             <div class="text-center mb-8 md:mb-10 relative z-10">
-                <h3 class="text-2xl md:text-4xl font-black italic mb-3 md:mb-4 uppercase tracking-tighter text-white leading-none">
+                <h3 class="text-2xl md:text-4xl font-black italic mb-3 md:mb-4 uppercase tracking-tighter section-title leading-none">
                     CHECK <span class="text-[#0992C2]">MEMBERSHIP</span>
                 </h3>
                 <div class="h-1 md:h-1.5 w-12 md:w-16 bg-[#0992C2] mx-auto rounded-full mb-4 md:mb-6"></div>
                 
-                <p class="text-gray-500 text-[9px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold">
+                <p class="section-subtitle text-[9px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold">
                     Akses Kartu Digital & Pantau Masa Aktif Anda
                 </p>
             </div>
@@ -17,7 +17,7 @@
             <form action="{{ url()->current() }}#cek-status" method="GET" class="relative mb-6 md:mb-8 z-10">
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 md:pl-5 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-phone text-gray-500 group-focus-within:text-[#0992C2] transition-colors text-sm md:text-base"></i>
+                        <i class="fa-solid fa-phone input-icon group-focus-within:text-[#0992C2] transition-colors text-sm md:text-base"></i>
                     </div>
                     <input type="tel" 
                            name="search" 
@@ -26,9 +26,9 @@
                            placeholder="Masukan nomor telpon anda" 
                            inputmode="numeric"
                            oninput="this.value = this.value.replace(/[^0-9]/g, '');"
-                           class="w-full pl-10 md:pl-12 pr-20 md:pr-32 py-3.5 md:py-5 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 focus:border-[#0992C2] focus:bg-white/10 focus:ring-4 focus:ring-[#0992C2]/20 outline-none transition-all font-bold text-white placeholder:text-gray-600 uppercase tracking-widest text-[11px] md:text-sm">
+                           class="w-full pl-10 md:pl-12 pr-20 md:pr-32 py-3.5 md:py-5 rounded-xl md:rounded-2xl input-field border input-border focus:border-[#0992C2] focus:ring-4 focus:ring-[#0992C2]/20 outline-none transition-all font-bold input-text placeholder:input-placeholder uppercase tracking-widest text-[11px] md:text-sm">
                     
-                    <button type="submit" class="absolute right-1.5 md:right-2 top-1.5 md:top-2 bottom-1.5 md:bottom-2 px-3 md:px-8 bg-[#0992C2] hover:bg-[#0992C2] rounded-lg md:rounded-xl font-black uppercase text-[9px] md:text-xs transition-all shadow-lg active:scale-95">
+                    <button type="submit" class="absolute right-1.5 md:right-2 top-1.5 md:top-2 bottom-1.5 md:bottom-2 px-3 md:px-8 bg-[#0992C2] hover:bg-[#0992C2] rounded-lg md:rounded-xl font-black uppercase text-[9px] md:text-xs transition-all shadow-lg active:scale-95 search-button-text">
                         Cari
                     </button>
                 </div>
@@ -50,15 +50,15 @@
                     @if($isMemberHarian)
                         <!-- Tampilan untuk Member Harian (Tanpa Card Digital) -->
                         <div class="flex flex-col items-center gap-6 py-8 w-full px-2">
-                            <div class="w-full max-w-[350px] p-8 bg-gradient-to-r from-gray-800/50 to-gray-900/50 border border-gray-600/50 rounded-3xl text-center backdrop-blur-sm">
-                                <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center border border-amber-500/30">
+                            <div class="w-full max-w-[350px] p-8 member-harian-card border member-harian-border rounded-3xl text-center backdrop-blur-sm">
+                                <div class="w-20 h-20 mx-auto mb-6 member-harian-icon-bg rounded-full flex items-center justify-center border member-harian-icon-border">
                                     <i class="fa-solid fa-clock text-3xl text-amber-400"></i>
                                 </div>
                                 
-                                <h3 class="text-xl font-bold text-white mb-2 uppercase tracking-wide">{{ $member->name }}</h3>
-                                <p class="text-sm text-gray-400 mb-4 font-mono">{{ $member->order_id }}</p>
+                                <h3 class="text-xl font-bold member-harian-title mb-2 uppercase tracking-wide">{{ $member->name }}</h3>
+                                <p class="text-sm member-harian-subtitle mb-4 font-mono">{{ $member->order_id }}</p>
                                 
-                                <div class="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-2xl p-4 mb-4">
+                                <div class="member-harian-type-card border member-harian-type-border rounded-2xl p-4 mb-4">
                                     <p class="text-amber-400 font-bold text-sm uppercase tracking-wide mb-2">{{ $member->type }}</p>
                                     <p class="text-xs text-amber-300/80">
                                         Berlaku: {{ \Carbon\Carbon::parse($member->expiry_date)->format('d M Y') }}
@@ -66,14 +66,14 @@
                                 </div>
 
                                 @if($isExpired || !$member->is_active)
-                                    <div class="bg-gradient-to-r from-red-500/10 to-red-600/10 border border-red-500/30 text-red-400 font-bold rounded-2xl p-4 mb-4">
+                                    <div class="member-harian-expired border font-bold rounded-2xl p-4 mb-4">
                                         <i class="fa-solid fa-exclamation-triangle animate-pulse mb-2"></i>
                                         <p class="text-xs uppercase tracking-wide">
                                             EXPIRED - Silakan perpanjang di kasir
                                         </p>
                                     </div>
                                 @else
-                                    <div class="bg-gradient-to-r from-green-500/10 to-green-600/10 border border-green-500/30 text-green-400 font-bold rounded-2xl p-4 mb-4">
+                                    <div class="member-harian-active border border-green-500/30 text-green-400 font-bold rounded-2xl p-4 mb-4">
                                         <i class="fa-solid fa-check-circle mb-2"></i>
                                         <p class="text-xs uppercase tracking-wide">
                                             AKTIF - Selamat berlatih!
@@ -81,7 +81,7 @@
                                     </div>
                                 @endif
                                 
-                                <div class="bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/30 text-blue-400 rounded-xl p-3">
+                                <div class="member-harian-info border member-harian-info-border text-blue-400 rounded-xl p-3">
                                     <i class="fa-solid fa-info-circle mb-2"></i>
                                     <p class="text-xs leading-relaxed">
                                         Kartu digital tidak tersedia untuk member harian. 
@@ -167,9 +167,9 @@
                                 </button>
 
                                 @if($isExpired || !$member->is_active)
-                                    <div class="w-full px-6 py-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 text-amber-400 font-bold rounded-2xl text-center shadow-lg backdrop-blur-sm transform transition-all duration-300 hover:scale-[1.02]">
-                                        <i class="fa-solid fa-info-circle animate-pulse"></i>
-                                        <p class="text-xs uppercase tracking-wide mt-2 leading-relaxed">
+                                    <div class="w-full px-6 py-4 expired-notification border rounded-2xl text-center shadow-lg backdrop-blur-sm transform transition-all duration-300 hover:scale-[1.02]">
+                                        <i class="fa-solid fa-info-circle animate-pulse expired-notification-icon"></i>
+                                        <p class="text-xs uppercase tracking-wide mt-2 leading-relaxed expired-notification-text">
                                             Silakan menuju kasir untuk<br>perpanjangan dan aktivasi ulang
                                         </p>
                                     </div>

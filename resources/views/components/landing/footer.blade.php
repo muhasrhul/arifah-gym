@@ -15,12 +15,12 @@
     }
 </style>
 
-<footer class="py-16 md:py-20 bg-black text-center border-t border-white/5 relative overflow-hidden">
+<footer class="py-16 md:py-20 footer-bg text-center footer-border relative overflow-hidden transition-all duration-300">
     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#0992C2]/10 rounded-full blur-[120px] pointer-events-none"></div>
     
-    <h1 class="text-3xl md:text-4xl font-black text-[#0992C2] italic mb-4 md:mb-6">ARIFAH <span class="text-white">GYM</span></h1>
+    <h1 class="text-3xl md:text-4xl font-black text-[#0992C2] italic mb-4 md:mb-6">ARIFAH <span class="footer-title">GYM</span></h1>
     
-    <div class="flex justify-center space-x-6 md:space-x-8 mb-8 md:mb-10 text-gray-400 relative z-20">
+    <div class="flex justify-center space-x-6 md:space-x-8 mb-8 md:mb-10 footer-links relative z-20">
         <a href="https://www.instagram.com/arifah_gym?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" 
            class="hover:text-[#0992C2] transition-all duration-300 hover:-translate-y-1 text-xl md:text-2xl cursor-pointer">
             <i class="fa-brands fa-instagram"></i>
@@ -38,8 +38,8 @@
     </div>
 
     <div class="relative z-20 space-y-2 px-6">
-        <p class="text-gray-500 text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] italic">No Pain No Gain.</p>
-        <p class="text-gray-600 text-[8px] md:text-[9px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em]">ARIFAH Gym Makassar © 2026</p>
+        <p class="footer-subtitle text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] italic">No Pain No Gain.</p>
+        <p class="footer-copyright text-[8px] md:text-[9px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em]">ARIFAH Gym Makassar © 2026</p>
     </div>
 </footer>
 

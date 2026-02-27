@@ -16,6 +16,14 @@
             font-family: 'Inter', sans-serif; 
             background-color: #030712;
             background-image: radial-gradient(circle at top right, rgba(9, 146, 194, 0.05), transparent);
+            transition: all 0.3s ease;
+        }
+        
+        /* Light Mode Styles */
+        body.light {
+            background-color: #ffffff;
+            background-image: radial-gradient(circle at top right, rgba(9, 146, 194, 0.08), transparent);
+            color: #0f172a;
         }
 
         .font-hero { 
@@ -33,6 +41,14 @@
             background: rgba(24, 24, 27, 0.8);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        /* Light mode glass card */
+        body.light .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
         .btn-premium {
@@ -54,6 +70,12 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        /* Light mode modal */
+        body.light .payment-modal {
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .payment-modal.active {
@@ -71,6 +93,12 @@
             align-items: center;
             justify-content: center;
             flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        
+        /* Light mode success overlay */
+        body.light #success-overlay {
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .svg-container { width: 120px; height: 120px; }
@@ -129,9 +157,97 @@
         .glass-card::-webkit-scrollbar-thumb:hover {
             background: rgba(9, 146, 194, 0.7);
         }
+        
+        /* Light mode scrollbar */
+        body.light .glass-card::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Text colors */
+        .text-white {
+            color: white;
+            transition: color 0.3s ease;
+        }
+        
+        body.light .text-white {
+            color: #0f172a;
+        }
+        
+        .text-zinc-400 {
+            color: rgb(161 161 170);
+            transition: color 0.3s ease;
+        }
+        
+        body.light .text-zinc-400 {
+            color: rgb(100 116 139);
+        }
+        
+        .text-zinc-500 {
+            color: rgb(113 113 122);
+            transition: color 0.3s ease;
+        }
+        
+        body.light .text-zinc-500 {
+            color: rgb(71 85 105);
+        }
+        
+        /* Background colors */
+        .bg-white\/5 {
+            background-color: rgba(255, 255, 255, 0.05);
+            transition: background-color 0.3s ease;
+        }
+        
+        body.light .bg-white\/5 {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .bg-white\/10 {
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: background-color 0.3s ease;
+        }
+        
+        body.light .bg-white\/10 {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Border colors */
+        .border-white\/10 {
+            border-color: rgba(255, 255, 255, 0.1);
+            transition: border-color 0.3s ease;
+        }
+        
+        body.light .border-white\/10 {
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Button text colors for light mode */
+        .whatsapp-btn-text {
+            color: white;
+            transition: color 0.3s ease;
+        }
+        
+        body.light .whatsapp-btn-text {
+            color: white; /* Keep white for contrast against green background */
+        }
+        
+        .transfer-btn-text {
+            color: black;
+            transition: color 0.3s ease;
+        }
+        
+        body.light .transfer-btn-text {
+            color: white; /* Change to white for better contrast in light mode */
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-6 text-white">
+
+    <!-- Theme Toggle Button -->
+    <div class="fixed top-6 right-6 md:top-8 md:right-8 z-50">
+        <button id="theme-toggle" class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all" title="Toggle Light/Dark Mode">
+            <i class="fas fa-sun" id="theme-icon"></i>
+        </button>
+    </div>
 
     <!-- Success Overlay -->
     <div id="success-overlay">
@@ -226,16 +342,16 @@
             </div>
 
             <div class="space-y-3">
-                <button onclick="sendToWhatsApp('transfer')" class="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white font-black py-5 rounded-2xl text-sm uppercase tracking-wider shadow-lg hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden group">
+                <button onclick="sendToWhatsApp('transfer')" class="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 font-black py-5 rounded-2xl text-sm uppercase tracking-wider shadow-lg hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden group">
                     <div class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                    <div class="relative flex items-center justify-center gap-3">
+                    <div class="relative flex items-center justify-center gap-3 whatsapp-btn-text">
                         <i class="fa-brands fa-whatsapp text-2xl"></i>
                         <span class="font-hero italic">Kirim ke WhatsApp</span>
                     </div>
                 </button>
-                <button onclick="confirmPayment('transfer')" class="w-full bg-gradient-to-r from-[#0992C2] to-[#0992C2] hover:from-[#0992C2] hover:to-[#0992C2] text-black font-black py-5 rounded-2xl text-sm uppercase tracking-wider shadow-lg hover:shadow-[#0992C2]/50 transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden group">
+                <button onclick="confirmPayment('transfer')" class="w-full bg-gradient-to-r from-[#0992C2] to-[#0992C2] hover:from-[#0992C2] hover:to-[#0992C2] font-black py-5 rounded-2xl text-sm uppercase tracking-wider shadow-lg hover:shadow-[#0992C2]/50 transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden group">
                     <div class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                    <div class="relative flex items-center justify-center gap-3">
+                    <div class="relative flex items-center justify-center gap-3 transfer-btn-text">
                         <i class="fa-solid fa-check-circle text-2xl"></i>
                         <span class="font-hero italic">Sudah Transfer</span>
                     </div>
@@ -316,6 +432,41 @@
     </div>
 
     <script type="text/javascript">
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const body = document.body;
+        
+        // Check for saved theme preference or default to 'dark'
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        
+        // Apply saved theme on page load
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                body.classList.remove('dark');
+                body.classList.add('light');
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            } else {
+                body.classList.remove('light');
+                body.classList.add('dark');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+        }
+        
+        // Apply theme on page load
+        applyTheme(currentTheme);
+        
+        // Theme toggle click handler
+        themeToggle.addEventListener('click', () => {
+            const isLight = body.classList.contains('light');
+            const newTheme = isLight ? 'dark' : 'light';
+            
+            applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+        
         // Open modal
         function openModal(modalId) {
             // Jika membuka modal transfer, langsung simpan metode pembayaran
