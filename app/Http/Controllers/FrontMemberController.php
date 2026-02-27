@@ -16,13 +16,13 @@ class FrontMemberController extends Controller
     // 1. HALAMAN UTAMA (LANDING PAGE)
     public function index(Request $request)
     {
-        // A. Ambil Daftar Paket Aktif (dengan cache 10 menit)
-        $pakets = cache()->remember('pakets_aktif', 600, function () {
+        // A. Ambil Daftar Paket Aktif (dengan cache 30 detik)
+        $pakets = cache()->remember('pakets_aktif', 30, function () {
             return Paket::where('is_active', true)->orderBy('harga', 'asc')->get();
         });
 
         // B. Ambil Registration Fee terendah yang tidak null/0 dari paket aktif
-        $registrationFee = cache()->remember('registration_fee_display', 600, function () {
+        $registrationFee = cache()->remember('registration_fee_display', 30, function () {
             $paket = Paket::where('is_active', true)
                 ->whereNotNull('registration_fee')
                 ->where('registration_fee', '>', 0)
