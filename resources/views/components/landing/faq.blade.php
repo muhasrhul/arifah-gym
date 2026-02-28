@@ -14,7 +14,7 @@
                         </details>
                         <details class="group glass-card dark rounded-xl md:rounded-2xl p-4 md:p-6 cursor-pointer">
                             <summary class="flex justify-between items-center font-bold text-xs md:text-sm uppercase tracking-wider italic text-[#0992C2]">Apa yang wajib dibawa?<span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-xs md:text-sm"></i></span></summary>
-                            <p class="mt-3 md:mt-4 card-features text-xs md:text-sm leading-relaxed italic">Wajib membawa handuk pribadi, menggunakan pakaian olahraga, dan sepatu yang bersih demi kenyamanan bersama.</p>
+                            <p class="mt-3 md:mt-4 card-features text-xs md:text-sm leading-relaxed italic">Wajib membawa handuk pribadi, pakaian olahraga yang menyerap keringat (senyamannya) & memakai sepatu agar lebih safety.</p>
                         </details>
                     </div>
                 </div>
