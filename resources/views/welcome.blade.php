@@ -92,7 +92,53 @@
             border: 2px solid rgba(9, 146, 194, 0.7) !important;
         }
         
-        /* Button Hover Effects */
+        /* Modern Button Effects */
+        .modern-btn-primary {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .modern-btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .modern-btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .modern-btn-secondary {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .modern-btn-secondary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .modern-btn-secondary:hover::before {
+            left: 100%;
+        }
+        
+        /* Custom Shadow Classes */
+        .shadow-3xl {
+            box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* Button Hover Effects - Legacy */
         .btn-hover { transition: all 0.3s ease; }
         .btn-hover:hover { transform: scale(1.05); box-shadow: 0 10px 20px -10px rgba(9, 146, 194, 1); }
         
@@ -310,11 +356,11 @@
             color: #0992C2;
         }
         
-        /* Navbar light mode */
-        body.light nav {
+        /* Navbar light mode - DISABLED untuk floating navbar */
+        /* body.light nav {
             background: rgba(255, 255, 255, 0.95) !important;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
+        } */
         
         body.light #mobile-menu {
             background: rgba(255, 255, 255, 0.98) !important;
