@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@400;900&display=swap');
         
         body { 
             font-family: 'Inter', sans-serif; 
@@ -16,6 +16,13 @@
             min-height: 100vh;
             position: relative;
             overflow: hidden;
+        }
+        
+        .font-hero { 
+            font-family: 'Poppins'; 
+            font-weight: 900; 
+            font-style: italic; 
+            text-transform: uppercase; 
         }
         
         /* Animated Background */
@@ -166,12 +173,12 @@
             <div class="glass-card rounded-3xl p-8 text-center fade-in">
                 <!-- Logo -->
                 <div class="mb-10 stagger-1 fade-in">
-                    <h1 class="text-6xl font-black mb-3 logo-glow">
-                        <span class="text-[#0992C2]">ARIFAH</span> 
-                        <span class="text-white">GYM</span>
-                    </h1>
-                    <div class="w-20 h-1 bg-gradient-to-r from-[#0992C2] to-green-400 mx-auto rounded-full mb-3"></div>
-                    <p class="text-gray-300 text-sm font-medium uppercase tracking-[0.3em]">Kasir System</p>
+                    <h1 class="text-5xl font-hero tracking-tighter italic mb-2">ARIFAH <span class="text-[#0992C2]">GYM</span></h1>
+                    <div class="flex items-center justify-center gap-3">
+                        <div class="h-[1px] w-10 bg-white/20"></div>
+                        <p class="text-gray-300 text-[10px] uppercase tracking-[0.5em] font-black italic">KASIR SYSTEM</p>
+                        <div class="h-[1px] w-10 bg-white/20"></div>
+                    </div>
                 </div>
 
                 <!-- Menu Buttons -->
