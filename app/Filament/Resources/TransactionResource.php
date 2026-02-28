@@ -9,7 +9,11 @@ use Filament\Resources\Form;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Carbon\Carbon;
 
 class TransactionResource extends Resource
 {
@@ -49,7 +53,10 @@ class TransactionResource extends Resource
             ->whereHas('member', function (Builder $query) {
                 $query->where('name', '!=', 'Tamu Harian')
                       ->where('name', '!=', 'Tamu Latihan Harian');
-            });
+            })
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
     }
 
     public static function form(Form $form): Form
@@ -117,7 +124,8 @@ class TransactionResource extends Resource
                     ->label('Sumber')
                     ->getStateUsing(fn () => 'Member Reguler')
                     ->color('primary')
-                    ->icon('heroicon-o-user-group'),
+                    ->icon('heroicon-o-user-group')
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 // KOLOM KEDUA: Nama customer
                 Tables\Columns\TextColumn::make('customer_name')
@@ -129,17 +137,20 @@ class TransactionResource extends Resource
                             ->orWhereHas('member', function (Builder $query) use ($search) {
                                 $query->where('name', 'like', "%{$search}%");
                             });
-                    }),
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false),
                 
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Nominal')
                     ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->color('success')
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\BadgeColumn::make('type')
                     ->label('Kategori')
-                    ->color('primary'),
+                    ->color('primary')
+                    ->toggleable(isToggledHiddenByDefault: false),
                 
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Status')
@@ -155,16 +166,62 @@ class TransactionResource extends Resource
                         'heroicon-o-x-circle' => 'failed',
                         'heroicon-o-arrow-left' => 'refund',
                     ])
-                    ->formatStateUsing(fn (string $state): string => strtoupper($state)),
+                    ->formatStateUsing(fn (string $state): string => strtoupper($state))
+                    ->toggleable(isToggledHiddenByDefault: false),
                 
-                Tables\Columns\TextColumn::make('payment_method')->label('Metode'),
+                Tables\Columns\TextColumn::make('payment_method')
+                    ->label('Metode')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 
                 Tables\Columns\TextColumn::make('payment_date')
                     ->label('Waktu')
                     ->dateTime('d M Y, H:i')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                    
+                Tables\Columns\TextColumn::make('order_id')
+                    ->label('Order ID')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('payment_date', 'desc')
+            ->filters([
+                // Filter 1: Tipe Paket (berdasarkan member)
+                Tables\Filters\SelectFilter::make('type')
+                    ->label('Tipe Paket')
+                    ->options(function () {
+                        return \App\Models\Paket::where('is_active', true)
+                            ->pluck('nama_paket', 'nama_paket')
+                            ->toArray();
+                    })
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['value'],
+                            fn (Builder $query, $value): Builder => $query->whereHas('member', function (Builder $query) use ($value) {
+                                $query->where('type', $value);
+                            })
+                        );
+                    })
+                    ->placeholder('Semua Paket'),
+
+                // Filter 2: Transaksi Bulan Ini
+                Tables\Filters\Filter::make('payment_this_month')
+                    ->label('Transaksi Bulan Ini')
+                    ->query(fn ($query) => $query->whereMonth('payment_date', \Carbon\Carbon::now()->month)
+                        ->whereYear('payment_date', \Carbon\Carbon::now()->year))
+                    ->toggle(),
+
+                // Filter 3: Data yang dihapus (seperti di MemberResource)
+                TrashedFilter::make(),
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\RestoreAction::make(),
+                // ForceDeleteAction tidak digunakan untuk keamanan data
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make(),
+            ])
             ->headerActions([
                 Tables\Actions\Action::make('export_excel')
                     ->label('Export Excel')
@@ -179,7 +236,7 @@ class TransactionResource extends Resource
                     ->icon('heroicon-o-printer')
                     ->url(fn () => route('cetak-laporan', ['format' => 'pdf']))
                     ->openUrlInNewTab(),
-            ]);
+            ]);;
     }
 
     public static function getPages(): array

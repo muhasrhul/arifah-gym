@@ -34,8 +34,17 @@ class IncomeChart extends LineChartWidget
             $dataTanggal = [];
 
             // Ambil data sekaligus dengan query yang lebih efisien
+            $revenueStartDate = env('REVENUE_START_DATE', '2026-03-05'); // Default: 5 Maret 2026
+            $startDate = Carbon::now()->subDays(6)->startOfDay();
+            
+            // Pastikan tidak mengambil data sebelum revenue start date
+            if ($startDate->format('Y-m-d') < $revenueStartDate) {
+                $startDate = Carbon::parse($revenueStartDate)->startOfDay();
+            }
+            
             $transactions = Transaction::selectRaw('DATE(payment_date) as date, SUM(amount) as total')
-                ->where('payment_date', '>=', Carbon::now()->subDays(6)->startOfDay())
+                ->where('payment_date', '>=', $startDate)
+                ->where('payment_date', '>=', $revenueStartDate) // Filter tambahan untuk revenue start date
                 ->groupBy('date')
                 ->pluck('total', 'date');
 
