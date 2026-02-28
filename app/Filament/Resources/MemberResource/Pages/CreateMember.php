@@ -151,10 +151,10 @@ class CreateMember extends CreateRecord
                 // Ambil ulang data member dari database
                 $memberFresh = \App\Models\Member::find($member->id);
                 
-                // Kirim notifikasi Telegram & WhatsApp
+                // Kirim notifikasi Telegram & WhatsApp - DISABLED UNTUK INPUT MANUAL
                 if ($memberFresh) {
-                    \App\Helpers\TelegramHelper::sendAktivasiMember($memberFresh, $transaction);
-                    \App\Helpers\WhatsAppHelper::sendAktivasiMember($memberFresh, $transaction);
+                    // \App\Helpers\TelegramHelper::sendAktivasiMember($memberFresh, $transaction);
+                    // \App\Helpers\WhatsAppHelper::sendAktivasiMember($memberFresh, $transaction);
                 }
             }
             

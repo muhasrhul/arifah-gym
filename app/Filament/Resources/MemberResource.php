@@ -105,9 +105,10 @@ class MemberResource extends Resource
 
                     Forms\Components\TextInput::make('fingerprint_id')
                         ->label('Fingerprint ID')
-                        ->numeric()
+                        ->maxLength(50)
                         ->unique(ignorable: fn ($record) => $record)
-                        ->placeholder('Masukkan ID fingerprint'),
+                        ->placeholder('Contoh: 010 (454545)')
+                        ->helperText('Format bebas: angka, huruf, tanda kurung, spasi diperbolehkan'),
                     
                     Forms\Components\Section::make('Informasi Membership')->schema([
                         Forms\Components\Select::make('type')
