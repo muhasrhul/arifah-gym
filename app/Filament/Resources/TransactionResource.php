@@ -89,14 +89,26 @@ class TransactionResource extends Resource
 
                 Forms\Components\Select::make('type')
                     ->label('Kategori')
-                    ->options([
-                        'Pendaftaran' => 'Pendaftaran',
-                        'Bulanan' => 'Iuran Bulanan',
-                        'Harian' => 'Harian (Insidentil)',
-                        'Minuman/Kantin' => 'Minuman/Kantin',
-                    ])
-                    ->default('Harian')
-                    ->required(),
+                    ->options(function () {
+                        $options = [];
+                        
+                        // Ambil semua paket aktif untuk membuat opsi pendaftaran dan perpanjangan
+                        $pakets = \App\Models\Paket::where('is_active', true)->get();
+                        
+                        foreach ($pakets as $paket) {
+                            $options["Pendaftaran Baru: {$paket->nama_paket}"] = "Pendaftaran Baru: {$paket->nama_paket}";
+                            $options["Perpanjang Member: {$paket->nama_paket}"] = "Perpanjang Member: {$paket->nama_paket}";
+                        }
+                        
+                        // Tambahkan kategori lainnya
+                        $options['Harian (Insidentil)'] = 'Harian (Insidentil)';
+                        $options['Minuman/Kantin'] = 'Minuman/Kantin';
+                        
+                        return $options;
+                    })
+                    ->default('Harian (Insidentil)')
+                    ->required()
+                    ->searchable(),
 
                 Forms\Components\Select::make('payment_method')
                     ->label('Metode Bayar')
