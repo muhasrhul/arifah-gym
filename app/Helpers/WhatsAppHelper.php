@@ -156,9 +156,17 @@ class WhatsAppHelper
 
     /**
      * Template: Reminder H-7 membership akan expired
+     * STATUS: DISABLED - Untuk input data manual
      */
     public static function sendReminderH7($member)
     {
+        // DISABLED: Pesan reminder ke member dimatikan sementara untuk input data manual
+        return [
+            'success' => true,
+            'message' => 'Reminder H-7 disabled for manual data entry'
+        ];
+        
+        /* ORIGINAL CODE - DISABLED
         $message = "🔔 *REMINDER MEMBERSHIP - ARIFAH GYM*\n\n";
         $message .= "Halo *{$member->name}*\n\n";
         $message .= "Membership Anda akan berakhir dalam *7 hari* lagi.\n\n";
@@ -169,13 +177,22 @@ class WhatsAppHelper
         $message .= "Terima kasih!";
 
         return self::sendMessage($member->phone, $message);
+        */
     }
 
     /**
      * Template: Reminder H-3 membership akan expired
+     * STATUS: DISABLED - Untuk input data manual
      */
     public static function sendReminderH3($member)
     {
+        // DISABLED: Pesan reminder ke member dimatikan sementara untuk input data manual
+        return [
+            'success' => true,
+            'message' => 'Reminder H-3 disabled for manual data entry'
+        ];
+        
+        /* ORIGINAL CODE - DISABLED
         $message = "⚠️ *REMINDER PENTING - ARIFAH GYM*\n\n";
         $message .= "Halo *{$member->name}*\n\n";
         $message .= "Membership Anda tinggal *3 hari* lagi!\n\n";
@@ -186,13 +203,22 @@ class WhatsAppHelper
         $message .= "Terima kasih!";
 
         return self::sendMessage($member->phone, $message);
+        */
     }
 
     /**
      * Template: Reminder H-1 membership akan expired
+     * STATUS: DISABLED - Untuk input data manual
      */
     public static function sendReminderH1($member)
     {
+        // DISABLED: Pesan reminder ke member dimatikan sementara untuk input data manual
+        return [
+            'success' => true,
+            'message' => 'Reminder H-1 disabled for manual data entry'
+        ];
+        
+        /* ORIGINAL CODE - DISABLED
         $message = "🚨 *REMINDER - ARIFAH GYM*\n\n";
         $message .= "Halo *{$member->name}*\n\n";
         $message .= "Membership Anda akan berakhir *BESOK*!\n\n";
@@ -203,6 +229,7 @@ class WhatsAppHelper
         $message .= "Terima kasih!";
 
         return self::sendMessage($member->phone, $message);
+        */
     }
 
     /**
