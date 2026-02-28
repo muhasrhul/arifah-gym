@@ -67,7 +67,7 @@
                                     <span class="text-[#0992C2] text-xs md:text-sm font-bold uppercase tracking-wider">Featured</span>
                                 </div>
                                 <h3 class="text-white text-lg md:text-2xl font-black italic uppercase tracking-tighter leading-none">
-                                    STRONG COMMUNITY
+                                    COMMUNITY
                                 </h3>
                             </div>
                         </div>
