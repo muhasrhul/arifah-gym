@@ -59,15 +59,15 @@
                              class="w-full h-64 md:h-80 object-cover transition-transform duration-700 group-hover:scale-110">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         
-                        <!-- Hero Badge -->
-                        <div class="absolute top-4 left-4 md:top-6 md:left-6">
+                        <!-- Hero Badge - Bottom Left -->
+                        <div class="absolute bottom-4 left-4 md:bottom-6 md:left-6">
                             <div class="flex flex-col items-start space-y-1">
                                 <div class="flex items-center space-x-2">
                                     <div class="w-2 h-2 bg-[#0992C2] rounded-full animate-pulse"></div>
                                     <span class="text-[#0992C2] text-xs md:text-sm font-bold uppercase tracking-wider">Featured</span>
                                 </div>
                                 <h3 class="text-white text-lg md:text-2xl font-black italic uppercase tracking-tighter leading-none">
-                                    ARIFAH GYM
+                                    STRONG COMMUNITY
                                 </h3>
                             </div>
                         </div>
