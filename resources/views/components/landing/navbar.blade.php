@@ -15,7 +15,7 @@
                 ARIFAH <span class="navbar-text">GYM</span>
             </h1>
 
-            <div class="hidden md:flex items-center space-x-6 font-bold text-[10px] uppercase tracking-[0.15em]">
+            <div class="hidden md:flex items-center space-x-6 font-bold text-[11px] uppercase tracking-[0.15em]">
                 <a href="#home" class="navbar-link hover:text-[#0992C2] transition-colors">Beranda</a>
                 <a href="#tentang" class="navbar-link hover:text-[#0992C2] transition-colors">Tentang</a>
                 <a href="#harga" class="navbar-link hover:text-[#0992C2] transition-colors">Membership</a>
