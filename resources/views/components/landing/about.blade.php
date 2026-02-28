@@ -39,6 +39,7 @@
                         <div class="text-2xl md:text-4xl font-black text-[#0992C2] mb-2">2+</div>
                         <div class="text-xs md:text-sm section-subtitle uppercase tracking-wider font-bold">
                             <span class="block sm:inline">Tahun</span>
+                            <span class="block sm:inline">Pengalaman</span>
                         </div>
                     </div>
                     <div class="text-center" data-aos="fade-up" data-aos-delay="300">
