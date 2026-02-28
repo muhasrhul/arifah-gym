@@ -263,11 +263,9 @@ class EditMember extends EditRecord
             // Toggle aktif, cek apakah user mengubah expiry_date manual
             if ($record->expiry_date) {
                 $expiryDiubah = isset($data['expiry_date']) && $data['expiry_date'] != $record->expiry_date;
-                $joinDiubah = isset($data['join_date']) && $data['join_date'] != $record->join_date;
                 
                 \Log::info('Toggle aktif, proteksi expiry_date:', [
                     'expiry_diubah' => $expiryDiubah ? 'YA' : 'TIDAK',
-                    'join_diubah' => $joinDiubah ? 'YA' : 'TIDAK',
                 ]);
                 
                 // Jika tidak diubah manual, kembalikan ke nilai lama
@@ -275,9 +273,15 @@ class EditMember extends EditRecord
                     $data['expiry_date'] = $record->expiry_date;
                     \Log::info('PROTEKSI: expiry_date dikembalikan ke nilai lama: ' . $record->expiry_date);
                 }
-                if (!$joinDiubah) {
-                    $data['join_date'] = $record->join_date;
-                }
+            }
+            
+            // PROTEKSI KHUSUS: join_date hanya berubah jika admin sengaja mengubahnya
+            // Jika admin tidak mengubah join_date, gunakan nilai lama
+            if ($record->join_date && (!isset($data['join_date']) || $data['join_date'] == $record->join_date)) {
+                $data['join_date'] = $record->join_date;
+                \Log::info('PROTEKSI: join_date dipertahankan: ' . $record->join_date);
+            } else if (isset($data['join_date']) && $data['join_date'] != $record->join_date) {
+                \Log::info('Admin mengubah join_date dari ' . $record->join_date . ' ke ' . $data['join_date']);
             }
         }
 

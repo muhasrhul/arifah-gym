@@ -167,7 +167,7 @@ class MemberResource extends Resource
                             Forms\Components\DatePicker::make('join_date')
                                 ->label('Tanggal Mulai')
                                 ->placeholder('Pilih tanggal mulai membership')
-                                ->helperText('Input manual tanggal mulai membership (untuk data lama atau baru)')
+                                ->helperText('Tanggal pertama kali member bergabung (tidak berubah saat perpanjangan)')
                                 ->required()
                                 ->reactive()
                                 ->rule('required', 'Tanggal mulai membership wajib diisi'),
