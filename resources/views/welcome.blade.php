@@ -1244,7 +1244,7 @@
                 setTimeout(() => {
                     waTooltip.classList.remove('tooltip-show');
                 }, 3000); // Tampil selama 3 detik
-            }, 15000); // Setiap 15 detik
+            }, 30000); // Setiap 30 detik
             
             // Tampilkan pertama kali setelah 5 detik
             setTimeout(() => {
