@@ -32,7 +32,7 @@
                 <!-- Stats -->
                 <div class="grid grid-cols-3 gap-6 mt-12">
                     <div class="text-center" data-aos="fade-up" data-aos-delay="100">
-                        <div class="text-2xl md:text-4xl font-black text-[#0992C2] mb-2">900+</div>
+                        <div class="text-2xl md:text-4xl font-black text-[#0992C2] mb-2">2000+</div>
                         <div class="text-xs md:text-sm section-subtitle uppercase tracking-wider font-bold">Member Aktif</div>
                     </div>
                     <div class="text-center" data-aos="fade-up" data-aos-delay="200">

@@ -6,7 +6,7 @@
                     <p class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest opacity-80 italic text-center">Open Daily (Sen-Minggu)</p>
                 </div>
                 <div class="bg-[#0992C2] p-6 md:p-8 flex flex-col items-center justify-center text-white border-b md:border-b-0 md:border-r border-white/10">
-                    <span class="text-3xl md:text-4xl font-black mb-1">900+</span>
+                    <span class="text-3xl md:text-4xl font-black mb-1">2000+</span>
                     <p class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest opacity-80 italic text-center">Active Members</p>
                 </div>
                 <div class="bg-[#0992C2] p-6 md:p-8 flex flex-col items-center justify-center text-white">
