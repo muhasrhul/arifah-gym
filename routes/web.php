@@ -25,7 +25,12 @@ Route::get('/login', function () {
 // 1. HALAMAN UTAMA & SEARCH
 Route::get('/', [FrontMemberController::class, 'index'])->name('home');
 
-// 1.1 FORGOT PASSWORD & RESET PASSWORD (KHUSUS ADMIN/OWNER) - OTP VIA WHATSAPP
+// 1.1 HALAMAN KASIR - Landing page untuk pilih menu absen atau registrasi
+Route::get('/kasir', function () {
+    return view('kasir');
+})->name('kasir');
+
+// 1.2 FORGOT PASSWORD & RESET PASSWORD (KHUSUS ADMIN/OWNER) - OTP VIA WHATSAPP
 Route::get('/forgot-password', [ForgotPasswordController::class, 'showOtpRequestForm'])->name('password.request.otp');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendOtp'])->name('password.send.otp');
 Route::get('/verify-otp', [ForgotPasswordController::class, 'showVerifyOtpForm'])->name('password.verify.otp.form');
