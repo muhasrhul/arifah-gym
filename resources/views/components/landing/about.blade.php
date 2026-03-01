@@ -82,8 +82,8 @@
                     </div>
                     
                     <div class="relative group overflow-hidden rounded-2xl">
-                        <img src="https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&w=400&q=80" 
-                             alt="Training Session" 
+                        <img src="/images/arifah-gym-interior2.jpg" 
+                             alt="ARIFAH Gym Interior - Modern Fitness Equipment" 
                              class="w-full h-32 md:h-40 object-cover transition-transform duration-700 group-hover:scale-110">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     </div>

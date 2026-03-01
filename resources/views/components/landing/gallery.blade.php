@@ -186,7 +186,7 @@
             
             <div class="col-span-2 md:col-span-2 row-span-2 relative overflow-hidden rounded-2xl md:rounded-[2.5rem] group border border-white/10 bg-zinc-900 shadow-2xl" data-aos="zoom-in">
                 <img 
-                    src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200" 
+                    src="/images/galery1.jpg" 
                     class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" 
                     alt="ARIFAH Gym">
                 
@@ -202,35 +202,35 @@
             </div>
 
             <div class="col-span-2 md:col-span-2 row-span-1 relative overflow-hidden rounded-2xl md:rounded-[2.5rem] group border border-white/5" data-aos="zoom-in" data-aos-delay="100">
-                <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Dumbbell Area">
+                <img src="/images/galery2.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Dumbbell Area">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4 md:p-6">
                     <p class="text-[#0992C2] font-black italic uppercase tracking-widest text-[10px] md:text-xs">Free Weight Zone</p>
                 </div>
             </div>
 
             <div class="col-span-1 row-span-1 relative overflow-hidden rounded-xl md:rounded-[2.5rem] group border border-white/5" data-aos="zoom-in" data-aos-delay="200">
-                <img src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=500" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Cardio">
+                <img src="/images/galery3.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Cardio">
                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <i class="fa-solid fa-heart-pulse text-[#0992C2] text-xl md:text-2xl"></i>
                 </div>
             </div>
 
             <div class="col-span-1 row-span-1 relative overflow-hidden rounded-xl md:rounded-[2.5rem] group border border-white/5" data-aos="zoom-in" data-aos-delay="300">
-                <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=500" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Equipment">
+                <img src="/images/galery4.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Equipment">
                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <i class="fa-solid fa-dumbbell text-[#0992C2] text-xl md:text-2xl"></i>
                 </div>
             </div>
 
             <div class="col-span-2 row-span-1 relative overflow-hidden rounded-2xl md:rounded-[2.5rem] group border border-white/5" data-aos="zoom-in" data-aos-delay="400">
-                <img src="https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=800" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Locker Room">
+                <img src="/images/galery5.jpg" class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110" alt="Premium Facilities">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4 md:p-6">
                     <p class="text-[#0992C2] font-black italic uppercase tracking-widest text-[10px] md:text-xs">Premium Facilities</p>
                 </div>
             </div>
 
             <div class="col-span-2 row-span-1 relative overflow-hidden rounded-2xl md:rounded-[2.5rem] group border border-white/5" data-aos="zoom-in" data-aos-delay="500">
-                <img src="https://images.unsplash.com/photo-1521804906057-1df8fdb718b7?q=80&w=800" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Community">
+                <img src="/images/galery6.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Community">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4 md:p-6">
                     <p class="text-[#0992C2] font-black italic uppercase tracking-widest text-[10px] md:text-xs">Strong Community</p>
                 </div>

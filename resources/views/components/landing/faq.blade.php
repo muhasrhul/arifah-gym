@@ -22,16 +22,16 @@
                     <h3 class="text-3xl md:text-4xl font-black mb-6 md:mb-8 italic uppercase tracking-tighter text-right md:text-left section-title">Our <span class="text-[#0992C2] text-glow">Atmosphere</span></h3>
                     <div class="grid grid-cols-2 gap-3 md:gap-4">
                         <div class="h-28 md:h-40 bg-gray-800 rounded-xl md:rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
-                            <img src="https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=500" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                            <img src="/images/galery7.jpg" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
                         </div>
                         <div class="h-28 md:h-40 bg-gray-800 rounded-xl md:rounded-3xl overflow-hidden border border-white/5 shadow-2xl mt-3 md:mt-8">
-                            <img src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=500" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                            <img src="/images/galery8.jpg" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
                         </div>
                         <div class="h-28 md:h-40 bg-gray-800 rounded-xl md:rounded-3xl overflow-hidden border border-white/5 shadow-2xl -mt-3 md:-mt-4">
-                            <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=500" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                            <img src="/images/galery9.jpg" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
                         </div>
                         <div class="h-28 md:h-40 bg-gray-800 rounded-xl md:rounded-3xl overflow-hidden border border-white/5 shadow-2xl mt-3 md:mt-4">
-                            <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=500" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                            <img src="/images/galery10.jpg" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
                         </div>
                     </div>
                 </div>
