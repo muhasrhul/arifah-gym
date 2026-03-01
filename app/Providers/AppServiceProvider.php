@@ -69,7 +69,7 @@ class AppServiceProvider extends ServiceProvider
                     /* Latar Belakang Modern dengan Gradient + Gambar Gym */
                     .filament-login-page {
                         background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), 
-                                    url("/images/bg-login.jpg") no-repeat center center fixed !important;
+                                    url("/images/bg-login.jpg?v=2") no-repeat center center fixed !important;
                         background-size: cover !important;
                         font-family: "Inter", sans-serif !important;
                         display: flex;
@@ -88,7 +88,7 @@ class AppServiceProvider extends ServiceProvider
                     /* Force dark class pada body saat di login page */
                     body:has(.filament-login-page) {
                         background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), 
-                                    url("/images/bg-login.jpg") no-repeat center center fixed !important;
+                                    url("/images/bg-login.jpg?v=2") no-repeat center center fixed !important;
                         background-size: cover !important;
                     }
 
