@@ -382,10 +382,10 @@ class EditMember extends EditRecord
                         // Ambil data fresh dari database
                         $memberFresh = \App\Models\Member::find($record->id);
                         
-                        // Kirim notifikasi aktivasi - DISABLED UNTUK INPUT MANUAL
+                        // Kirim notifikasi aktivasi - ENABLED UNTUK AKTIVASI MEMBER
                         if ($memberFresh) {
-                            // \App\Helpers\TelegramHelper::sendAktivasiMember($memberFresh, $transaction);
-                            // \App\Helpers\WhatsAppHelper::sendAktivasiMember($memberFresh, $transaction);
+                            \App\Helpers\TelegramHelper::sendAktivasiMember($memberFresh, $transaction);
+                            \App\Helpers\WhatsAppHelper::sendAktivasiMember($memberFresh, $transaction);
                         }
                     })->afterResponse();
                 }
