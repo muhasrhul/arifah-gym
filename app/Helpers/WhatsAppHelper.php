@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class WhatsAppHelper
 {
@@ -572,6 +573,50 @@ class WhatsAppHelper
         $message .= "Member tidak kehilangan sisa waktu membership.\n\n";
         $message .= "ARIFAH Gym System";
 
+        return self::sendMessage($ownerPhone, $message);
+    }
+
+    /**
+     * Kirim notifikasi absen member ke owner
+     */
+    public static function sendAbsenNotification($member, $totalLatihan, $badge)
+    {
+        // Nomor owner (ambil dari env atau hardcode)
+        $ownerPhone = env('OWNER_WHATSAPP', '6281234567890'); // Ganti dengan nomor owner
+        
+        $now = Carbon::now('Asia/Makassar');
+        $jamAbsen = $now->format('H:i');
+        $tanggalAbsen = $now->translatedFormat('d F Y');
+        
+        // Format pesan
+        $message = "🏋️ *ABSEN MEMBER*\n\n";
+        $message .= "👤 *Nama:* {$member->name}\n";
+        $message .= "📱 *WhatsApp:* {$member->phone}\n";
+        $message .= "🎫 *Tipe:* {$member->type}\n";
+        $message .= "⏰ *Jam Absen:* {$jamAbsen} WITA\n";
+        $message .= "📅 *Tanggal:* {$tanggalAbsen}\n\n";
+        
+        $message .= "📊 *Statistik Bulan Ini:*\n";
+        $message .= "├ Total Latihan: {$totalLatihan}x\n";
+        $message .= "└ Badge: {$badge}\n\n";
+        
+        // Tambahkan info expired jika ada
+        if ($member->expiry_date) {
+            $expiredDate = Carbon::parse($member->expiry_date);
+            $sisaHari = $expiredDate->diffInDays($now);
+            
+            if ($expiredDate->isFuture()) {
+                $message .= "⏳ *Masa Aktif:* {$sisaHari} hari lagi\n";
+                $message .= "📆 *Expired:* " . $expiredDate->translatedFormat('d F Y') . "\n\n";
+            } else {
+                $message .= "⚠️ *Status:* EXPIRED\n\n";
+            }
+        }
+        
+        $message .= "---\n";
+        $message .= "🏢 *ARIFAH GYM MAKASSAR*\n";
+        $message .= "📱 Sistem Absensi Otomatis";
+        
         return self::sendMessage($ownerPhone, $message);
     }
 }

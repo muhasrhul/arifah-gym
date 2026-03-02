@@ -123,6 +123,14 @@ Route::post('/absen', function (Request $request) {
             
     }
 
+    // 6. Kirim Notifikasi WhatsApp ke Owner
+    try {
+        \App\Helpers\WhatsAppHelper::sendAbsenNotification($member, $totalLatihan, $badge);
+    } catch (\Exception $e) {
+        // Log error tapi jangan stop proses absen
+        \Log::error('WhatsApp notification failed: ' . $e->getMessage());
+    }
+
     // 6. Kembalikan Respon Sukses + Data Statistik ke View
     return back()->with([
         'success'      => true,
