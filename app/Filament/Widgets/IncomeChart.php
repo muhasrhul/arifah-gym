@@ -38,7 +38,6 @@ class IncomeChart extends LineChartWidget
             
             $transactions = Transaction::selectRaw('DATE(payment_date) as date, SUM(amount) as total')
                 ->where('payment_date', '>=', $startDate)
-                ->where('payment_date', '>=', $revenueStartDate) // Filter tambahan untuk revenue start date
                 ->groupBy('date')
                 ->pluck('total', 'date');
 
