@@ -128,9 +128,9 @@
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 24px;
+            border-radius: 20px;
             padding: 0;
-            max-width: 480px;
+            max-width: min(380px, 90vw);
             width: 90%;
             box-shadow: 
                 0 25px 50px -12px rgba(0, 0, 0, 0.25),
@@ -162,7 +162,7 @@
         .modal-header {
             background: linear-gradient(135deg, #059669 0%, #047857 100%);
             color: white;
-            padding: 30px;
+            padding: 16px 20px;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -182,62 +182,62 @@
             50% { transform: rotate(180deg); }
         }
         .modal-title {
-            font-size: 1.8rem;
+            font-size: 1.2rem;
             font-weight: 900;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
             position: relative;
             z-index: 1;
         }
         .modal-subtitle {
-            font-size: 0.9rem;
+            font-size: 0.7rem;
             opacity: 0.9;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1.2px;
             font-weight: 600;
             position: relative;
             z-index: 1;
         }
         .modal-body {
-            padding: 30px;
+            padding: 16px 20px;
         }
         .quantity-section {
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
             border: 1px solid rgba(148, 163, 184, 0.1);
         }
         .qty-btn {
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             border: 2px solid #e2e8f0;
-            border-radius: 16px;
+            border-radius: 12px;
             background: linear-gradient(145deg, #ffffff, #f8fafc);
             cursor: pointer;
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             font-weight: 900;
             color: #059669;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
         }
         .qty-btn:hover {
             border-color: #059669;
             background: linear-gradient(145deg, #f0fdf4, #dcfce7);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px -3px rgba(5, 150, 105, 0.2);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px -2px rgba(5, 150, 105, 0.2);
         }
         .qty-btn:active {
             transform: translateY(0);
         }
         #quantityInput {
-            width: 100px;
-            height: 50px;
+            width: 80px;
+            height: 40px;
             text-align: center;
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             font-weight: 900;
             border: 2px solid #e2e8f0;
-            border-radius: 16px;
+            border-radius: 12px;
             background: linear-gradient(145deg, #ffffff, #f8fafc);
             color: #059669;
             transition: all 0.3s ease;
@@ -245,45 +245,45 @@
         #quantityInput:focus {
             outline: none;
             border-color: #059669;
-            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+            box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.1);
         }
         .total-section {
             background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
             border: 1px solid rgba(5, 150, 105, 0.1);
         }
         .total-label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #059669;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
         .total-amount {
-            font-size: 2.8rem;
+            font-size: 1.8rem;
             font-weight: 900;
             color: #047857;
             font-style: italic;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         #unitPrice {
-            font-size: 1.3rem;
+            font-size: 1rem;
             font-weight: 700;
             color: #6b7280;
         }
         .payment-methods {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 12px;
+            margin-bottom: 20px;
         }
         .payment-btn {
-            padding: 20px;
+            padding: 12px;
             border: 2px solid #e2e8f0;
-            border-radius: 20px;
+            border-radius: 14px;
             background: linear-gradient(145deg, #ffffff, #f8fafc);
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -307,47 +307,47 @@
         .payment-btn:hover {
             border-color: #059669;
             background: linear-gradient(145deg, #f0fdf4, #dcfce7);
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px -4px rgba(5, 150, 105, 0.2);
         }
         .payment-btn.selected {
             border-color: #059669;
             background: linear-gradient(135deg, #059669, #047857);
             color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px -3px rgba(5, 150, 105, 0.4);
         }
         .payment-btn.selected:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 12px 30px -6px rgba(5, 150, 105, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px -5px rgba(5, 150, 105, 0.5);
         }
         .payment-icon {
-            font-size: 2rem;
-            margin-bottom: 12px;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            font-size: 1.4rem;
+            margin-bottom: 6px;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
         }
         .payment-label {
-            font-size: 1rem;
+            font-size: 0.8rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.6px;
         }
         .modal-footer {
             display: flex;
-            gap: 20px;
-            padding: 0 30px 30px 30px;
+            gap: 12px;
+            padding: 0 20px 20px 20px;
         }
         .btn-modal {
             flex: 1;
-            padding: 18px 24px;
+            padding: 12px 16px;
             border: none;
-            border-radius: 16px;
+            border-radius: 12px;
             font-weight: 800;
-            font-size: 1rem;
+            font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.6px;
             position: relative;
             overflow: hidden;
         }
