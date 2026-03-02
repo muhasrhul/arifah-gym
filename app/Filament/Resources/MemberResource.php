@@ -339,7 +339,10 @@ class MemberResource extends Resource
                                         // LOGIKA PINTAR:
                                         // Cek apakah member ini sudah pernah perpanjangan (berarti sudah pernah expired)
                                         $sudahPernahPerpanjangan = \App\Models\Transaction::where('member_id', $record->id)
-                                            ->where('type', 'like', 'Perpanjangan%')
+                                            ->where(function($query) {
+                                                $query->where('type', 'like', 'Perpanjangan:%')
+                                                      ->orWhere('type', 'like', 'Perpanjang Member:%');
+                                            })
                                             ->exists();
                                         
                                         // 1. Jika member AKTIF dan BELUM pernah perpanjangan → Tampilkan fee sebagai referensi (member baru pertama kali aktif)
@@ -386,7 +389,10 @@ class MemberResource extends Resource
                                     
                                     // Cek apakah member sudah pernah perpanjangan
                                     $sudahPernahPerpanjangan = \App\Models\Transaction::where('member_id', $record->id)
-                                        ->where('type', 'like', 'Perpanjangan%')
+                                        ->where(function($query) {
+                                            $query->where('type', 'like', 'Perpanjangan:%')
+                                                  ->orWhere('type', 'like', 'Perpanjang Member:%');
+                                        })
                                         ->exists();
                                     
                                     if ($record->is_active && !$sudahPernahPerpanjangan) {
@@ -431,7 +437,10 @@ class MemberResource extends Resource
                                         // LOGIKA PINTAR:
                                         // Cek apakah member ini sudah pernah perpanjangan
                                         $sudahPernahPerpanjangan = \App\Models\Transaction::where('member_id', $record->id)
-                                            ->where('type', 'like', 'Perpanjangan%')
+                                            ->where(function($query) {
+                                                $query->where('type', 'like', 'Perpanjangan:%')
+                                                      ->orWhere('type', 'like', 'Perpanjang Member:%');
+                                            })
                                             ->exists();
                                         
                                         // 1. Jika member AKTIF dan BELUM pernah perpanjangan → Total = harga + fee (member baru)

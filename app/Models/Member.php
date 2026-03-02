@@ -54,9 +54,9 @@ class Member extends Model
 
         \App\Models\Transaction::create([
             'member_id'      => $this->id,
-            'order_id'       => 'REN-' . strtoupper(uniqid()), 
+            'order_id'       => 'RNW-' . strtoupper(uniqid()), 
             'amount'         => $harga, 
-            'type'           => 'Perpanjang Member: ' . $this->type,
+            'type'           => 'Perpanjangan: ' . $this->type,
             'payment_method' => 'Tunai (Kasir)',
             'payment_date'   => now(),
         ]);

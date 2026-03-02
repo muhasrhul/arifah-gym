@@ -97,7 +97,7 @@ class TransactionResource extends Resource
                         
                         foreach ($pakets as $paket) {
                             $options["Pendaftaran Baru: {$paket->nama_paket}"] = "Pendaftaran Baru: {$paket->nama_paket}";
-                            $options["Perpanjang Member: {$paket->nama_paket}"] = "Perpanjang Member: {$paket->nama_paket}";
+                            $options["Perpanjangan: {$paket->nama_paket}"] = "Perpanjangan: {$paket->nama_paket}";
                         }
                         
                         // Tambahkan kategori lainnya

@@ -622,7 +622,10 @@ class EditMember extends EditRecord
             // Check for duplicate transaction today
             $now = Carbon::now('Asia/Makassar');
             $existingTransaction = Transaction::where('member_id', $record->id)
-                ->where('type', 'like', 'Perpanjang Member%')
+                ->where(function($query) {
+                    $query->where('type', 'like', 'Perpanjangan:%')
+                          ->orWhere('type', 'like', 'Perpanjang Member:%');
+                })
                 ->whereDate('payment_date', $now->format('Y-m-d'))
                 ->exists();
             
@@ -659,10 +662,10 @@ class EditMember extends EditRecord
             // Create transaction
             Transaction::create([
                 'member_id'      => $record->id,
-                'order_id'       => 'REN-' . strtoupper(uniqid()),
+                'order_id'       => 'RNW-' . strtoupper(uniqid()),
                 'amount'         => $harga,
                 'status'         => 'paid',
-                'type'           => 'Perpanjang Member: ' . $selectedType,
+                'type'           => 'Perpanjangan: ' . $selectedType,
                 'payment_method' => $paymentMethodLabel,
                 'payment_date'   => $now,
                 'guest_name'     => $record->name,
