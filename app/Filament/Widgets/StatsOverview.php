@@ -28,12 +28,9 @@ class StatsOverview extends BaseWidget
         });
 
         $totalOmzet = cache()->remember('stats_total_omzet', 30, function () {
-            // Tanggal mulai perhitungan revenue (untuk mengecualikan data lama)
-            $revenueStartDate = env('REVENUE_START_DATE', '2026-03-05'); // Default: 5 Maret 2026
-            
-            // Gabungkan dari kedua tabel dengan filter tanggal
-            $memberTransactions = Transaction::where('payment_date', '>=', $revenueStartDate)->sum('amount');
-            $quickTransactions = QuickTransaction::where('payment_date', '>=', $revenueStartDate)->sum('amount');
+            // Hitung total omzet dari semua transaksi (tanpa filter tanggal)
+            $memberTransactions = Transaction::sum('amount');
+            $quickTransactions = QuickTransaction::sum('amount');
             return $memberTransactions + $quickTransactions;
         });
 
@@ -56,7 +53,7 @@ class StatsOverview extends BaseWidget
 
             // KARTU 2: TOTAL OMZET KESELURUHAN (Mencolok dengan warna primary/biru/orange)
             Card::make('Total Omzet Keseluruhan', 'Rp ' . number_format($totalOmzet, 0, ',', '.'))
-                ->description('Total pendapatan sejak ' . date('d M Y', strtotime(env('REVENUE_START_DATE', '2026-03-05'))))
+                ->description('Total pendapatan keseluruhan')
                 ->descriptionIcon('heroicon-s-currency-dollar')
                 ->color('primary'),
 
