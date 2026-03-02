@@ -561,9 +561,35 @@ class MemberResource extends Resource
                     ->searchable()
                     ->icon('heroicon-o-chat-alt')
                     ->color('success')
+                    ->formatStateUsing(function ($state) {
+                        $nomor = preg_replace('/[^0-9]/', '', $state);
+                        
+                        // Format display: tambahkan 0 di depan jika perlu
+                        if (str_starts_with($nomor, '8')) {
+                            return '0' . $nomor;
+                        }
+                        elseif (str_starts_with($nomor, '62')) {
+                            return '0' . substr($nomor, 2);
+                        }
+                        
+                        return $nomor;
+                    })
                     ->url(function ($record) {
                         $nomor = preg_replace('/[^0-9]/', '', $record->phone);
-                        if (str_starts_with($nomor, '0')) { $nomor = '62' . substr($nomor, 1); }
+                        
+                        // Jika nomor dimulai dengan 8 (tanpa 0), tambahkan 62
+                        if (str_starts_with($nomor, '8')) {
+                            $nomor = '62' . $nomor;
+                        }
+                        // Jika nomor dimulai dengan 0, ganti dengan 62
+                        elseif (str_starts_with($nomor, '0')) {
+                            $nomor = '62' . substr($nomor, 1);
+                        }
+                        // Jika sudah dimulai dengan 62, biarkan
+                        elseif (!str_starts_with($nomor, '62')) {
+                            $nomor = '62' . $nomor;
+                        }
+                        
                         return "https://wa.me/{$nomor}";
                     })
                     ->openUrlInNewTab()
