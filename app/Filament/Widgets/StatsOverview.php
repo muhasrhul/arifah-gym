@@ -28,9 +28,10 @@ class StatsOverview extends BaseWidget
         });
 
         $totalOmzet = cache()->remember('stats_total_omzet', 30, function () {
-            // Hitung total omzet dari semua transaksi (tanpa filter tanggal)
-            $memberTransactions = Transaction::sum('amount');
-            $quickTransactions = QuickTransaction::sum('amount');
+            // Hitung total omzet mulai dari tanggal 3 Maret 2026
+            $startDate = '2026-03-03';
+            $memberTransactions = Transaction::where('payment_date', '>=', $startDate)->sum('amount');
+            $quickTransactions = QuickTransaction::where('payment_date', '>=', $startDate)->sum('amount');
             return $memberTransactions + $quickTransactions;
         });
 
