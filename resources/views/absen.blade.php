@@ -119,7 +119,7 @@
                         <!-- Member Info Section -->
                         <div class="transform transition-all duration-300 group-hover:translate-x-1">
                             <h3 class="text-lg font-bold uppercase truncate tracking-tight text-white transition-all duration-300 group-hover:text-[#0992C2]">{{ session('member_name') }}</h3>
-                            <p class="text-[8px] opacity-50 font-mono tracking-widest transition-all duration-300 group-hover:opacity-70">{{ session('order_id') }}</p>
+                            <p class="text-[8px] opacity-50 font-mono tracking-widest transition-all duration-300 group-hover:opacity-70">ID: {{ session('member_id') }}</p>
                         </div>
                         
                         <!-- Footer Section -->
@@ -129,7 +129,7 @@
                                 <p class="text-[10px] font-bold opacity-60 text-white uppercase tracking-wider transition-all duration-300 group-hover:text-[#0992C2]">{{ session('expiry_date') }}</p>
                             </div>
                             <div class="bg-white p-1 rounded-md transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-2xl" style="box-shadow: 0 4px 20px rgba(9, 146, 194, 0.3);">
-                                <img id="qrSrc" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ session('order_id') }}" class="w-8 h-8" crossorigin="anonymous">
+                                <img id="qrSrc" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ session('member_id') }}" class="w-8 h-8" crossorigin="anonymous">
                             </div>
                         </div>
                     </div>
@@ -254,7 +254,7 @@
             ctx.fillText("{{ session('member_name') }}".toUpperCase(), 60, 275);
 
             ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.font = "400 32px monospace";
-            ctx.fillText("{{ session('order_id') }}", 60, 360);
+            ctx.fillText("{{ session('member_id') }}", 60, 360);
             
             ctx.strokeStyle = "rgba(255,255,255,0.1)";
             ctx.beginPath(); ctx.moveTo(60, 460); ctx.lineTo(960, 460); ctx.stroke();
