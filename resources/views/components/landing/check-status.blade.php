@@ -56,7 +56,7 @@
                                 </div>
                                 
                                 <h3 class="text-xl font-bold member-harian-title mb-2 uppercase tracking-wide">{{ $member->name }}</h3>
-                                <p class="text-sm member-harian-subtitle mb-4 font-mono">ID: {{ $member->id }}</p>
+                                <p class="text-sm member-harian-subtitle mb-4 font-mono">{{ $member->order_id }}</p>
                                 
                                 <div class="member-harian-type-card border member-harian-type-border rounded-2xl p-4 mb-4">
                                     <p class="text-amber-400 font-bold text-sm uppercase tracking-wide mb-2">{{ $member->type }}</p>
@@ -134,7 +134,7 @@
                                     <!-- Member Info Section -->
                                     <div class="mt-2 transform transition-all duration-300 group-hover:translate-x-1">
                                         <h3 class="text-base md:text-xl font-bold uppercase truncate transition-all duration-300 group-hover:text-[#0992C2]" style="font-family: 'Poppins', sans-serif; letter-spacing: 0.05em;">{{ $member->name }}</h3>
-                                        <p class="text-[8px] md:text-[10px] opacity-50 font-mono tracking-widest transition-all duration-300 group-hover:opacity-70">ID: {{ $member->id }}</p>
+                                        <p class="text-[8px] md:text-[10px] opacity-50 font-mono tracking-widest transition-all duration-300 group-hover:opacity-70">{{ $member->order_id }}</p>
                                     </div>
 
                                     <!-- Footer Section -->
@@ -146,7 +146,7 @@
                                             </p>
                                         </div>
                                         <div class="bg-white p-1 md:p-1.5 rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-2xl" style="box-shadow: 0 4px 20px rgba(9, 146, 194, 0.3);">
-                                            <img id="qrSource" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ $member->id }}" crossorigin="anonymous" style="width: 35px; height: 35px;" class="md:w-[40px] md:h-[40px]">
+                                            <img id="qrSource" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ $member->order_id }}" crossorigin="anonymous" style="width: 35px; height: 35px;" class="md:w-[40px] md:h-[40px]">
                                         </div>
                                     </div>
                                 </div>
@@ -255,7 +255,7 @@
                         ctx.fillText("{{ $member->name ?? 'NAME' }}".toUpperCase(), 60, 270);
                         ctx.fillStyle = "rgba(255,255,255,0.5)";
                         ctx.font = "400 32px monospace";
-                        ctx.fillText("ID: {{ $member->id ?? '' }}", 60, 360);
+                        ctx.fillText("{{ $member->order_id ?? '' }}", 60, 360);
 
                         // 7. Garis Pemisah & Footer
                         ctx.strokeStyle = "rgba(255,255,255,0.1)";
