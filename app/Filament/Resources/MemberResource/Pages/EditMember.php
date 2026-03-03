@@ -343,11 +343,11 @@ class EditMember extends EditRecord
                     ->send();
 
                 // --- BARU CATAT TRANSAKSI ---
-                // Tentukan metode pembayaran berdasarkan pilihan member
+                // Tentukan metode pembayaran berdasarkan pilihan member dari form
                 $paymentMethodLabel = 'Cash'; // Default jika tidak ada pilihan
                 
-                if ($record->payment_method) {
-                    switch ($record->payment_method) {
+                if (isset($data['payment_method']) && $data['payment_method']) {
+                    switch ($data['payment_method']) {
                         case 'transfer_bank':
                             $paymentMethodLabel = 'Transfer Bank';
                             break;
@@ -407,10 +407,10 @@ class EditMember extends EditRecord
             } else {
                 // Jika sudah ada transaksi pendaftaran (perpanjangan), catat transaksi perpanjangan
                 if ($record->expiry_date) {
-                    // Tentukan metode pembayaran
+                    // Tentukan metode pembayaran berdasarkan pilihan member
                     $paymentMethodLabel = 'Cash';
-                    if ($record->payment_method) {
-                        switch ($record->payment_method) {
+                    if (isset($data['payment_method']) && $data['payment_method']) {
+                        switch ($data['payment_method']) {
                             case 'transfer_bank':
                                 $paymentMethodLabel = 'Transfer Bank';
                                 break;
