@@ -162,6 +162,7 @@ class CreateMember extends CreateRecord
             cache()->forget('stats_omset_hari_ini');
             cache()->forget('stats_total_omzet');
             cache()->forget('stats_total_member');
+            cache()->forget('stats_member_expired');
         }
     }
     

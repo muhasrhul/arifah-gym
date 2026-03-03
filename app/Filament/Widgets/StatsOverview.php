@@ -17,6 +17,14 @@ class StatsOverview extends BaseWidget
     // Lazy load widget - tidak langsung load saat halaman dibuka
     protected static bool $isLazy = true;
     
+    // Set kolom menjadi 4 untuk layout yang lebih rapi
+    protected int | string | array $columnSpan = 'full';
+    
+    protected function getColumns(): int
+    {
+        return 4; // 4 kolom per baris
+    }
+    
     protected function getCards(): array
     {
         // Cache selama 30 detik untuk update lebih cepat
@@ -45,6 +53,13 @@ class StatsOverview extends BaseWidget
             return Attendance::whereDate('created_at', now())->count();
         });
 
+        $memberExpired = cache()->remember('stats_member_expired', 30, function () {
+            return Member::where('is_active', false)
+                ->whereNotNull('expiry_date')
+                ->whereDate('expiry_date', '<', now())
+                ->count();
+        });
+
         return [
             // KARTU 1: PENDAPATAN HARI INI
             Card::make('Pendapatan Hari Ini', 'Rp ' . number_format($omsetHariIni, 0, ',', '.'))
@@ -64,7 +79,13 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-s-user-group')
                 ->color('primary'),
             
-            // KARTU 4: LOG ABSENSI HARI INI
+            // KARTU 4: TOTAL MEMBER EXPIRED
+            Card::make('Total Member Expired', $memberExpired . ' Orang')
+                ->description('Member yang sudah expired')
+                ->descriptionIcon('heroicon-s-clock')
+                ->color('danger'),
+            
+            // KARTU 5: LOG ABSENSI HARI INI
             Card::make('Absensi Hari Ini', $sedangLatihan . ' Check-in')
                 ->description('Jumlah orang latihan hari ini')
                 ->descriptionIcon('heroicon-s-clipboard-check')

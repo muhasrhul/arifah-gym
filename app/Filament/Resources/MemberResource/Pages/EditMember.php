@@ -394,6 +394,7 @@ class EditMember extends EditRecord
                 cache()->forget('stats_omset_hari_ini');
                 cache()->forget('stats_total_omzet');
                 cache()->forget('stats_total_member');
+                cache()->forget('stats_member_expired');
 
                 // join_date tetap dari input manual user untuk pendaftar baru
                 // Tidak perlu set otomatis ke hari ini
@@ -474,6 +475,7 @@ class EditMember extends EditRecord
                     cache()->forget('stats_omset_hari_ini');
                     cache()->forget('stats_total_omzet');
                     cache()->forget('stats_total_member');
+                    cache()->forget('stats_member_expired');
                 }
             }
         }
@@ -712,6 +714,8 @@ class EditMember extends EditRecord
             // Clear cache
             cache()->forget('stats_omset_hari_ini');
             cache()->forget('stats_total_omzet');
+            cache()->forget('stats_total_member');
+            cache()->forget('stats_member_expired');
             
             // Refresh the page to show updated data
             redirect()->to($this->getResource()::getUrl('edit', ['record' => $record]));
