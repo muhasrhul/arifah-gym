@@ -170,12 +170,14 @@ class MemberResource extends Resource
                                 ->helperText('Tanggal pertama kali member bergabung (tidak berubah saat perpanjangan)')
                                 ->required()
                                 ->reactive()
+                                ->closeOnDateSelection()
                                 ->rule('required', 'Tanggal mulai membership wajib diisi'),
 
                             Forms\Components\DatePicker::make('expiry_date')
                                 ->label('Tanggal Berakhir')
                                 ->reactive()
                                 ->required(fn ($get) => $get('is_active') === true)
+                                ->closeOnDateSelection()
                                 ->placeholder(function ($get) {
                                     $joinDate = $get('join_date');
                                     $paketType = $get('type');
