@@ -53,9 +53,8 @@ class UpdateExpiredMembers extends Command
                 'checked_at' => $today->format('Y-m-d H:i:s')
             ]);
     
-            // Kirim notifikasi WhatsApp ke owner (meskipun tidak ada member expired)
-            $this->sendWhatsAppNotification(collect([]), $today);
-            $this->info('📱 Notifikasi WhatsApp terkirim.');
+            // WhatsApp notification dinonaktifkan
+            $this->info('📱 Notifikasi WhatsApp dinonaktifkan (tidak ada member expired).');
             
             return Command::SUCCESS;
         }
@@ -96,8 +95,8 @@ class UpdateExpiredMembers extends Command
         // Kirim notifikasi ke Telegram
         $this->sendTelegramNotification($message);
         
-        // Kirim notifikasi ke WhatsApp Owner
-        $this->sendWhatsAppNotification($expiredMembers, $today);
+        // WhatsApp notification dinonaktifkan
+        // $this->sendWhatsAppNotification($expiredMembers, $today);
         
         $this->info("✅ Berhasil update {$count} member menjadi non-aktif.");
         
@@ -108,7 +107,7 @@ class UpdateExpiredMembers extends Command
         
         $this->info('🗑️  Cache widget dibersihkan.');
         $this->info('📱 Notifikasi Telegram terkirim.');
-        $this->info('📱 Notifikasi WhatsApp terkirim.');
+        $this->info('📱 Notifikasi WhatsApp dinonaktifkan.');
         
         return Command::SUCCESS;
     }
@@ -118,6 +117,14 @@ class UpdateExpiredMembers extends Command
      */
     private function sendWhatsAppNotification($expiredMembers, $today)
     {
+        // DISABLED: Notifikasi WhatsApp dimatikan
+        $this->info('📱 Notifikasi WhatsApp dinonaktifkan (fungsi tetap berjalan).');
+        Log::info('[WhatsApp] Notifikasi WhatsApp dinonaktifkan', [
+            'expired_count' => $expiredMembers->count(),
+            'date' => $today->format('Y-m-d')
+        ]);
+        return;
+        
         $ownerPhone = config('services.whatsapp.owner');
         
         if (!$ownerPhone) {
