@@ -129,15 +129,129 @@ class QuickTransactionResource extends Resource
                     ->label('Export Excel')
                     ->color('success')
                     ->icon('heroicon-o-document-download')
-                    ->url(fn () => route('cetak-laporan-kasir', ['format' => 'excel']))
-                    ->openUrlInNewTab(),
+                    ->form([
+                        Forms\Components\Card::make()->schema([
+                            Forms\Components\Select::make('filter_type')
+                                ->label('Jenis Filter Tanggal')
+                                ->options([
+                                    'all' => 'Semua Data (Tanpa Filter)',
+                                    'single' => 'Tanggal Tunggal',
+                                    'range' => 'Rentang Tanggal',
+                                ])
+                                ->default('all')
+                                ->reactive()
+                                ->required(),
+                            
+                            Forms\Components\DatePicker::make('single_date')
+                                ->label('Pilih Tanggal')
+                                ->visible(fn ($get) => $get('filter_type') === 'single')
+                                ->required(fn ($get) => $get('filter_type') === 'single')
+                                ->closeOnDateSelection(),
+                            
+                            Forms\Components\DatePicker::make('start_date')
+                                ->label('Tanggal Mulai')
+                                ->visible(fn ($get) => $get('filter_type') === 'range')
+                                ->required(fn ($get) => $get('filter_type') === 'range')
+                                ->closeOnDateSelection(),
+                            
+                            Forms\Components\DatePicker::make('end_date')
+                                ->label('Tanggal Akhir')
+                                ->visible(fn ($get) => $get('filter_type') === 'range')
+                                ->required(fn ($get) => $get('filter_type') === 'range')
+                                ->afterOrEqual('start_date')
+                                ->closeOnDateSelection(),
+                        ])
+                    ])
+                    ->action(function (array $data) {
+                        $params = ['format' => 'excel'];
+                        
+                        if ($data['filter_type'] === 'single' && !empty($data['single_date'])) {
+                            $params['filter_type'] = 'single';
+                            $params['single_date'] = $data['single_date'];
+                        } elseif ($data['filter_type'] === 'range' && !empty($data['start_date']) && !empty($data['end_date'])) {
+                            $params['filter_type'] = 'range';
+                            $params['start_date'] = $data['start_date'];
+                            $params['end_date'] = $data['end_date'];
+                        }
+                        
+                        $url = route('cetak-laporan-kasir', $params);
+                        
+                        // Show notification
+                        \Filament\Notifications\Notification::make()
+                            ->title('Excel berhasil dibuat')
+                            ->success()
+                            ->send();
+                            
+                        // Redirect to download URL
+                        return redirect()->away($url);
+                    })
+                    ->modalHeading('Filter Export Excel')
+                    ->modalSubheading('Pilih filter tanggal untuk data kasir cepat yang akan di-export ke Excel')
+                    ->modalButton('Export Excel'),
 
                 Tables\Actions\Action::make('print_pdf')
                     ->label('Cetak PDF')
                     ->color('warning')
                     ->icon('heroicon-o-printer')
-                    ->url(fn () => route('cetak-laporan-kasir', ['format' => 'pdf']))
-                    ->openUrlInNewTab(),
+                    ->form([
+                        Forms\Components\Card::make()->schema([
+                            Forms\Components\Select::make('filter_type')
+                                ->label('Jenis Filter Tanggal')
+                                ->options([
+                                    'all' => 'Semua Data (Tanpa Filter)',
+                                    'single' => 'Tanggal Tunggal',
+                                    'range' => 'Rentang Tanggal',
+                                ])
+                                ->default('all')
+                                ->reactive()
+                                ->required(),
+                            
+                            Forms\Components\DatePicker::make('single_date')
+                                ->label('Pilih Tanggal')
+                                ->visible(fn ($get) => $get('filter_type') === 'single')
+                                ->required(fn ($get) => $get('filter_type') === 'single')
+                                ->closeOnDateSelection(),
+                            
+                            Forms\Components\DatePicker::make('start_date')
+                                ->label('Tanggal Mulai')
+                                ->visible(fn ($get) => $get('filter_type') === 'range')
+                                ->required(fn ($get) => $get('filter_type') === 'range')
+                                ->closeOnDateSelection(),
+                            
+                            Forms\Components\DatePicker::make('end_date')
+                                ->label('Tanggal Akhir')
+                                ->visible(fn ($get) => $get('filter_type') === 'range')
+                                ->required(fn ($get) => $get('filter_type') === 'range')
+                                ->afterOrEqual('start_date')
+                                ->closeOnDateSelection(),
+                        ])
+                    ])
+                    ->action(function (array $data) {
+                        $params = ['format' => 'pdf'];
+                        
+                        if ($data['filter_type'] === 'single' && !empty($data['single_date'])) {
+                            $params['filter_type'] = 'single';
+                            $params['single_date'] = $data['single_date'];
+                        } elseif ($data['filter_type'] === 'range' && !empty($data['start_date']) && !empty($data['end_date'])) {
+                            $params['filter_type'] = 'range';
+                            $params['start_date'] = $data['start_date'];
+                            $params['end_date'] = $data['end_date'];
+                        }
+                        
+                        $url = route('cetak-laporan-kasir', $params);
+                        
+                        // Show notification
+                        \Filament\Notifications\Notification::make()
+                            ->title('PDF berhasil dibuat')
+                            ->success()
+                            ->send();
+                            
+                        // Redirect to PDF URL
+                        return redirect()->away($url);
+                    })
+                    ->modalHeading('Filter Cetak PDF')
+                    ->modalSubheading('Pilih filter tanggal untuk data kasir cepat yang akan dicetak ke PDF')
+                    ->modalButton('Cetak PDF'),
             ]);
     }
 

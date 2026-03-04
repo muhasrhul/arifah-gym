@@ -155,13 +155,28 @@ Route::middleware(['auth:web'])->group(function () {
     // 4. LAPORAN KEUANGAN MEMBER
     Route::get('/cetak-laporan', function (Request $request) {
     // FILTER: Hanya transaksi member reguler (bukan kasir cepat)
-    $data = Transaction::with('member')
+    $query = Transaction::with('member')
         ->whereHas('member', function ($query) {
             $query->where('name', '!=', 'Tamu Harian')
                   ->where('name', '!=', 'Tamu Latihan Harian');
-        })
-        ->orderBy('payment_date', 'desc')
-        ->get();
+        });
+    
+    // FILTER TANGGAL
+    $filterType = $request->query('filter_type');
+    $dateFilterText = '';
+    
+    if ($filterType === 'single' && $request->query('single_date')) {
+        $singleDate = $request->query('single_date');
+        $query->whereDate('payment_date', $singleDate);
+        $dateFilterText = ' - Tanggal: ' . \Carbon\Carbon::parse($singleDate)->format('d/m/Y');
+    } elseif ($filterType === 'range' && $request->query('start_date') && $request->query('end_date')) {
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+        $query->whereBetween('payment_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        $dateFilterText = ' - Periode: ' . \Carbon\Carbon::parse($startDate)->format('d/m/Y') . ' s/d ' . \Carbon\Carbon::parse($endDate)->format('d/m/Y');
+    }
+    
+    $data = $query->orderBy('payment_date', 'asc')->get();
     
     $data->transform(function ($item) {
         $item->type = preg_replace('/[^\x20-\x7E]/', '', $item->type);
@@ -170,7 +185,7 @@ Route::middleware(['auth:web'])->group(function () {
     });
 
     if ($request->query('format') == 'pdf') {
-        return view('laporan_pdf', compact('data'));
+        return view('laporan_pdf', compact('data', 'dateFilterText'));
     }
 
     $filename = "Laporan_Keuangan_Member_ARIFAH_GYM_" . date('d-m-Y') . ".xls";
@@ -180,7 +195,7 @@ Route::middleware(['auth:web'])->group(function () {
     $total = 0;
     $output = "<table border='1'>
                 <tr>
-                    <th colspan='10' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LAPORAN KEUANGAN MEMBER - ARIFAH GYM</th>
+                    <th colspan='10' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LAPORAN KEUANGAN MEMBER - ARIFAH GYM{$dateFilterText}</th>
                 </tr>
                 <tr style='background-color: #eeeeee;'>
                     <th>No</th>
@@ -238,7 +253,24 @@ Route::middleware(['auth:web'])->group(function () {
 
 // 4.1 LAPORAN KEUANGAN KASIR CEPAT
 Route::get('/cetak-laporan-kasir', function (Request $request) {
-    $data = \App\Models\QuickTransaction::orderBy('payment_date', 'desc')->get();
+    $query = \App\Models\QuickTransaction::query();
+    
+    // FILTER TANGGAL
+    $filterType = $request->query('filter_type');
+    $dateFilterText = '';
+    
+    if ($filterType === 'single' && $request->query('single_date')) {
+        $singleDate = $request->query('single_date');
+        $query->whereDate('payment_date', $singleDate);
+        $dateFilterText = ' - Tanggal: ' . \Carbon\Carbon::parse($singleDate)->format('d/m/Y');
+    } elseif ($filterType === 'range' && $request->query('start_date') && $request->query('end_date')) {
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+        $query->whereBetween('payment_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        $dateFilterText = ' - Periode: ' . \Carbon\Carbon::parse($startDate)->format('d/m/Y') . ' s/d ' . \Carbon\Carbon::parse($endDate)->format('d/m/Y');
+    }
+    
+    $data = $query->orderBy('payment_date', 'asc')->get();
     
     $data->transform(function ($item) {
         $item->type = preg_replace('/[^\x20-\x7E]/', '', $item->type);
@@ -247,7 +279,7 @@ Route::get('/cetak-laporan-kasir', function (Request $request) {
     });
 
     if ($request->query('format') == 'pdf') {
-        return view('laporan_kasir_pdf', compact('data'));
+        return view('laporan_kasir_pdf', compact('data', 'dateFilterText'));
     }
 
     $filename = "Laporan_Kasir_Cepat_ARIFAH_GYM_" . date('d-m-Y') . ".xls";
@@ -257,7 +289,7 @@ Route::get('/cetak-laporan-kasir', function (Request $request) {
     $total = 0;
     $output = "<table border='1'>
                 <tr>
-                    <th colspan='8' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LAPORAN KEUANGAN KASIR CEPAT - ARIFAH GYM</th>
+                    <th colspan='8' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LAPORAN KEUANGAN KASIR CEPAT - ARIFAH GYM{$dateFilterText}</th>
                 </tr>
                 <tr style='background-color: #eeeeee;'>
                     <th>No</th>
@@ -379,10 +411,27 @@ Route::get('/export-members', function (Request $request) {
 
 // 6. EXPORT LOG ABSENSI
 Route::get('/export-attendance', function (Request $request) {
-    $data = Attendance::with('member')->orderBy('created_at', 'desc')->get();
+    $query = Attendance::with('member');
+    
+    // FILTER TANGGAL
+    $filterType = $request->query('filter_type');
+    $dateFilterText = '';
+    
+    if ($filterType === 'single' && $request->query('single_date')) {
+        $singleDate = $request->query('single_date');
+        $query->whereDate('created_at', $singleDate);
+        $dateFilterText = ' - Tanggal: ' . \Carbon\Carbon::parse($singleDate)->format('d/m/Y');
+    } elseif ($filterType === 'range' && $request->query('start_date') && $request->query('end_date')) {
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+        $query->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        $dateFilterText = ' - Periode: ' . \Carbon\Carbon::parse($startDate)->format('d/m/Y') . ' s/d ' . \Carbon\Carbon::parse($endDate)->format('d/m/Y');
+    }
+    
+    $data = $query->orderBy('created_at', 'asc')->get();
 
     if ($request->query('format') == 'pdf') {
-        return view('attendance_pdf', compact('data'));
+        return view('attendance_pdf', compact('data', 'dateFilterText'));
     }
 
     $filename = "Log_Absensi_ARIFAH_GYM_" . date('d-m-Y') . ".xls";
@@ -391,7 +440,7 @@ Route::get('/export-attendance', function (Request $request) {
     
     $output = "<table border='1'>
                 <tr>
-                    <th colspan='6' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LOG ABSENSI ARIFAH GYM</th>
+                    <th colspan='6' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LOG ABSENSI ARIFAH GYM{$dateFilterText}</th>
                 </tr>
                 <tr style='background-color: #eeeeee;'>
                     <th>No</th>

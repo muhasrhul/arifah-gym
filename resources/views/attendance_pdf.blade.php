@@ -82,7 +82,7 @@
 <body>
     <div class="header">
         <h1>LOG ABSENSI</h1>
-        <p>ARIFAH GYM MAKASSAR</p>
+        <p>ARIFAH GYM MAKASSAR{{ $dateFilterText ?? '' }}</p>
         <p style="font-size: 12px;">Dicetak: {{ \Carbon\Carbon::now('Asia/Makassar')->format('d F Y, H:i') }} WITA</p>
     </div>
 
