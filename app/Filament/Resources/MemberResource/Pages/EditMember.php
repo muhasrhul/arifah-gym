@@ -67,6 +67,7 @@ class EditMember extends EditRecord
                                     ->default(fn () => $this->record->expiry_date) // Mulai dari expired date lama
                                     ->required()
                                     ->reactive()
+                                    ->closeOnDateSelection()
                                     ->helperText('Perpanjangan dimulai dari tanggal expired lama agar tidak kehilangan sisa waktu')
                                     ->afterStateUpdated(function ($state, $set, $get) {
                                         // TIDAK auto-update tanggal berakhir
@@ -77,6 +78,7 @@ class EditMember extends EditRecord
                                     ->label('Tanggal Berakhir')
                                     ->reactive()
                                     ->required()
+                                    ->closeOnDateSelection()
                                     ->placeholder(function ($get) {
                                         $joinDate = $get('join_date_preview');
                                         $paketType = $get('type') ?? $this->record->type;
@@ -518,10 +520,10 @@ class EditMember extends EditRecord
         
         // Tombol muncul jika:
         // - daysUntilExpiry >= 0 (termasuk hari expired)
-        // - dan daysUntilExpiry <= 2 (maksimal H-2)
-        // Jadi: H-2 (2 hari lagi), H-1 (1 hari lagi), H (hari expired)
+        // - dan daysUntilExpiry <= 25 (maksimal H-25)
+        // Jadi: H-25 sampai H-0 (hari expired)
         // Setelah lewat tengah malam (H+1), daysUntilExpiry = -1, tombol TIDAK muncul
-        return $daysUntilExpiry >= 0 && $daysUntilExpiry <= 2;
+        return $daysUntilExpiry >= 0 && $daysUntilExpiry <= 25;
     }
 
     /**
@@ -569,6 +571,16 @@ class EditMember extends EditRecord
         $record = $this->record;
         
         try {
+            // Validasi field wajib
+            if (empty($data['expiry_date_preview'])) {
+                Notification::make()
+                    ->title('Tanggal Berakhir Wajib Diisi')
+                    ->body('Silakan pilih tanggal berakhir perpanjangan terlebih dahulu.')
+                    ->danger()
+                    ->send();
+                return;
+            }
+            
             // Validasi eligibility
             if (!$this->isEligibleForEarlyRenewal()) {
                 Notification::make()
