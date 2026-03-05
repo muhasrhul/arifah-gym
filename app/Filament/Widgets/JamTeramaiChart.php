@@ -5,10 +5,11 @@ namespace App\Filament\Widgets;
 use App\Models\Attendance;
 use Filament\Widgets\LineChartWidget;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class JamTeramaiChart extends LineChartWidget
 {
-    protected static ?string $heading = 'Analisis Jam Teramai (Hari Ini)';
+    protected static ?string $heading = 'Analisis Jam Teramai (Bulan Ini)';
     protected static ?int $sort = 3;
     
     // Polling setiap 60 detik
@@ -29,10 +30,14 @@ class JamTeramaiChart extends LineChartWidget
     protected function getData(): array
     {
         // Cache selama 5 menit
-        return cache()->remember('chart_jam_teramai_' . now()->format('Y-m-d'), 300, function () {
-            // Mengambil data jumlah orang per jam untuk hari ini menggunakan created_at
+        return cache()->remember('chart_jam_teramai_bulan_' . now()->format('Y-m'), 300, function () {
+            $currentMonth = Carbon::now('Asia/Makassar');
+            $startOfMonth = $currentMonth->copy()->startOfMonth();
+            $endOfMonth = $currentMonth->copy()->endOfMonth();
+            
+            // Mengambil data jumlah orang per jam untuk bulan ini
             $data = Attendance::select(DB::raw('HOUR(created_at) as hour'), DB::raw('count(*) as total'))
-                ->whereDate('created_at', now())
+                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
                 ->groupBy('hour')
                 ->orderBy('hour')
                 ->pluck('total', 'hour')
@@ -49,7 +54,7 @@ class JamTeramaiChart extends LineChartWidget
             return [
                 'datasets' => [
                     [
-                        'label' => 'Jumlah Member Latihan',
+                        'label' => 'Total Member Latihan (Bulan ' . $currentMonth->translatedFormat('F Y') . ')',
                         'data' => $values,
                         'borderColor' => '#3b82f6', // Warna Biru
                         'backgroundColor' => 'rgba(59, 130, 246, 0.1)',
