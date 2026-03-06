@@ -213,13 +213,6 @@ class WhatsAppHelper
      */
     public static function sendReminderH1($member)
     {
-        // DISABLED: Pesan reminder ke member dimatikan sementara untuk input data manual
-        return [
-            'success' => true,
-            'message' => 'Reminder H-1 disabled for manual data entry'
-        ];
-        
-        /* ORIGINAL CODE - DISABLED
         $message = "🚨 *REMINDER - ARIFAH GYM*\n\n";
         $message .= "Halo *{$member->name}*\n\n";
         $message .= "Membership Anda akan berakhir *BESOK*!\n\n";
@@ -230,7 +223,6 @@ class WhatsAppHelper
         $message .= "Terima kasih!";
 
         return self::sendMessage($member->phone, $message);
-        */
     }
 
     /**
@@ -238,6 +230,13 @@ class WhatsAppHelper
      */
     public static function sendPerpanjanganSuccess($member)
     {
+        // DISABLED: Pesan perpanjangan success dimatikan sementara untuk input data manual
+        return [
+            'success' => true,
+            'message' => 'Perpanjangan success notification disabled for manual data entry'
+        ];
+        
+        /* ORIGINAL CODE - DISABLED
         $message = "✅ *PERPANJANGAN BERHASIL - ARIFAH GYM*\n\n";
         $message .= "Terima kasih *{$member->name}*\n\n";
         $message .= "Membership Anda sudah berhasil diperpanjang!\n\n";
@@ -247,6 +246,7 @@ class WhatsAppHelper
         $message .= "Terima kasih sudah mempercayai ARIFAH Gym!";
 
         return self::sendMessage($member->phone, $message);
+        */
     }
 
     /**
