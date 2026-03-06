@@ -326,30 +326,20 @@ class EditMember extends EditRecord
                 ->exists();
 
             if (!$sudahAdaUang) {
-                // --- URUTAN: TEMBAK NOTIFIKASI DULU (SESUAI REQUEST BAPAK) ---
-                $admins = User::all();
-                foreach ($admins as $admin) {
-                    Notification::make()
-                        ->title('Pembayaran Member Baru!')
-                        // Keterangan sudah seragam dengan menu Create
-                        ->body("Pendaftaran baru **Rp " . number_format($totalHarga, 0, ',', '.') . "** dari **{$record->name}** via kasir.")
-                        ->status('success')
-                        ->icon('heroicon-o-user-add')
-                        ->sendToDatabase($admin);
-                }
-
-                // Notifikasi Pop-up di layar
-                Notification::make()
-                    ->title('Aktivasi & Pembayaran Sukses')
-                    ->status('success')
-                    ->send();
-
-                // --- BARU CATAT TRANSAKSI ---
-                // Tentukan metode pembayaran berdasarkan pilihan member dari form
-                $paymentMethodLabel = 'Cash'; // Default jika tidak ada pilihan
+                // SOLUSI SEDERHANA: URUTAN LOGIS UNTUK KONSISTENSI DATA
                 
-                if (isset($data['payment_method']) && $data['payment_method']) {
-                    switch ($data['payment_method']) {
+                // 1️⃣ UPDATE MEMBER DATA DULU (SKIP OBSERVER)
+                $record->withoutEvents(function () use ($record, $data) {
+                    $record->update($data);
+                });
+                
+                // 2️⃣ CATAT TRANSAKSI BERDASARKAN DATA TERBARU
+                // Ambil data member yang sudah diupdate untuk memastikan konsistensi
+                $memberFresh = $record->fresh();
+                $paymentMethodLabel = 'Cash';
+                
+                if ($memberFresh && $memberFresh->payment_method) {
+                    switch ($memberFresh->payment_method) {
                         case 'transfer_bank':
                             $paymentMethodLabel = 'Transfer Bank';
                             break;
@@ -372,19 +362,32 @@ class EditMember extends EditRecord
                     'guest_name'     => $record->name,
                 ]);
                 
-                // Ambil transaksi yang baru dibuat untuk notifikasi Telegram
+                // 3️⃣ NOTIFIKASI ADMIN (SETELAH DATA KONSISTEN)
+                $admins = User::all();
+                foreach ($admins as $admin) {
+                    Notification::make()
+                        ->title('Pembayaran Member Baru!')
+                        ->body("Pendaftaran baru **Rp " . number_format($totalHarga, 0, ',', '.') . "** dari **{$record->name}** via kasir.")
+                        ->status('success')
+                        ->icon('heroicon-o-user-add')
+                        ->sendToDatabase($admin);
+                }
+
+                // Notifikasi Pop-up di layar
+                Notification::make()
+                    ->title('Aktivasi & Pembayaran Sukses')
+                    ->status('success')
+                    ->send();
+                
+                // 4️⃣ KIRIM WHATSAPP/TELEGRAM (DATA SUDAH KONSISTEN)
                 $transaction = Transaction::where('member_id', $record->id)
                     ->latest()
                     ->first();
                 
-                // Kirim notifikasi Telegram SETELAH semua data commit
                 if ($transaction) {
-                    // Gunakan dispatch untuk kirim notifikasi setelah response
                     dispatch(function () use ($record, $transaction) {
-                        // Ambil data fresh dari database
                         $memberFresh = \App\Models\Member::find($record->id);
                         
-                        // Kirim notifikasi aktivasi - ENABLED UNTUK AKTIVASI MEMBER
                         if ($memberFresh) {
                             \App\Helpers\TelegramHelper::sendAktivasiMember($memberFresh, $transaction);
                             \App\Helpers\WhatsAppHelper::sendAktivasiMember($memberFresh, $transaction);
@@ -410,10 +413,18 @@ class EditMember extends EditRecord
             } else {
                 // Jika sudah ada transaksi pendaftaran (perpanjangan), catat transaksi perpanjangan
                 if ($record->expiry_date) {
-                    // Tentukan metode pembayaran berdasarkan pilihan member
+                    // PERBAIKAN: Update member data DULU sebelum catat transaksi (SKIP OBSERVER)
+                    $record->withoutEvents(function () use ($record, $data) {
+                        $record->update($data);
+                    });
+                    
+                    // Tentukan metode pembayaran berdasarkan data terbaru di database
+                    // (karena member sudah diupdate di atas)
+                    $memberFresh = $record->fresh(); // Ambil data terbaru dari database
                     $paymentMethodLabel = 'Cash';
-                    if (isset($data['payment_method']) && $data['payment_method']) {
-                        switch ($data['payment_method']) {
+                    
+                    if ($memberFresh && $memberFresh->payment_method) {
+                        switch ($memberFresh->payment_method) {
                             case 'transfer_bank':
                                 $paymentMethodLabel = 'Transfer Bank';
                                 break;
@@ -425,7 +436,7 @@ class EditMember extends EditRecord
                         }
                     }
                     
-                    // Catat transaksi perpanjangan
+                    // Catat transaksi perpanjangan SETELAH member diupdate
                     Transaction::create([
                         'member_id'      => $record->id,
                         'order_id'       => 'RNW-' . strtoupper(uniqid()),
@@ -482,8 +493,14 @@ class EditMember extends EditRecord
             }
         }
 
-        // Simpan semua perubahan data ke database
-        $record->update($data);
+        // PERBAIKAN: Hapus update kedua karena sudah diupdate di atas untuk perpanjangan
+        // Hanya update jika bukan perpanjangan (DENGAN withoutEvents untuk mencegah Observer)
+        if (!($record->expiry_date && $sedangDiaktifkan)) {
+            // Simpan semua perubahan data ke database (untuk aktivasi member baru)
+            $record->withoutEvents(function () use ($record, $data) {
+                $record->update($data);
+            });
+        }
         
         return $record;
     }
@@ -652,25 +669,31 @@ class EditMember extends EditRecord
                 return;
             }
             
-            // Update member data
-            $record->update([
-                'type' => $selectedType,
-                'expiry_date' => $tanggalBaru->format('Y-m-d'),
-                'payment_method' => $selectedPaymentMethod,
-                // is_active NOT changed, remains true
-            ]);
+            // Update member data (SKIP OBSERVER untuk konsistensi)
+            $record->withoutEvents(function () use ($record, $selectedType, $tanggalBaru, $selectedPaymentMethod) {
+                $record->update([
+                    'type' => $selectedType,
+                    'expiry_date' => $tanggalBaru->format('Y-m-d'),
+                    'payment_method' => $selectedPaymentMethod,
+                    // is_active NOT changed, remains true
+                ]);
+            });
             
-            // Determine payment method label
+            // Determine payment method label berdasarkan data yang sudah diupdate
+            $memberFresh = $record->fresh();
             $paymentMethodLabel = 'Cash';
-            switch ($selectedPaymentMethod) {
-                case 'transfer_bank':
-                    $paymentMethodLabel = 'Transfer Bank';
-                    break;
-                case 'cash':
-                    $paymentMethodLabel = 'Cash';
-                    break;
-                default:
-                    $paymentMethodLabel = 'Cash';
+            
+            if ($memberFresh && $memberFresh->payment_method) {
+                switch ($memberFresh->payment_method) {
+                    case 'transfer_bank':
+                        $paymentMethodLabel = 'Transfer Bank';
+                        break;
+                    case 'cash':
+                        $paymentMethodLabel = 'Cash';
+                        break;
+                    default:
+                        $paymentMethodLabel = 'Cash';
+                }
             }
             
             // Create transaction
