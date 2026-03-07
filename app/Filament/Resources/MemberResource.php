@@ -554,7 +554,7 @@ class MemberResource extends Resource
                     ->label('Masuk ⇅')
                     ->sortable()
                     ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->format('d/m/Y') : '-')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('expiry_date')
                     ->label('Berakhir ⇅')
@@ -604,7 +604,7 @@ class MemberResource extends Resource
                         return "https://wa.me/{$nomor}";
                     })
                     ->openUrlInNewTab()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 // --- KOLOM STATUS YANG SUDAH DIPERBARUI LOGIKANYA ---
                 Tables\Columns\BadgeColumn::make('status')
