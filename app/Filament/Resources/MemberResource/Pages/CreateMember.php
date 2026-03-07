@@ -111,23 +111,15 @@ class CreateMember extends CreateRecord
                 ->send();
 
             // --- C. CATAT TRANSAKSI KE KEUANGAN ---
-            // Tentukan metode pembayaran berdasarkan pilihan member
-            $paymentMethodLabel = 'Cash'; // Default jika tidak ada pilihan
+            // Gunakan fallback bertingkat untuk memastikan konsistensi
+            $paymentMethod = $member->payment_method ?? 'cash';
+            $paymentMethodLabel = match($paymentMethod) {
+                'transfer_bank' => 'Transfer Bank',
+                'cash' => 'Cash',
+                default => 'Cash'
+            };
             
-            if ($member->payment_method) {
-                switch ($member->payment_method) {
-                    case 'transfer_bank':
-                        $paymentMethodLabel = 'Transfer Bank';
-                        break;
-                    case 'cash':
-                        $paymentMethodLabel = 'Cash';
-                        break;
-                    default:
-                        $paymentMethodLabel = 'Cash';
-                }
-            }
-            
-            Transaction::create([
+            $transaction = Transaction::create([
                 'member_id'      => $member->id,
                 'order_id'       => $member->order_id, // Menggunakan REG- yang sama dengan Member
                 'amount'         => $totalHarga,
@@ -137,11 +129,6 @@ class CreateMember extends CreateRecord
                 'payment_date'   => Carbon::now('Asia/Makassar'),
                 'guest_name'     => $member->name,
             ]);
-            
-            // Ambil transaksi yang baru dibuat untuk notifikasi Telegram
-            $transaction = Transaction::where('member_id', $member->id)
-                ->where('order_id', $member->order_id)
-                ->first();
             
             // Pastikan semua data sudah tersimpan ke database
             if ($transaction) {

@@ -326,6 +326,22 @@ class EditMember extends EditRecord
                 ->exists();
 
             if (!$sudahAdaUang) {
+                // Cek apakah sudah ada transaksi hari ini untuk mencegah double
+                $now = Carbon::now('Asia/Makassar');
+                $existingTransactionToday = Transaction::where('member_id', $record->id)
+                    ->where('type', 'like', 'Pendaftaran Baru%')
+                    ->whereDate('payment_date', $now->format('Y-m-d'))
+                    ->exists();
+                
+                if ($existingTransactionToday) {
+                    Notification::make()
+                        ->title('Transaksi Sudah Ada')
+                        ->body('Transaksi pendaftaran sudah ada untuk hari ini.')
+                        ->warning()
+                        ->send();
+                    return $record;
+                }
+                
                 // SOLUSI SEDERHANA: URUTAN LOGIS UNTUK KONSISTENSI DATA
                 
                 // 1️⃣ UPDATE MEMBER DATA DULU (SKIP OBSERVER)
@@ -334,24 +350,15 @@ class EditMember extends EditRecord
                 });
                 
                 // 2️⃣ CATAT TRANSAKSI BERDASARKAN DATA TERBARU
-                // Ambil data member yang sudah diupdate untuk memastikan konsistensi
-                $memberFresh = $record->fresh();
-                $paymentMethodLabel = 'Cash';
+                // Gunakan fallback bertingkat untuk memastikan konsistensi
+                $paymentMethod = $data['payment_method'] ?? $record->payment_method ?? 'cash';
+                $paymentMethodLabel = match($paymentMethod) {
+                    'transfer_bank' => 'Transfer Bank',
+                    'cash' => 'Cash',
+                    default => 'Cash'
+                };
                 
-                if ($memberFresh && $memberFresh->payment_method) {
-                    switch ($memberFresh->payment_method) {
-                        case 'transfer_bank':
-                            $paymentMethodLabel = 'Transfer Bank';
-                            break;
-                        case 'cash':
-                            $paymentMethodLabel = 'Cash';
-                            break;
-                        default:
-                            $paymentMethodLabel = 'Cash';
-                    }
-                }
-                
-                Transaction::create([
+                $transaction = Transaction::create([
                     'member_id'      => $record->id,
                     'order_id'       => $record->order_id ?? 'ADM-' . strtoupper(uniqid()),
                     'amount'         => $totalHarga,
@@ -380,10 +387,6 @@ class EditMember extends EditRecord
                     ->send();
                 
                 // 4️⃣ KIRIM WHATSAPP/TELEGRAM (DATA SUDAH KONSISTEN)
-                $transaction = Transaction::where('member_id', $record->id)
-                    ->latest()
-                    ->first();
-                
                 if ($transaction) {
                     dispatch(function () use ($record, $transaction) {
                         $memberFresh = \App\Models\Member::find($record->id);
@@ -413,31 +416,37 @@ class EditMember extends EditRecord
             } else {
                 // Jika sudah ada transaksi pendaftaran (perpanjangan), catat transaksi perpanjangan
                 if ($record->expiry_date) {
+                    // Cek apakah sudah ada transaksi perpanjangan hari ini
+                    $now = Carbon::now('Asia/Makassar');
+                    $existingRenewalToday = Transaction::where('member_id', $record->id)
+                        ->where('type', 'like', 'Perpanjangan%')
+                        ->whereDate('payment_date', $now->format('Y-m-d'))
+                        ->exists();
+                    
+                    if ($existingRenewalToday) {
+                        Notification::make()
+                            ->title('Transaksi Sudah Ada')
+                            ->body('Transaksi perpanjangan sudah ada untuk hari ini.')
+                            ->warning()
+                            ->send();
+                        return $record;
+                    }
+                    
                     // PERBAIKAN: Update member data DULU sebelum catat transaksi (SKIP OBSERVER)
                     $record->withoutEvents(function () use ($record, $data) {
                         $record->update($data);
                     });
                     
-                    // Tentukan metode pembayaran berdasarkan data terbaru di database
-                    // (karena member sudah diupdate di atas)
-                    $memberFresh = $record->fresh(); // Ambil data terbaru dari database
-                    $paymentMethodLabel = 'Cash';
-                    
-                    if ($memberFresh && $memberFresh->payment_method) {
-                        switch ($memberFresh->payment_method) {
-                            case 'transfer_bank':
-                                $paymentMethodLabel = 'Transfer Bank';
-                                break;
-                            case 'cash':
-                                $paymentMethodLabel = 'Cash';
-                                break;
-                            default:
-                                $paymentMethodLabel = 'Cash';
-                        }
-                    }
+                    // Gunakan fallback bertingkat untuk memastikan konsistensi
+                    $paymentMethod = $data['payment_method'] ?? $record->payment_method ?? 'cash';
+                    $paymentMethodLabel = match($paymentMethod) {
+                        'transfer_bank' => 'Transfer Bank',
+                        'cash' => 'Cash',
+                        default => 'Cash'
+                    };
                     
                     // Catat transaksi perpanjangan SETELAH member diupdate
-                    Transaction::create([
+                    $transaction = Transaction::create([
                         'member_id'      => $record->id,
                         'order_id'       => 'RNW-' . strtoupper(uniqid()),
                         'amount'         => $totalHarga, // Hanya harga paket, tanpa fee
@@ -447,11 +456,6 @@ class EditMember extends EditRecord
                         'payment_date'   => $now,
                         'guest_name'     => $record->name,
                     ]);
-                    
-                    // Ambil transaksi yang baru dibuat untuk notifikasi Telegram
-                    $transaction = Transaction::where('member_id', $record->id)
-                        ->latest()
-                        ->first();
                     
                     // Kirim notifikasi Telegram SETELAH semua data commit
                     if ($transaction) {
@@ -610,7 +614,7 @@ class EditMember extends EditRecord
             
             // Get package info from selected type
             $selectedType = $data['type'] ?? $record->type;
-            $selectedPaymentMethod = $data['payment_method'] ?? 'cash';
+            $selectedPaymentMethod = $data['payment_method'] ?? $record->payment_method ?? 'cash';
             $customBiayaPaket = isset($data['biaya_paket_info']) ? (int)$data['biaya_paket_info'] : null;
             $customJoinDate = $data['join_date_preview'] ?? null;
             $customExpiryDate = $data['expiry_date_preview'] ?? null;
@@ -679,25 +683,15 @@ class EditMember extends EditRecord
                 ]);
             });
             
-            // Determine payment method label berdasarkan data yang sudah diupdate
-            $memberFresh = $record->fresh();
-            $paymentMethodLabel = 'Cash';
-            
-            if ($memberFresh && $memberFresh->payment_method) {
-                switch ($memberFresh->payment_method) {
-                    case 'transfer_bank':
-                        $paymentMethodLabel = 'Transfer Bank';
-                        break;
-                    case 'cash':
-                        $paymentMethodLabel = 'Cash';
-                        break;
-                    default:
-                        $paymentMethodLabel = 'Cash';
-                }
-            }
+            // Gunakan payment method yang sudah di-fallback di atas
+            $paymentMethodLabel = match($selectedPaymentMethod) {
+                'transfer_bank' => 'Transfer Bank',
+                'cash' => 'Cash',
+                default => 'Cash'
+            };
             
             // Create transaction
-            Transaction::create([
+            $transaction = Transaction::create([
                 'member_id'      => $record->id,
                 'order_id'       => 'RNW-' . strtoupper(uniqid()),
                 'amount'         => $harga,
@@ -707,11 +701,6 @@ class EditMember extends EditRecord
                 'payment_date'   => $now,
                 'guest_name'     => $record->name,
             ]);
-            
-            // Ambil transaksi yang baru dibuat untuk notifikasi
-            $transaction = Transaction::where('member_id', $record->id)
-                ->latest()
-                ->first();
             
             // Kirim notifikasi WhatsApp & Telegram SETELAH semua data commit
             if ($transaction) {
