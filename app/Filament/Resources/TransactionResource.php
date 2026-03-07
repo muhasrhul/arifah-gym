@@ -158,8 +158,8 @@ class TransactionResource extends Resource
                                     // Add original pattern
                                     $searchPatterns[] = $normalizedSearch;
                                     
-                                    // Convert 62xxx to 0xxx
-                                    if (str_starts_with($normalizedSearch, '62') && strlen($normalizedSearch) >= 10) {
+                                    // Convert 62xxx to 0xxx (handle all lengths >= 9)
+                                    if (str_starts_with($normalizedSearch, '62') && strlen($normalizedSearch) >= 9) {
                                         $searchPatterns[] = '0' . substr($normalizedSearch, 2);
                                     }
                                     
