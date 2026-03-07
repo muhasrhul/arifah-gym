@@ -148,6 +148,42 @@ class TransactionResource extends Resource
                             ->where('guest_name', 'like', "%{$search}%")
                             ->orWhereHas('member', function (Builder $query) use ($search) {
                                 $query->where('name', 'like', "%{$search}%");
+                                
+                                // Phone search with safe normalization
+                                $normalizedSearch = preg_replace('/[^0-9]/', '', $search);
+                                
+                                if (!empty($normalizedSearch) && strlen($normalizedSearch) >= 8 && strlen($normalizedSearch) <= 15) {
+                                    $searchPatterns = [];
+                                    
+                                    // Add original pattern
+                                    $searchPatterns[] = $normalizedSearch;
+                                    
+                                    // Convert 62xxx to 0xxx
+                                    if (str_starts_with($normalizedSearch, '62') && strlen($normalizedSearch) >= 10) {
+                                        $searchPatterns[] = '0' . substr($normalizedSearch, 2);
+                                    }
+                                    
+                                    // Convert 0xxx to 62xxx
+                                    if (str_starts_with($normalizedSearch, '0') && strlen($normalizedSearch) >= 10) {
+                                        $searchPatterns[] = '62' . substr($normalizedSearch, 1);
+                                    }
+                                    
+                                    // Handle 8xxx format
+                                    if (str_starts_with($normalizedSearch, '8') && strlen($normalizedSearch) >= 9) {
+                                        $searchPatterns[] = '0' . $normalizedSearch;
+                                        $searchPatterns[] = '62' . $normalizedSearch;
+                                    }
+                                    
+                                    // Use REPLACE instead of REGEXP_REPLACE for better compatibility
+                                    $query->orWhere(function ($phoneQuery) use ($searchPatterns) {
+                                        foreach ($searchPatterns as $pattern) {
+                                            $phoneQuery->orWhereRaw(
+                                                "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '+', ''), '(', ''), ')', ''), '.', '') = ?", 
+                                                [$pattern]
+                                            );
+                                        }
+                                    });
+                                }
                             });
                     })
                     ->toggleable(isToggledHiddenByDefault: false),
@@ -183,7 +219,7 @@ class TransactionResource extends Resource
                 
                 Tables\Columns\TextColumn::make('payment_method')
                     ->label('Metode')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 
                 Tables\Columns\TextColumn::make('payment_date')
                     ->label('Waktu')
