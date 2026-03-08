@@ -19,7 +19,9 @@ class ListAttendances extends ListRecords
     protected function getActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Tambah Absensi')
+                ->icon('heroicon-o-clock'),
         ];
     }
 }

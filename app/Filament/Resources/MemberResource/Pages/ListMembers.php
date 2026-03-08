@@ -19,7 +19,9 @@ class ListMembers extends ListRecords
     protected function getActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Tambah Member')
+                ->icon('heroicon-o-plus'),
         ];
     }
 }
