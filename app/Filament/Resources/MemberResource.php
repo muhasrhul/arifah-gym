@@ -78,6 +78,7 @@ class MemberResource extends Resource
                 Forms\Components\Card::make()->schema([
                     Forms\Components\TextInput::make('name')
                         ->label('Nama Lengkap')
+                        ->placeholder('Masukkan nama lengkap member')
                         ->required(),
 
                     Forms\Components\TextInput::make('nik')
@@ -86,19 +87,19 @@ class MemberResource extends Resource
                         ->minLength(16)
                         ->numeric()
                         ->placeholder('Masukkan 16 digit NIK KTP')
-                        ->helperText('NIK KTP harus 16 digit angka')
                         ->unique(ignorable: fn ($record) => $record),
 
                     Forms\Components\Grid::make(2)->schema([
                         Forms\Components\TextInput::make('email')
                             ->email()
                             ->label('Email')
-                            ->helperText('Email bersifat opsional. Jika diisi, akan digunakan untuk notifikasi.')
+                            ->placeholder('Masukkan alamat email')
                             ->unique(ignorable: fn ($record) => $record),
 
                         Forms\Components\TextInput::make('phone')
                             ->label('WhatsApp')
                             ->tel()
+                            ->placeholder('Masukkan nomor WhatsApp')
                             ->required()
                             ->unique(ignorable: fn ($record) => $record),
                     ]),
@@ -114,12 +115,10 @@ class MemberResource extends Resource
                         Forms\Components\Select::make('type')
                             ->label('Tipe Member')
                             ->options(Paket::all()->pluck('nama_paket', 'nama_paket'))
+                            ->placeholder('Pilih tipe member')
                             ->reactive() 
                             ->required()
                             ->disabled(fn ($record) => $record && $record->is_active)
-                            ->helperText(fn ($record) => $record && $record->is_active 
-                                ? '⚠️ Tipe member tidak bisa diubah untuk member yang sudah aktif' 
-                                : 'Pilih tipe membership')
                             ->afterStateUpdated(function ($state, $set, $get, $record) {
                                 // 1. Cari Paket di Database
                                 $paket = Paket::where('nama_paket', $state)->first();
@@ -159,15 +158,14 @@ class MemberResource extends Resource
                                 'cash' => 'Cash',
                                 'transfer_bank' => 'Transfer Bank',
                             ])
-                            ->default('cash')
-                            ->required()
-                            ->helperText('Pilih metode pembayaran yang digunakan member'),
+                            ->placeholder('Pilih metode pembayaran')
+                            ->required(),
 
                         Forms\Components\Grid::make(2)->schema([
                             Forms\Components\DatePicker::make('join_date')
                                 ->label('Tanggal Mulai')
                                 ->placeholder('Pilih tanggal mulai membership')
-                                ->helperText('Tanggal pertama kali member bergabung (tidak berubah saat perpanjangan)')
+                                ->helperText('Tanggal mulai tidak berubah saat perpanjangan')
                                 ->required()
                                 ->reactive()
                                 ->closeOnDateSelection()
@@ -223,11 +221,11 @@ class MemberResource extends Resource
                                                 if ($durasi >= 30) {
                                                     $bulan = round($durasi / 30);
                                                     $rekomendasiExpiry = $tanggalMulai->copy()->addMonths($bulan);
-                                                    return "💡 Rekomendasi otomatis: {$rekomendasiExpiry->format('d/m/Y')} (dari tanggal mulai + {$bulan} bulan). WAJIB diisi jika toggle Status Aktif dinyalakan.";
+                                                    return "💡 Rekomendasi: {$rekomendasiExpiry->format('d/m/Y')} (dari tanggal mulai + {$bulan} bulan).";
                                                 } else {
                                                     if ($durasi == 1) {
                                                         $rekomendasiExpiry = $tanggalMulai->copy();
-                                                        return "💡 Rekomendasi otomatis: {$rekomendasiExpiry->format('d/m/Y')} (member harian expired di hari yang sama). WAJIB diisi jika toggle Status Aktif dinyalakan.";
+                                                        return "💡 Rekomendasi: {$rekomendasiExpiry->format('d/m/Y')} (member harian expired di hari yang sama).";
                                                     } else {
                                                         $rekomendasiExpiry = $tanggalMulai->copy()->addDays($durasi - 1);
                                                         return "💡 Rekomendasi otomatis: {$rekomendasiExpiry->format('d/m/Y')} (dari tanggal mulai + {$durasi} hari). WAJIB diisi jika toggle Status Aktif dinyalakan.";
@@ -236,7 +234,7 @@ class MemberResource extends Resource
                                             }
                                         }
                                         
-                                        return 'WAJIB diisi jika toggle Status Aktif dinyalakan. Pilih tanggal mulai dan paket untuk melihat rekomendasi.';
+                                        return null;
                                     }
                                     
                                     if ($record->expiry_date) {
@@ -244,7 +242,7 @@ class MemberResource extends Resource
                                         
                                         // Jika member expired (tidak aktif tapi punya expiry_date)
                                         if (!$record->is_active) {
-                                            return "⚠️ Member expired pada: {$expiredDate}. WAJIB ubah tanggal berakhir yang baru untuk perpanjangan.";
+                                            return "Member sudah expired pada: {$expiredDate}. Ubah tanggal berakhir yang baru untuk perpanjangan.";
                                         }
                                         
                                         return "Tanggal berakhir saat ini: {$expiredDate}";
@@ -292,7 +290,6 @@ class MemberResource extends Resource
                                         }
                                     }
                                 })
-                                ->helperText(fn ($record) => $record && $record->is_active ? 'Tidak bisa diedit (member sudah aktif)' : 'Bisa diedit manual')
                                 ->extraInputAttributes(['style' => 'font-weight: 700; color: #059669; background-color: #f0fdf4;']),
 
                             Forms\Components\TextInput::make('biaya_registrasi_info')
@@ -374,10 +371,10 @@ class MemberResource extends Resource
                                         if ($paketName) {
                                             $paket = Paket::where('nama_paket', $paketName)->first();
                                             if ($paket && $paket->durasi_hari < 30) {
-                                                return '⚠️ Tamu harian tidak dikenakan biaya admin';
+                                                return 'Tamu harian tidak dikenakan biaya admin';
                                             }
                                         }
-                                        return 'Hanya untuk pendaftar baru (bisa diedit)';
+                                        return 'Hanya untuk pendaftar baru';
                                     }
                                     
                                     // Cek apakah paket yang dipilih adalah paket harian
@@ -385,7 +382,7 @@ class MemberResource extends Resource
                                     if ($paketName) {
                                         $paket = Paket::where('nama_paket', $paketName)->first();
                                         if ($paket && $paket->durasi_hari < 30) {
-                                            return '⚠️ Tamu harian tidak dikenakan biaya admin';
+                                            return 'Tamu harian tidak dikenakan biaya admin';
                                         }
                                     }
                                     
@@ -398,14 +395,14 @@ class MemberResource extends Resource
                                         ->exists();
                                     
                                     if ($record->is_active && !$sudahPernahPerpanjangan) {
-                                        return 'Biaya admin yang sudah dibayar saat pendaftaran pertama kali';
+                                        return null;
                                     } elseif ($record->is_active && $sudahPernahPerpanjangan) {
                                         return 'Member lama tidak dikenakan biaya admin';
                                     } elseif ($record->expiry_date) {
-                                        return 'Tidak dikenakan biaya admin (perpanjangan membership)';
+                                        return 'Perpanjangan membership bebas biaya admin';
                                     }
                                     
-                                    return 'Hanya untuk pendaftar baru (bisa diedit)';
+                                    return 'Hanya untuk pendaftar baru';
                                 })
                                 ->extraInputAttributes(['style' => 'font-weight: 700; color: #ea580c; background-color: #fff7ed;']),
 
@@ -466,7 +463,7 @@ class MemberResource extends Resource
                                 ->helperText(function ($record) {
                                     if (!$record) return null;
                                     if ($record->is_active) return 'Total yang sudah dibayar';
-                                    if ($record->expiry_date) return 'Total untuk perpanjangan (tanpa biaya registrasi)';
+                                    if ($record->expiry_date) return 'Total untuk perpanjangan';
                                     return null;
                                 })
                                 ->extraInputAttributes(['style' => 'font-weight: 900; color: #000000; font-size: 1.5rem; background-color: #fef3c7;']),
@@ -476,7 +473,7 @@ class MemberResource extends Resource
                             ->label('Status Aktif')
                             ->reactive()
                             ->helperText(function ($record) {
-                                if (!$record) return 'Nyalakan ini hanya jika member sudah membayar lunas. PENTING: Anda harus mengisi Tanggal Berakhir secara manual sebelum mengaktifkan.';
+                                if (!$record) return '**Nyalakan hanya jika member sudah membayar lunas.**';
                                 
                                 // Jika member sedang aktif dan sudah pernah punya transaksi
                                 if ($record->is_active) {
@@ -485,16 +482,16 @@ class MemberResource extends Resource
                                         ->exists();
                                     
                                     if ($sudahPernahAktif) {
-                                        return 'Member sedang aktif. Toggle tidak bisa dimatikan untuk mencegah kesalahan perhitungan.';
+                                        return null; // Hilangkan helper text untuk member aktif
                                     }
                                 }
                                 
                                 // Jika member expired (tidak aktif tapi punya expiry_date)
                                 if (!$record->is_active && $record->expiry_date) {
-                                    return 'Member expired. Nyalakan toggle untuk perpanjangan membership.';
+                                    return 'Member expired. Nyalakan untuk perpanjangan membership.';
                                 }
                                 
-                                return 'Nyalakan ini hanya jika member sudah membayar lunas. PENTING: Anda harus mengisi Tanggal Berakhir secara manual sebelum mengaktifkan.';
+                                return '**Nyalakan hanya jika member sudah membayar lunas.**';
                             })
                             ->disabled(function ($record) {
                                 if (!$record) return false;

@@ -57,9 +57,8 @@ class EditMember extends EditRecord
                                     'cash' => 'Cash',
                                     'transfer_bank' => 'Transfer Bank',
                                 ])
-                                ->default(fn () => $this->record->payment_method ?? 'cash')
-                                ->required()
-                                ->helperText('Pilih metode pembayaran yang digunakan member'),
+                                ->placeholder('Pilih metode pembayaran')
+                                ->required(),
                             
                             Forms\Components\Grid::make(2)->schema([
                                 Forms\Components\DatePicker::make('join_date_preview')
@@ -68,7 +67,7 @@ class EditMember extends EditRecord
                                     ->required()
                                     ->reactive()
                                     ->closeOnDateSelection()
-                                    ->helperText('Perpanjangan dimulai dari tanggal expired lama agar tidak kehilangan sisa waktu')
+                                    ->helperText('Perpanjangan dimulai dari tanggal expired lama')
                                     ->afterStateUpdated(function ($state, $set, $get) {
                                         // TIDAK auto-update tanggal berakhir
                                         // Biarkan admin input manual, hanya update placeholder dan helper text
@@ -116,25 +115,21 @@ class EditMember extends EditRecord
                                             $paket = \App\Models\Paket::where('nama_paket', $paketType)->first();
                                             if ($paket) {
                                                 $durasi = $paket->durasi_hari;
-                                                $tanggalMulai = \Carbon\Carbon::parse($joinDate);
                                                 
                                                 if ($durasi >= 30) {
                                                     $bulan = round($durasi / 30);
-                                                    $rekomendasiExpiry = $tanggalMulai->copy()->addMonths($bulan);
-                                                    return "💡 Rekomendasi otomatis: {$rekomendasiExpiry->format('d/m/Y')} (dari tanggal mulai + {$bulan} bulan). Input manual tanggal berakhir yang diinginkan.";
+                                                    return "Tanggal expired lama + {$bulan} bulan";
                                                 } else {
                                                     if ($durasi == 1) {
-                                                        $rekomendasiExpiry = $tanggalMulai->copy();
-                                                        return "💡 Rekomendasi otomatis: {$rekomendasiExpiry->format('d/m/Y')} (member harian expired di hari yang sama). Input manual tanggal berakhir yang diinginkan.";
+                                                        return "Tanggal expired lama + 1 hari";
                                                     } else {
-                                                        $rekomendasiExpiry = $tanggalMulai->copy()->addDays($durasi - 1);
-                                                        return "💡 Rekomendasi otomatis: {$rekomendasiExpiry->format('d/m/Y')} (dari tanggal mulai + {$durasi} hari). Input manual tanggal berakhir yang diinginkan.";
+                                                        return "Tanggal expired lama + {$durasi} hari";
                                                     }
                                                 }
                                             }
                                         }
                                         
-                                        return 'Input manual tanggal berakhir yang diinginkan. Pilih tanggal mulai dan paket untuk melihat rekomendasi otomatis.';
+                                        return 'Pilih tanggal mulai dan paket untuk melihat rekomendasi';
                                     }),
                             ]),
                             
@@ -152,7 +147,6 @@ class EditMember extends EditRecord
                                         // Update total ketika biaya paket diubah
                                         $set('harga_paket_info', $state);
                                     })
-                                    ->helperText('Bisa diedit manual')
                                     ->extraInputAttributes(['style' => 'font-weight: 700; color: #059669; background-color: #f0fdf4;']),
                                 
                                 Forms\Components\TextInput::make('harga_paket_info')
@@ -167,7 +161,6 @@ class EditMember extends EditRecord
                                     ->reactive()
                                     ->disabled()
                                     ->dehydrated(false)
-                                    ->helperText('Total untuk perpanjangan (tanpa biaya admin)')
                                     ->extraInputAttributes(['style' => 'font-weight: 900; color: #000000; font-size: 1.5rem; background-color: #fef3c7;']),
                             ]),
                         ])
