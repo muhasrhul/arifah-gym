@@ -72,6 +72,16 @@ Route::post('/absen', function (Request $request) {
         return back()->with('error', 'Member Anda Non-Aktif/Expired. Silakan lapor ke kasir.');
     }
 
+    // 2.5. Cek Apakah Hari Ini = Tanggal Expired (Tolak Absen di Hari Terakhir)
+    if ($member->expiry_date) {
+        $today = \Carbon\Carbon::now('Asia/Makassar')->startOfDay();
+        $expiryDate = \Carbon\Carbon::parse($member->expiry_date)->startOfDay();
+        
+        if ($today->equalTo($expiryDate)) {
+            return back()->with('error', "Maaf {$member->name}, membership Anda berakhir hari ini. Silakan perpanjang terlebih dahulu untuk bisa absen.");
+        }
+    }
+
     // 3. Cek Apakah Sudah Absen Hari Ini (Kecuali Tamu Harian)
     if ($member->name !== 'Tamu Harian') {
         $sudahAbsen = Attendance::where('member_id', $member->id)

@@ -62,16 +62,29 @@ class AttendanceResource extends Resource
                     ->relationship('member', 'name')
                     ->searchable()
                     ->required()
-                    // LOGIKA ANTI-DOUBLE ABSEN
+                    // LOGIKA ANTI-DOUBLE ABSEN & VALIDASI EXPIRED
                     ->rules([
                         function () {
                             return function (string $attribute, $value, \Closure $fail) {
+                                // 1. Cek double absen
                                 $sudahAbsen = Attendance::where('member_id', $value)
                                     ->whereDate('created_at', Carbon::today())
                                     ->exists();
 
                                 if ($sudahAbsen) {
                                     $fail('Member ini sudah melakukan absensi hari ini.');
+                                    return;
+                                }
+
+                                // 2. Cek apakah hari ini = tanggal expired
+                                $member = \App\Models\Member::find($value);
+                                if ($member && $member->expiry_date) {
+                                    $today = Carbon::now('Asia/Makassar')->startOfDay();
+                                    $expiryDate = Carbon::parse($member->expiry_date)->startOfDay();
+                                    
+                                    if ($today->equalTo($expiryDate)) {
+                                        $fail("Member {$member->name} tidak bisa absen karena membership berakhir hari ini. Silakan perpanjang terlebih dahulu.");
+                                    }
                                 }
                             };
                         },
