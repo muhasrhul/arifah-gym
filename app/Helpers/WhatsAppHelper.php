@@ -349,7 +349,7 @@ class WhatsAppHelper
                 $message .= "  HP: {$member->phone}\n\n";
             }
 
-            $message .= "Pesan reminder sudah dikirim ke member.\n\n";
+            $message .= "Silakan hubungi member untuk perpanjangan membership.\n\n";
         } else {
             $message .= "✅ *TIDAK ADA MEMBER YANG AKAN EXPIRED BESOK*\n\n";
             $message .= "Semua member masih aman!\n\n";

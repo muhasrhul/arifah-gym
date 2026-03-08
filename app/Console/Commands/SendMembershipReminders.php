@@ -49,21 +49,24 @@ class SendMembershipReminders extends Command
 
         $this->info("📅 H-1 (Besok Expired): Ditemukan {$membersH1->count()} member");
 
-        foreach ($membersH1 as $member) {
-            $this->line("   Mengirim ke {$member->name} ({$member->phone})...");
-            
-            $result = WhatsAppHelper::sendReminderH1($member);
-            
-            if ($result['success']) {
-                $sentH1++;
-                $this->info("   ✅ Berhasil");
-            } else {
-                $failed++;
-                $this->error("   ❌ Gagal: " . ($result['message'] ?? 'Unknown error'));
-            }
-            
-            sleep(2);
-        }
+        // REMINDER H-1 DINONAKTIFKAN - Hanya laporan ke owner yang aktif
+        // foreach ($membersH1 as $member) {
+        //     $this->line("   Mengirim ke {$member->name} ({$member->phone})...");
+        //     
+        //     $result = WhatsAppHelper::sendReminderH1($member);
+        //     
+        //     if ($result['success']) {
+        //         $sentH1++;
+        //         $this->info("   ✅ Berhasil");
+        //     } else {
+        //         $failed++;
+        //         $this->error("   ❌ Gagal: " . ($result['message'] ?? 'Unknown error'));
+        //     }
+        //     
+        //     sleep(2);
+        // }
+        
+        $this->info("   📴 Pengiriman reminder ke member dinonaktifkan");
 
         // ========================================
         // SUMMARY
@@ -73,9 +76,9 @@ class SendMembershipReminders extends Command
         $this->table(
             ['Kategori', 'Jumlah'],
             [
-                ['H-1 (Besok)', $sentH1],
+                ['H-1 (Dinonaktifkan)', 0],
                 ['Gagal', $failed],
-                ['TOTAL TERKIRIM', $sentH1],
+                ['TOTAL TERKIRIM', 0],
             ]
         );
 
