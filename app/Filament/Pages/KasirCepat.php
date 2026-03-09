@@ -219,7 +219,7 @@ class KasirCepat extends Page
             Notification::make()
                 ->title("Hutang Baru Dicatat")
                 ->body("Kasir mencatat hutang **{$customerName}** untuk **{$product->name}{$quantityText}** senilai **{$nominal}**. Stock tersisa: **{$product->stock}**")
-                ->icon('heroicon-o-exclamation-triangle')
+                ->icon('heroicon-o-information-circle')
                 ->iconColor('warning')
                 ->sendToDatabase($admin);
         }
