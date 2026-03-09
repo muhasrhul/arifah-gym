@@ -15,12 +15,15 @@ class QuickTransaction extends Model
     // Kolom yang bisa diisi (Mass Assignment)
     protected $fillable = [
         'guest_name',
+        'customer_phone',
+        'notes',
         'product_name',
         'order_id',
         'amount',
         'payment_method',
         'type',
         'payment_date',
+        'status',
     ];
 
     // Cast kolom ke tipe data yang sesuai
@@ -45,5 +48,37 @@ class QuickTransaction extends Model
     public function getFormattedAmountAttribute()
     {
         return 'Rp ' . number_format($this->amount, 0, ',', '.');
+    }
+
+    // Accessor untuk status dalam bahasa Indonesia
+    public function getStatusLabelAttribute()
+    {
+        return match($this->status) {
+            'paid' => 'Lunas',
+            'pending' => 'Belum Bayar',
+            default => 'Lunas'
+        };
+    }
+
+    // Accessor untuk warna status
+    public function getStatusColorAttribute()
+    {
+        return match($this->status) {
+            'paid' => 'success',
+            'pending' => 'warning',
+            default => 'success'
+        };
+    }
+
+    // Scope untuk hutang yang belum dibayar
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    // Scope untuk transaksi yang sudah dibayar
+    public function scopePaid($query)
+    {
+        return $query->where('status', 'paid');
     }
 }

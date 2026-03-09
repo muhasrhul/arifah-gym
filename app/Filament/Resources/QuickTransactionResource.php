@@ -115,6 +115,17 @@ class QuickTransactionResource extends Resource
                     ->color('success')
                     ->weight('bold'),
                 
+                Tables\Columns\BadgeColumn::make('status')
+                    ->label('Status')
+                    ->enum([
+                        'paid' => 'Lunas',
+                        'pending' => 'Belum Bayar',
+                    ])
+                    ->colors([
+                        'success' => 'paid',
+                        'warning' => 'pending',
+                    ]),
+                
                 Tables\Columns\TextColumn::make('payment_method')
                     ->label('Metode'),
                 
@@ -122,6 +133,33 @@ class QuickTransactionResource extends Resource
                     ->label('Waktu')
                     ->dateTime('d M Y, H:i')
                     ->sortable(),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
+                    ->options([
+                        'paid' => 'Lunas',
+                        'pending' => 'Belum Bayar',
+                    ]),
+                
+                Tables\Filters\Filter::make('payment_date')
+                    ->form([
+                        Forms\Components\DatePicker::make('from')
+                            ->label('Dari Tanggal'),
+                        Forms\Components\DatePicker::make('until')
+                            ->label('Sampai Tanggal'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('payment_date', '>=', $date),
+                            )
+                            ->when(
+                                $data['until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('payment_date', '<=', $date),
+                            );
+                    }),
             ])
             ->defaultSort('payment_date', 'desc')
             ->headerActions([

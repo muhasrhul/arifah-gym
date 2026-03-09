@@ -26,8 +26,12 @@ class KasirCepat extends Page
         // Ambil produk langsung tanpa cache (real-time)
         $products = Product::where('is_active', true)->get();
         
+        // Ambil hutang yang belum lunas (status pending) untuk ditampilkan
+        $unpaidDebts = QuickTransaction::pending()->orderBy('payment_date', 'desc')->take(5)->get();
+        
         return [
             'products' => $products,
+            'unpaidDebts' => $unpaidDebts,
         ];
     }
 
@@ -38,6 +42,13 @@ class KasirCepat extends Page
      */
     public function bayarHarian($productId, $paymentMethod = 'cash', $quantity = 1)
     {
+        // Debug: Log parameter yang diterima
+        \Log::info('bayarHarian called with:', [
+            'productId' => $productId,
+            'paymentMethod' => $paymentMethod,
+            'quantity' => $quantity
+        ]);
+
         // 1. Ambil data produk dari database berdasarkan ID yang diklik
         $product = Product::find($productId);
 
@@ -89,6 +100,12 @@ class KasirCepat extends Page
             default => 'Cash'
         };
 
+        // Debug: Log payment method yang akan disimpan
+        \Log::info('Payment method processing:', [
+            'received' => $paymentMethod,
+            'formatted' => $paymentMethodLabel
+        ]);
+
         // 6. SIMPAN KE TABEL QUICK_TRANSACTIONS
         $quickTransaction = QuickTransaction::create([
             'guest_name'     => str_contains(strtolower($itemName), 'latihan') || str_contains(strtolower($itemName), 'harian') 
@@ -126,5 +143,173 @@ class KasirCepat extends Page
             ->body("Pembayaran **{$itemName}{$quantityText}** sebesar **{$nominal}** via **{$paymentMethodLabel}** telah dicatat. Stock tersisa: **{$product->stock}**")
             ->success()
             ->send();
+    }
+
+    /**
+     * Method untuk mencatat hutang baru
+     */
+    public function catatHutang($productId, $customerName, $phone, $quantity = 1, $notes = null)
+    {
+        // 1. Ambil data produk
+        $product = Product::find($productId);
+
+        if (!$product) {
+            Notification::make()
+                ->title('Produk tidak ditemukan!')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        // 2. Validasi quantity dan stock
+        if ($quantity < 1) $quantity = 1;
+        if ($quantity > $product->stock) {
+            Notification::make()
+                ->title('Stock Tidak Cukup!')
+                ->body("Stock **{$product->name}** hanya tersisa **{$product->stock}** pcs.")
+                ->danger()
+                ->send();
+            return;
+        }
+
+        if ($product->stock <= 0) {
+            Notification::make()
+                ->title('Stock Habis!')
+                ->body("Produk **{$product->name}** sudah habis.")
+                ->danger()
+                ->send();
+            return;
+        }
+
+        // 3. Validasi nama pelanggan
+        if (empty(trim($customerName))) {
+            Notification::make()
+                ->title('Nama Pelanggan Wajib Diisi!')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        $unitPrice = $product->price;
+        $totalAmount = $unitPrice * $quantity;
+
+        // 4. KURANGI STOCK PRODUK
+        $product->decrement('stock', $quantity);
+
+        // 5. SIMPAN HUTANG KE QUICK_TRANSACTIONS dengan status PENDING
+        $quickTransaction = QuickTransaction::create([
+            'guest_name' => trim($customerName),
+            'customer_phone' => $phone ? trim($phone) : null,
+            'notes' => $notes ? trim($notes) : null,
+            'product_name' => $quantity > 1 ? "Hutang: {$product->name} ({$quantity}x)" : "Hutang: {$product->name}",
+            'order_id' => 'HUTANG-' . date('YmdHis'),
+            'amount' => $totalAmount,
+            'type' => 'Hutang: ' . $product->name,
+            'payment_method' => 'Pending', // Belum ada pembayaran
+            'payment_date' => now(),
+            'status' => 'pending', // Status hutang
+        ]);
+
+        // 6. KIRIM NOTIFIKASI KE ADMIN
+        $admins = User::all();
+        $nominal = "Rp " . number_format($totalAmount, 0, ',', '.');
+        $quantityText = $quantity > 1 ? " ({$quantity}x)" : "";
+        
+        foreach ($admins as $admin) {
+            Notification::make()
+                ->title("Hutang Baru Dicatat")
+                ->body("Kasir mencatat hutang **{$customerName}** untuk **{$product->name}{$quantityText}** senilai **{$nominal}**. Stock tersisa: **{$product->stock}**")
+                ->icon('heroicon-o-exclamation-triangle')
+                ->iconColor('warning')
+                ->sendToDatabase($admin);
+        }
+
+        // 7. Notifikasi sukses
+        Notification::make()
+            ->title('Hutang Berhasil Dicatat!')
+            ->body("Hutang **{$customerName}** untuk **{$product->name}{$quantityText}** senilai **{$nominal}** telah dicatat.")
+            ->success()
+            ->send();
+
+        // Clear cache
+        cache()->forget('stats_omset_hari_ini');
+        cache()->forget('stats_total_omzet');
+    }
+
+    /**
+     * Method untuk mengambil data members untuk autocomplete
+     */
+    public function getMembersData()
+    {
+        $members = \App\Models\Member::select('name', 'phone')
+            ->where('is_active', true)
+            ->orderBy('name', 'asc')
+            ->get()
+            ->map(function($member) {
+                return [
+                    'name' => $member->name,
+                    'phone' => $member->phone
+                ];
+            });
+
+        return $members->toArray();
+    }
+    public function bayarHutang($transactionId, $paymentMethod = 'cash')
+    {
+        $transaction = QuickTransaction::find($transactionId);
+
+        if (!$transaction) {
+            Notification::make()
+                ->title('Transaksi tidak ditemukan!')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        if ($transaction->status !== 'pending') {
+            Notification::make()
+                ->title('Transaksi sudah dibayar!')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        // Format metode pembayaran
+        $paymentMethodLabel = match($paymentMethod) {
+            'cash' => 'Cash',
+            'transfer' => 'Transfer Bank',
+            default => 'Cash'
+        };
+
+        // Update status menjadi paid dan update payment_method
+        $transaction->update([
+            'status' => 'paid',
+            'payment_method' => $paymentMethodLabel,
+            'payment_date' => now(), // Update waktu pembayaran
+        ]);
+
+        // Notifikasi sukses
+        $nominal = "Rp " . number_format($transaction->amount, 0, ',', '.');
+        
+        Notification::make()
+            ->title('Pembayaran Hutang Berhasil!')
+            ->body("Hutang **{$transaction->guest_name}** sebesar **{$nominal}** telah dibayar via **{$paymentMethodLabel}**.")
+            ->success()
+            ->send();
+
+        // Kirim notifikasi ke admin
+        $admins = User::all();
+        foreach ($admins as $admin) {
+            Notification::make()
+                ->title("Pembayaran Hutang")
+                ->body("**{$transaction->guest_name}** telah melunasi hutang **{$transaction->product_name}** sebesar **{$nominal}** via **{$paymentMethodLabel}**")
+                ->icon('heroicon-o-check-circle')
+                ->iconColor('success')
+                ->sendToDatabase($admin);
+        }
+
+        // Clear cache
+        cache()->forget('stats_omset_hari_ini');
+        cache()->forget('stats_total_omzet');
     }
 }
