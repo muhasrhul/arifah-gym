@@ -144,46 +144,64 @@ class TransactionResource extends Resource
                     ->label('Nama Customer')
                     ->getStateUsing(fn ($record) => $record->member ? $record->member->name : ($record->guest_name ?? 'Umum'))
                     ->searchable(query: function (Builder $query, string $search): Builder {
-                        return $query
-                            ->where('guest_name', 'like', "%{$search}%")
-                            ->orWhereHas('member', function (Builder $query) use ($search) {
-                                $query->where('name', 'like', "%{$search}%");
+                        // Cek apakah input adalah nomor telepon
+                        $normalizedSearch = preg_replace('/[^0-9]/', '', $search);
+                        $isPhoneSearch = !empty($normalizedSearch) && strlen($normalizedSearch) >= 8 && strlen($normalizedSearch) <= 15;
+                        
+                        if ($isPhoneSearch) {
+                            // Phone search - exact match untuk nomor telepon
+                            return $query->whereHas('member', function (Builder $query) use ($normalizedSearch) {
+                                $searchPatterns = [];
                                 
-                                // Phone search with safe normalization
-                                $normalizedSearch = preg_replace('/[^0-9]/', '', $search);
+                                // Add original pattern
+                                $searchPatterns[] = $normalizedSearch;
                                 
-                                if (!empty($normalizedSearch) && strlen($normalizedSearch) >= 8 && strlen($normalizedSearch) <= 15) {
-                                    $searchPatterns = [];
-                                    
-                                    // Add original pattern
-                                    $searchPatterns[] = $normalizedSearch;
-                                    
-                                    // Convert 62xxx to 0xxx (handle all lengths >= 9)
-                                    if (str_starts_with($normalizedSearch, '62') && strlen($normalizedSearch) >= 9) {
-                                        $searchPatterns[] = '0' . substr($normalizedSearch, 2);
-                                    }
-                                    
-                                    // Convert 0xxx to 62xxx
-                                    if (str_starts_with($normalizedSearch, '0') && strlen($normalizedSearch) >= 10) {
-                                        $searchPatterns[] = '62' . substr($normalizedSearch, 1);
-                                    }
-                                    
-                                    // Handle 8xxx format
-                                    if (str_starts_with($normalizedSearch, '8') && strlen($normalizedSearch) >= 9) {
-                                        $searchPatterns[] = '0' . $normalizedSearch;
-                                        $searchPatterns[] = '62' . $normalizedSearch;
-                                    }
-                                    
-                                    // Use REPLACE instead of REGEXP_REPLACE for better compatibility
-                                    $query->orWhere(function ($phoneQuery) use ($searchPatterns) {
-                                        foreach ($searchPatterns as $pattern) {
-                                            $phoneQuery->orWhereRaw(
-                                                "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '+', ''), '(', ''), ')', ''), '.', '') = ?", 
-                                                [$pattern]
-                                            );
-                                        }
-                                    });
+                                // Convert 62xxx to 0xxx (handle all lengths >= 9)
+                                if (str_starts_with($normalizedSearch, '62') && strlen($normalizedSearch) >= 9) {
+                                    $searchPatterns[] = '0' . substr($normalizedSearch, 2);
                                 }
+                                
+                                // Convert 0xxx to 62xxx
+                                if (str_starts_with($normalizedSearch, '0') && strlen($normalizedSearch) >= 10) {
+                                    $searchPatterns[] = '62' . substr($normalizedSearch, 1);
+                                }
+                                
+                                // Handle 8xxx format
+                                if (str_starts_with($normalizedSearch, '8') && strlen($normalizedSearch) >= 9) {
+                                    $searchPatterns[] = '0' . $normalizedSearch;
+                                    $searchPatterns[] = '62' . $normalizedSearch;
+                                }
+                                
+                                // Use REPLACE for exact phone match
+                                $query->where(function ($phoneQuery) use ($searchPatterns) {
+                                    foreach ($searchPatterns as $pattern) {
+                                        $phoneQuery->orWhereRaw(
+                                            "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '+', ''), '(', ''), ')', ''), '.', '') = ?", 
+                                            [$pattern]
+                                        );
+                                    }
+                                });
+                            });
+                        }
+                        
+                        // Cek apakah search dimulai dengan * untuk partial match
+                        $isPartialSearch = str_starts_with($search, '*');
+                        
+                        if ($isPartialSearch) {
+                            // Partial match - hilangkan tanda *
+                            $partialSearch = ltrim($search, '*');
+                            return $query
+                                ->where('guest_name', 'like', "%{$partialSearch}%")
+                                ->orWhereHas('member', function (Builder $query) use ($partialSearch) {
+                                    $query->where('name', 'like', "%{$partialSearch}%");
+                                });
+                        }
+                        
+                        // Default: Exact match untuk nama
+                        return $query
+                            ->where('guest_name', '=', $search)
+                            ->orWhereHas('member', function (Builder $query) use ($search) {
+                                $query->where('name', '=', $search);
                             });
                     })
                     ->toggleable(isToggledHiddenByDefault: false),
