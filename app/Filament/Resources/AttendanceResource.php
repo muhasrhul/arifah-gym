@@ -106,7 +106,63 @@ class AttendanceResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('member.name')
                     ->label('Nama Member')
-                    ->searchable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        // Cek apakah input adalah nomor telepon
+                        $normalizedSearch = preg_replace('/[^0-9]/', '', $search);
+                        $isPhoneSearch = !empty($normalizedSearch) && strlen($normalizedSearch) >= 8 && strlen($normalizedSearch) <= 15;
+                        
+                        if ($isPhoneSearch) {
+                            // Phone search - exact match untuk nomor telepon
+                            return $query->whereHas('member', function (Builder $query) use ($normalizedSearch) {
+                                $searchPatterns = [];
+                                
+                                // Add original pattern
+                                $searchPatterns[] = $normalizedSearch;
+                                
+                                // Convert 62xxx to 0xxx (handle all lengths >= 9)
+                                if (str_starts_with($normalizedSearch, '62') && strlen($normalizedSearch) >= 9) {
+                                    $searchPatterns[] = '0' . substr($normalizedSearch, 2);
+                                }
+                                
+                                // Convert 0xxx to 62xxx
+                                if (str_starts_with($normalizedSearch, '0') && strlen($normalizedSearch) >= 10) {
+                                    $searchPatterns[] = '62' . substr($normalizedSearch, 1);
+                                }
+                                
+                                // Handle 8xxx format
+                                if (str_starts_with($normalizedSearch, '8') && strlen($normalizedSearch) >= 9) {
+                                    $searchPatterns[] = '0' . $normalizedSearch;
+                                    $searchPatterns[] = '62' . $normalizedSearch;
+                                }
+                                
+                                // Use REPLACE for exact phone match
+                                $query->where(function ($phoneQuery) use ($searchPatterns) {
+                                    foreach ($searchPatterns as $pattern) {
+                                        $phoneQuery->orWhereRaw(
+                                            "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '+', ''), '(', ''), ')', ''), '.', '') = ?", 
+                                            [$pattern]
+                                        );
+                                    }
+                                });
+                            });
+                        }
+                        
+                        // Cek apakah search dimulai dengan * untuk partial match
+                        $isPartialSearch = str_starts_with($search, '*');
+                        
+                        if ($isPartialSearch) {
+                            // Partial match - hilangkan tanda *
+                            $partialSearch = ltrim($search, '*');
+                            return $query->whereHas('member', function (Builder $query) use ($partialSearch) {
+                                $query->where('name', 'like', "%{$partialSearch}%");
+                            });
+                        }
+                        
+                        // Default: Exact match untuk nama
+                        return $query->whereHas('member', function (Builder $query) use ($search) {
+                            $query->where('name', '=', $search);
+                        });
+                    })
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('created_at')
