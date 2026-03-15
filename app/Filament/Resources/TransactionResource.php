@@ -197,11 +197,38 @@ class TransactionResource extends Resource
                                 });
                         }
                         
-                        // Default: Exact match untuk nama
+                        // Cek apakah search dimulai dengan = untuk exact match
+                        $isExactSearch = str_starts_with($search, '=');
+                        
+                        if ($isExactSearch) {
+                            // Exact match - hilangkan tanda =
+                            $exactSearch = ltrim($search, '=');
+                            return $query
+                                ->where('guest_name', '=', $exactSearch)
+                                ->orWhereHas('member', function (Builder $query) use ($exactSearch) {
+                                    $query->where('name', '=', $exactSearch);
+                                });
+                        }
+                        
+                        // Default: Smart search - case-insensitive exact match dulu, lalu partial
                         return $query
-                            ->where('guest_name', '=', $search)
-                            ->orWhereHas('member', function (Builder $query) use ($search) {
-                                $query->where('name', '=', $search);
+                            ->where(function ($exactQuery) use ($search) {
+                                $exactQuery->whereRaw('LOWER(guest_name) = LOWER(?)', [$search])
+                                    ->orWhereHas('member', function (Builder $query) use ($search) {
+                                        $query->whereRaw('LOWER(name) = LOWER(?)', [$search]);
+                                    });
+                            })
+                            ->orWhere(function ($partialQuery) use ($search) {
+                                // Jika exact match tidak ada hasil, coba partial match
+                                $words = explode(' ', $search);
+                                foreach ($words as $word) {
+                                    if (strlen(trim($word)) >= 2) {
+                                        $partialQuery->where('guest_name', 'like', "%{$word}%")
+                                            ->orWhereHas('member', function (Builder $query) use ($word) {
+                                                $query->where('name', 'like', "%{$word}%");
+                                            });
+                                    }
+                                }
                             });
                     })
                     ->toggleable(isToggledHiddenByDefault: false),

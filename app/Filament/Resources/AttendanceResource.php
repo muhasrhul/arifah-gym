@@ -158,9 +158,29 @@ class AttendanceResource extends Resource
                             });
                         }
                         
-                        // Default: Exact match untuk nama
+                        // Cek apakah search dimulai dengan = untuk exact match
+                        $isExactSearch = str_starts_with($search, '=');
+                        
+                        if ($isExactSearch) {
+                            // Exact match - hilangkan tanda =
+                            $exactSearch = ltrim($search, '=');
+                            return $query->whereHas('member', function (Builder $query) use ($exactSearch) {
+                                $query->where('name', '=', $exactSearch);
+                            });
+                        }
+                        
+                        // Default: Smart search - case-insensitive exact match dulu, lalu partial
                         return $query->whereHas('member', function (Builder $query) use ($search) {
-                            $query->where('name', '=', $search);
+                            $query->whereRaw('LOWER(name) = LOWER(?)', [$search])
+                                ->orWhere(function ($subQuery) use ($search) {
+                                    // Jika exact match tidak ada hasil, coba partial match
+                                    $words = explode(' ', $search);
+                                    foreach ($words as $word) {
+                                        if (strlen(trim($word)) >= 2) {
+                                            $subQuery->where('name', 'like', "%{$word}%");
+                                        }
+                                    }
+                                });
                         });
                     })
                     ->sortable(),

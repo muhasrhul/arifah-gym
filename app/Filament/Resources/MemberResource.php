@@ -568,8 +568,27 @@ class MemberResource extends Resource
                             return $query->where('name', 'like', "%{$partialSearch}%");
                         }
                         
-                        // Default: Exact match untuk nama
-                        return $query->where('name', '=', $search);
+                        // Cek apakah search dimulai dengan = untuk exact match
+                        $isExactSearch = str_starts_with($search, '=');
+                        
+                        if ($isExactSearch) {
+                            // Exact match - hilangkan tanda =
+                            $exactSearch = ltrim($search, '=');
+                            return $query->where('name', '=', $exactSearch);
+                        }
+                        
+                        // Default: Smart search - coba exact dulu, kalau tidak ada hasil coba partial
+                        // Untuk nama dengan spasi, gunakan case-insensitive exact match
+                        return $query->whereRaw('LOWER(name) = LOWER(?)', [$search])
+                            ->orWhere(function ($subQuery) use ($search) {
+                                // Jika exact match tidak ada hasil, coba partial match
+                                $words = explode(' ', $search);
+                                foreach ($words as $word) {
+                                    if (strlen(trim($word)) >= 2) {
+                                        $subQuery->where('name', 'like', "%{$word}%");
+                                    }
+                                }
+                            });
                     })
                     ->sortable()
                     ->weight('bold')
