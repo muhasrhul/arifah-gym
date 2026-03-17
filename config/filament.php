@@ -325,7 +325,7 @@ return [
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
             StartSession::class,
-            // AuthenticateSession::class, // DISABLED: Agar user tidak logout otomatis saat ubah password
+            AuthenticateSession::class, // ENABLED: Session akan expire jika ada perubahan password/security
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
             SubstituteBindings::class,
