@@ -11,6 +11,7 @@ use App\Models\User;
 use Filament\Notifications\Notification; 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Filament\Forms;
 
 class EditMember extends EditRecord
@@ -335,32 +336,52 @@ class EditMember extends EditRecord
                     return $record;
                 }
                 
-                // SOLUSI SEDERHANA: URUTAN LOGIS UNTUK KONSISTENSI DATA
+                // SOLUSI ATOMIK: GUNAKAN DATABASE TRANSACTION UNTUK KONSISTENSI
                 
-                // 1️⃣ UPDATE MEMBER DATA DULU (SKIP OBSERVER)
-                $record->withoutEvents(function () use ($record, $data) {
-                    $record->update($data);
-                });
-                
-                // 2️⃣ CATAT TRANSAKSI BERDASARKAN DATA TERBARU
-                // Gunakan fallback bertingkat untuk memastikan konsistensi
-                $paymentMethod = $data['payment_method'] ?? $record->payment_method ?? 'cash';
-                $paymentMethodLabel = match($paymentMethod) {
-                    'transfer_bank' => 'Transfer Bank',
-                    'cash' => 'Cash',
-                    default => 'Cash'
-                };
-                
-                $transaction = Transaction::create([
-                    'member_id'      => $record->id,
-                    'order_id'       => $record->order_id ?? 'ADM-' . strtoupper(uniqid()),
-                    'amount'         => $totalHarga,
-                    'status'         => 'paid',
-                    'payment_method' => $paymentMethodLabel,
-                    'type'           => 'Pendaftaran Baru: ' . $data['type'],
-                    'payment_date'   => $now,
-                    'guest_name'     => $record->name,
-                ]);
+                try {
+                    DB::beginTransaction();
+                    
+                    // 1️⃣ UPDATE MEMBER DATA DULU (SKIP OBSERVER)
+                    $record->withoutEvents(function () use ($record, $data) {
+                        $record->update($data);
+                    });
+                    
+                    // 2️⃣ CATAT TRANSAKSI BERDASARKAN DATA TERBARU
+                    // Gunakan fallback bertingkat untuk memastikan konsistensi
+                    $paymentMethod = $data['payment_method'] ?? $record->payment_method ?? 'cash';
+                    $paymentMethodLabel = match($paymentMethod) {
+                        'transfer_bank' => 'Transfer Bank',
+                        'cash' => 'Cash',
+                        default => 'Cash'
+                    };
+                    
+                    $transaction = Transaction::create([
+                        'member_id'      => $record->id,
+                        'order_id'       => $record->order_id ?? 'ADM-' . strtoupper(uniqid()),
+                        'amount'         => $totalHarga,
+                        'status'         => 'paid',
+                        'payment_method' => $paymentMethodLabel,
+                        'type'           => 'Pendaftaran Baru: ' . $data['type'],
+                        'payment_date'   => $now,
+                        'guest_name'     => $record->name,
+                    ]);
+                    
+                    // Commit jika semua berhasil
+                    DB::commit();
+                    
+                } catch (\Exception $e) {
+                    // Rollback jika ada yang gagal
+                    DB::rollback();
+                    
+                    Notification::make()
+                        ->title('Gagal Menyimpan Data')
+                        ->body('Terjadi kesalahan saat menyimpan. Silakan coba lagi. Error: ' . $e->getMessage())
+                        ->danger()
+                        ->send();
+                    
+                    \Log::error('Error saat aktivasi member: ' . $e->getMessage());
+                    $this->halt();
+                }
                 
                 // 3️⃣ NOTIFIKASI ADMIN (SETELAH DATA KONSISTEN)
                 $admins = User::all();
@@ -425,30 +446,51 @@ class EditMember extends EditRecord
                         return $record;
                     }
                     
-                    // PERBAIKAN: Update member data DULU sebelum catat transaksi (SKIP OBSERVER)
-                    $record->withoutEvents(function () use ($record, $data) {
-                        $record->update($data);
-                    });
-                    
-                    // Gunakan fallback bertingkat untuk memastikan konsistensi
-                    $paymentMethod = $data['payment_method'] ?? $record->payment_method ?? 'cash';
-                    $paymentMethodLabel = match($paymentMethod) {
-                        'transfer_bank' => 'Transfer Bank',
-                        'cash' => 'Cash',
-                        default => 'Cash'
-                    };
-                    
-                    // Catat transaksi perpanjangan SETELAH member diupdate
-                    $transaction = Transaction::create([
-                        'member_id'      => $record->id,
-                        'order_id'       => 'RNW-' . strtoupper(uniqid()),
-                        'amount'         => $totalHarga, // Hanya harga paket, tanpa fee
-                        'status'         => 'paid',
-                        'payment_method' => $paymentMethodLabel,
-                        'type'           => 'Perpanjangan: ' . $data['type'],
-                        'payment_date'   => $now,
-                        'guest_name'     => $record->name,
-                    ]);
+                    // PERBAIKAN ATOMIK: GUNAKAN DATABASE TRANSACTION
+                    try {
+                        DB::beginTransaction();
+                        
+                        // Update member data DULU sebelum catat transaksi (SKIP OBSERVER)
+                        $record->withoutEvents(function () use ($record, $data) {
+                            $record->update($data);
+                        });
+                        
+                        // Gunakan fallback bertingkat untuk memastikan konsistensi
+                        $paymentMethod = $data['payment_method'] ?? $record->payment_method ?? 'cash';
+                        $paymentMethodLabel = match($paymentMethod) {
+                            'transfer_bank' => 'Transfer Bank',
+                            'cash' => 'Cash',
+                            default => 'Cash'
+                        };
+                        
+                        // Catat transaksi perpanjangan SETELAH member diupdate
+                        $transaction = Transaction::create([
+                            'member_id'      => $record->id,
+                            'order_id'       => 'RNW-' . strtoupper(uniqid()),
+                            'amount'         => $totalHarga, // Hanya harga paket, tanpa fee
+                            'status'         => 'paid',
+                            'payment_method' => $paymentMethodLabel,
+                            'type'           => 'Perpanjangan: ' . $data['type'],
+                            'payment_date'   => $now,
+                            'guest_name'     => $record->name,
+                        ]);
+                        
+                        // Commit jika semua berhasil
+                        DB::commit();
+                        
+                    } catch (\Exception $e) {
+                        // Rollback jika ada yang gagal
+                        DB::rollback();
+                        
+                        Notification::make()
+                            ->title('Gagal Menyimpan Data')
+                            ->body('Terjadi kesalahan saat perpanjangan. Silakan coba lagi. Error: ' . $e->getMessage())
+                            ->danger()
+                            ->send();
+                        
+                        \Log::error('Error saat perpanjangan member: ' . $e->getMessage());
+                        $this->halt();
+                    }
                     
                     // Kirim notifikasi Telegram SETELAH semua data commit
                     if ($transaction) {
