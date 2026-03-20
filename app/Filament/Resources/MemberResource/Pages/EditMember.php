@@ -450,11 +450,29 @@ class EditMember extends EditRecord
                     try {
                         DB::beginTransaction();
                         
-                        // Update member data DULU sebelum catat transaksi (SKIP OBSERVER)
+                        // 1️⃣ CEK DUPLIKAT DALAM TRANSACTION (DENGAN LOCK)
+                        $existingRenewalToday = Transaction::where('member_id', $record->id)
+                            ->where('type', 'like', 'Perpanjangan%')
+                            ->whereDate('payment_date', $now->format('Y-m-d'))
+                            ->lockForUpdate() // Prevent race condition
+                            ->exists();
+                        
+                        if ($existingRenewalToday) {
+                            DB::rollback();
+                            Notification::make()
+                                ->title('Transaksi Sudah Ada')
+                                ->body('Transaksi perpanjangan sudah ada untuk hari ini.')
+                                ->warning()
+                                ->send();
+                            return $record;
+                        }
+                        
+                        // 2️⃣ UPDATE MEMBER DATA (SKIP OBSERVER)
                         $record->withoutEvents(function () use ($record, $data) {
                             $record->update($data);
                         });
                         
+                        // 3️⃣ CATAT TRANSAKSI BERDASARKAN DATA TERBARU
                         // Gunakan fallback bertingkat untuk memastikan konsistensi
                         $paymentMethod = $data['payment_method'] ?? $record->payment_method ?? 'cash';
                         $paymentMethodLabel = match($paymentMethod) {
@@ -477,6 +495,15 @@ class EditMember extends EditRecord
                         
                         // Commit jika semua berhasil
                         DB::commit();
+                        
+                        \Log::info('Perpanjangan member berhasil:', [
+                            'member_id' => $record->id,
+                            'member_name' => $record->name,
+                            'old_expiry' => $record->getOriginal('expiry_date'),
+                            'new_expiry' => $data['expiry_date'],
+                            'transaction_id' => $transaction->id,
+                            'amount' => $totalHarga
+                        ]);
                         
                     } catch (\Exception $e) {
                         // Rollback jika ada yang gagal
@@ -532,13 +559,19 @@ class EditMember extends EditRecord
             }
         }
 
-        // PERBAIKAN: Hapus update kedua karena sudah diupdate di atas untuk perpanjangan
-        // Hanya update jika bukan perpanjangan (DENGAN withoutEvents untuk mencegah Observer)
-        if (!($record->expiry_date && $sedangDiaktifkan)) {
-            // Simpan semua perubahan data ke database (untuk aktivasi member baru)
+        // PERBAIKAN: Handle edit biasa (tanpa aktivasi) secara terpisah
+        if (!$sedangDiaktifkan) {
+            // Jika tidak ada aktivasi, ini adalah edit biasa (nama, alamat, dll)
+            // Update langsung tanpa transaksi
             $record->withoutEvents(function () use ($record, $data) {
                 $record->update($data);
             });
+            
+            \Log::info('Edit biasa member:', [
+                'member_id' => $record->id,
+                'member_name' => $record->name,
+                'changes' => array_diff_assoc($data, $record->getOriginal())
+            ]);
         }
         
         return $record;
@@ -689,53 +722,85 @@ class EditMember extends EditRecord
                 }
             }
             
-            // Check for duplicate transaction today
+            // PERBAIKAN ATOMIK: GUNAKAN DATABASE TRANSACTION UNTUK KONSISTENSI
             $now = Carbon::now('Asia/Makassar');
-            $existingTransaction = Transaction::where('member_id', $record->id)
-                ->where(function($query) {
-                    $query->where('type', 'like', 'Perpanjangan:%')
-                          ->orWhere('type', 'like', 'Perpanjang Member:%');
-                })
-                ->whereDate('payment_date', $now->format('Y-m-d'))
-                ->exists();
             
-            if ($existingTransaction) {
+            try {
+                DB::beginTransaction();
+                
+                // 1️⃣ CEK DUPLIKAT DALAM TRANSACTION (DENGAN LOCK)
+                $existingTransaction = Transaction::where('member_id', $record->id)
+                    ->where(function($query) {
+                        $query->where('type', 'like', 'Perpanjangan:%')
+                              ->orWhere('type', 'like', 'Perpanjang Member:%');
+                    })
+                    ->whereDate('payment_date', $now->format('Y-m-d'))
+                    ->lockForUpdate() // Prevent race condition
+                    ->exists();
+                
+                if ($existingTransaction) {
+                    DB::rollback();
+                    Notification::make()
+                        ->title('Transaksi Sudah Ada')
+                        ->body('Transaksi perpanjangan sudah ada untuk hari ini.')
+                        ->warning()
+                        ->send();
+                    return;
+                }
+                
+                // 2️⃣ UPDATE MEMBER DATA (SKIP OBSERVER untuk konsistensi)
+                $record->withoutEvents(function () use ($record, $selectedType, $tanggalBaru, $selectedPaymentMethod) {
+                    $record->update([
+                        'type' => $selectedType,
+                        'expiry_date' => $tanggalBaru->format('Y-m-d'),
+                        'payment_method' => $selectedPaymentMethod,
+                        // is_active NOT changed, remains true
+                    ]);
+                });
+                
+                // 3️⃣ CATAT TRANSAKSI BERDASARKAN DATA TERBARU
+                $paymentMethodLabel = match($selectedPaymentMethod) {
+                    'transfer_bank' => 'Transfer Bank',
+                    'cash' => 'Cash',
+                    default => 'Cash'
+                };
+                
+                $transaction = Transaction::create([
+                    'member_id'      => $record->id,
+                    'order_id'       => 'RNW-' . strtoupper(uniqid()),
+                    'amount'         => $harga,
+                    'status'         => 'paid',
+                    'type'           => 'Perpanjangan: ' . $selectedType,
+                    'payment_method' => $paymentMethodLabel,
+                    'payment_date'   => $now,
+                    'guest_name'     => $record->name,
+                ]);
+                
+                // Commit jika semua berhasil
+                DB::commit();
+                
+                \Log::info('Perpanjangan early berhasil:', [
+                    'member_id' => $record->id,
+                    'member_name' => $record->name,
+                    'old_expiry' => $record->getOriginal('expiry_date'),
+                    'new_expiry' => $tanggalBaru->format('Y-m-d'),
+                    'transaction_id' => $transaction->id,
+                    'amount' => $harga
+                ]);
+                
+            } catch (\Exception $e) {
+                // Rollback jika ada yang gagal
+                DB::rollback();
+                
                 Notification::make()
-                    ->title('Transaksi Sudah Ada')
-                    ->body('Transaksi perpanjangan sudah ada untuk hari ini.')
-                    ->warning()
+                    ->title('Gagal Memproses Perpanjangan')
+                    ->body('Terjadi kesalahan saat menyimpan data. Error: ' . $e->getMessage())
+                    ->danger()
                     ->send();
+                
+                \Log::error('Error saat perpanjangan early: ' . $e->getMessage());
                 return;
             }
-            
-            // Update member data (SKIP OBSERVER untuk konsistensi)
-            $record->withoutEvents(function () use ($record, $selectedType, $tanggalBaru, $selectedPaymentMethod) {
-                $record->update([
-                    'type' => $selectedType,
-                    'expiry_date' => $tanggalBaru->format('Y-m-d'),
-                    'payment_method' => $selectedPaymentMethod,
-                    // is_active NOT changed, remains true
-                ]);
-            });
-            
-            // Gunakan payment method yang sudah di-fallback di atas
-            $paymentMethodLabel = match($selectedPaymentMethod) {
-                'transfer_bank' => 'Transfer Bank',
-                'cash' => 'Cash',
-                default => 'Cash'
-            };
-            
-            // Create transaction
-            $transaction = Transaction::create([
-                'member_id'      => $record->id,
-                'order_id'       => 'RNW-' . strtoupper(uniqid()),
-                'amount'         => $harga,
-                'status'         => 'paid',
-                'type'           => 'Perpanjangan: ' . $selectedType,
-                'payment_method' => $paymentMethodLabel,
-                'payment_date'   => $now,
-                'guest_name'     => $record->name,
-            ]);
             
             // Kirim notifikasi WhatsApp & Telegram SETELAH semua data commit
             if ($transaction) {

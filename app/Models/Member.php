@@ -47,19 +47,70 @@ class Member extends Model
             }
         }
 
-        $this->update([
-            'expiry_date' => $tanggalBaru->format('Y-m-d'),
-            'is_active' => true,
-        ]);
+        // PERBAIKAN ATOMIK: GUNAKAN DATABASE TRANSACTION
+        try {
+            \DB::beginTransaction();
+            
+            // 1️⃣ CEK DUPLIKAT DALAM TRANSACTION (DENGAN LOCK)
+            $now = Carbon::now('Asia/Makassar');
+            $existingTransaction = \App\Models\Transaction::where('member_id', $this->id)
+                ->where('type', 'like', 'Perpanjangan:%')
+                ->whereDate('payment_date', $now->format('Y-m-d'))
+                ->lockForUpdate() // Prevent race condition
+                ->exists();
+            
+            if ($existingTransaction) {
+                \DB::rollback();
+                Notification::make()
+                    ->title('Transaksi Sudah Ada')
+                    ->body('Transaksi perpanjangan sudah ada untuk hari ini.')
+                    ->warning()
+                    ->send();
+                return;
+            }
+            
+            // 2️⃣ UPDATE MEMBER DATA
+            $this->update([
+                'expiry_date' => $tanggalBaru->format('Y-m-d'),
+                'is_active' => true,
+            ]);
 
-        \App\Models\Transaction::create([
-            'member_id'      => $this->id,
-            'order_id'       => 'RNW-' . strtoupper(uniqid()), 
-            'amount'         => $harga, 
-            'type'           => 'Perpanjangan: ' . $this->type,
-            'payment_method' => 'Tunai (Kasir)',
-            'payment_date'   => now(),
-        ]);
+            // 3️⃣ CATAT TRANSAKSI
+            $transaction = \App\Models\Transaction::create([
+                'member_id'      => $this->id,
+                'order_id'       => 'RNW-' . strtoupper(uniqid()), 
+                'amount'         => $harga, 
+                'type'           => 'Perpanjangan: ' . $this->type,
+                'payment_method' => 'Tunai (Kasir)',
+                'payment_date'   => $now,
+                'guest_name'     => $this->name,
+            ]);
+            
+            // Commit jika semua berhasil
+            \DB::commit();
+            
+            \Log::info('Perpanjangan via model berhasil:', [
+                'member_id' => $this->id,
+                'member_name' => $this->name,
+                'old_expiry' => $tanggalLama->format('Y-m-d'),
+                'new_expiry' => $tanggalBaru->format('Y-m-d'),
+                'transaction_id' => $transaction->id,
+                'amount' => $harga
+            ]);
+            
+        } catch (\Exception $e) {
+            // Rollback jika ada yang gagal
+            \DB::rollback();
+            
+            Notification::make()
+                ->title('Gagal Memproses Perpanjangan')
+                ->body('Terjadi kesalahan saat menyimpan data. Error: ' . $e->getMessage())
+                ->danger()
+                ->send();
+            
+            \Log::error('Error saat perpanjangan via model: ' . $e->getMessage());
+            return;
+        }
     }
 
     protected static function boot()
