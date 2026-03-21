@@ -67,6 +67,7 @@ class MemberResource extends Resource
         return $count > 0 ? (string) $count : null;
     }
 
+
     protected static function getNavigationBadgeColor(): ?string
     {
         return 'danger';
@@ -887,13 +888,6 @@ class MemberResource extends Resource
                     ->icon('heroicon-o-printer')
                     ->url(fn () => route('export-members', ['format' => 'pdf']))
                     ->openUrlInNewTab(),
-                    
-                Tables\Actions\Action::make('pendaftar_baru')
-                    ->label(fn () => "Ada " . cache()->remember('pendaftar_baru_count', 300, fn () => \App\Models\Member::where('is_active', false)->whereNull('expiry_date')->count()) . " Pendaftar Baru")
-                    ->color('danger')
-                    ->icon('heroicon-o-user-add')
-                    ->url(fn () => static::getUrl('index', ['tableFilters[is_active][value]' => '0']))
-                    ->visible(fn () => cache()->remember('pendaftar_baru_exists', 300, fn () => \App\Models\Member::where('is_active', false)->whereNull('expiry_date')->exists())),
             ]);
     }
     
