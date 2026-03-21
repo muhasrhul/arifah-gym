@@ -50,9 +50,17 @@ class TransactionResource extends Resource
     {
         return parent::getEloquentQuery()
             ->with('member')
-            ->whereHas('member', function (Builder $query) {
-                $query->where('name', '!=', 'Tamu Harian')
-                      ->where('name', '!=', 'Tamu Latihan Harian');
+            // PERBAIKAN: Jangan filter berdasarkan member yang ada
+            // Karena member bisa dihapus tapi transaksi harus tetap tampil
+            ->where(function (Builder $query) {
+                // Filter hanya berdasarkan guest_name, bukan relasi member
+                $query->where('guest_name', '!=', 'Tamu Harian')
+                      ->where('guest_name', '!=', 'Tamu Latihan Harian')
+                      // ATAU jika member masih ada, filter berdasarkan member name
+                      ->orWhereHas('member', function (Builder $subQuery) {
+                          $subQuery->where('name', '!=', 'Tamu Harian')
+                                   ->where('name', '!=', 'Tamu Latihan Harian');
+                      });
             })
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,

@@ -28,12 +28,18 @@ class Transaction extends Model
 
     /**
      * Relasi ke tabel Member
-     * Ditambahkan withTrashed() agar riwayat keuangan tetap menampilkan nama 
-     * meskipun member sudah dihapus (Soft Delete).
+     * Relasi normal tanpa withTrashed karena soft delete sudah dihapus
      */
     public function member()
     {
-        // Penambahan withTrashed() adalah kunci agar nama member tetap muncul
-        return $this->belongsTo(Member::class, 'member_id')->withTrashed();
+        return $this->belongsTo(Member::class, 'member_id');
+    }
+    
+    /**
+     * Get member name dengan fallback jika member dihapus
+     */
+    public function getMemberNameAttribute()
+    {
+        return $this->member->name ?? $this->guest_name ?? 'Member Dihapus';
     }
 }

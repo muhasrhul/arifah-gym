@@ -104,8 +104,9 @@ class AttendanceResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('member.name')
+                Tables\Columns\TextColumn::make('member_name')
                     ->label('Nama Member')
+                    ->getStateUsing(fn ($record) => $record->member->name ?? 'Member Dihapus')
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         // Cek apakah input adalah nomor telepon
                         $normalizedSearch = preg_replace('/[^0-9]/', '', $search);

@@ -12,12 +12,12 @@ use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
 use Carbon\Carbon;
-// Import untuk fitur Soft Deletes & Actions
+// Import untuk fitur Actions
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Actions\RestoreAction;
+// use Illuminate\Database\Eloquent\SoftDeletingScope; // Tidak perlu lagi karena soft delete dihapus
+// use Filament\Tables\Actions\RestoreAction; // Tidak perlu lagi karena soft delete dihapus
 // use Filament\Tables\Actions\ForceDeleteAction; // DIHAPUS: Tidak digunakan lagi
-use Filament\Tables\Filters\TrashedFilter;
+// use Filament\Tables\Filters\TrashedFilter; // Tidak perlu lagi karena soft delete dihapus
 
 class MemberResource extends Resource
 {
@@ -49,13 +49,14 @@ class MemberResource extends Resource
     }
 
     // Mendukung pembacaan data yang sudah di-soft delete
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
-    }
+    // Soft delete sudah dihapus, tidak perlu withoutGlobalScopes lagi
+    // public static function getEloquentQuery(): Builder
+    // {
+    //     return parent::getEloquentQuery()
+    //         ->withoutGlobalScopes([
+    //             SoftDeletingScope::class,
+    //         ]);
+    // }
 
     protected static function getNavigationBadge(): ?string
     {
@@ -592,8 +593,8 @@ class MemberResource extends Resource
                     })
                     ->sortable()
                     ->weight('bold')
-                    ->description(fn (Member $record): string => $record->trashed() ? 'DATA DIHAPUS' : '')
-                    ->color(fn (Member $record): string => $record->trashed() ? 'danger' : 'default')
+                    // ->description(fn (Member $record): string => $record->trashed() ? 'DATA DIHAPUS' : '') // Hapus karena soft delete dihapus
+                    // ->color(fn (Member $record): string => $record->trashed() ? 'danger' : 'default') // Hapus karena soft delete dihapus
                     ->toggleable(isToggledHiddenByDefault: false),
                 
                 Tables\Columns\TextColumn::make('nik')
@@ -770,8 +771,8 @@ class MemberResource extends Resource
                     ->query(fn ($query) => $query->whereNotNull('fingerprint_id'))
                     ->toggle(),
 
-                // Filter 5: Data yang dihapus
-                TrashedFilter::make(),
+                // Filter 5: Data yang dihapus - Tidak perlu lagi karena soft delete dihapus
+                // TrashedFilter::make(),
             ])
             ->headerActions([
                 Tables\Actions\Action::make('sort_options')
@@ -866,7 +867,7 @@ class MemberResource extends Resource
                         // 3. Aktif atau status lainnya - Biru (default)
                         return 'primary';
                     }),
-                RestoreAction::make(),
+                // RestoreAction::make(), // Tidak perlu lagi karena soft delete dihapus
                 // ForceDeleteAction::make(), // DIHAPUS: Terlalu berbahaya untuk data keuangan
             ])
             ->bulkActions([

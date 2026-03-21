@@ -13,13 +13,19 @@ class Attendance extends Model
 
     /**
      * Relasi ke tabel Member
-     * Ditambahkan withTrashed() agar riwayat absen tetap menampilkan nama 
-     * meskipun member sudah dihapus (Soft Delete).
+     * Relasi normal tanpa withTrashed karena soft delete sudah dihapus dari Member
      */
     public function member()
     {
-        // Penambahan withTrashed() memastikan nama orang yang sudah berhenti 
-        // tetap muncul di laporan absensi.
-        return $this->belongsTo(Member::class, 'member_id')->withTrashed();
+        // Relasi normal ke Member
+        return $this->belongsTo(Member::class, 'member_id');
+    }
+    
+    /**
+     * Get member name dengan fallback jika member dihapus
+     */
+    public function getMemberNameAttribute()
+    {
+        return $this->member->name ?? 'Member Dihapus';
     }
 }
