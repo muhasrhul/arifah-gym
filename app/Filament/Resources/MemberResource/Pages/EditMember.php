@@ -22,6 +22,24 @@ class EditMember extends EditRecord
     protected $formBiayaPaket = 0;
     protected $formBiayaRegistrasi = 0;
 
+    public function mount($record): void
+    {
+        parent::mount($record);
+    }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        // Reset payment_method untuk member expired agar admin dipaksa pilih ulang
+        if (!$this->record->is_active && $this->record->expiry_date) {
+            $data['payment_method'] = null;
+            
+            // Update database juga
+            $this->record->update(['payment_method' => null]);
+        }
+        
+        return $data;
+    }
+
     protected function getActions(): array
     {
         return [
