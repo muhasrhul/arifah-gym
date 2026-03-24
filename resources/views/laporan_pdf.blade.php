@@ -27,7 +27,7 @@
 <body onload="window.print()">
     <div class="header">
         <h1 style="margin: 0;">ARIFAH GYM MAKASSAR</h1>
-        <h2 style="margin: 5px 0; color: #555;">LAPORAN KEUANGAN MEMBER{{ $dateFilterText ?? '' }}</h2>
+        <h2 style="margin: 5px 0; color: #555;">LAPORAN KEUANGAN MEMBER{{ $dateFilterText ?? '' }}{{ $additionalFilterText ?? '' }}</h2>
         <p style="margin: 0; font-size: 12px;">Tanggal Cetak: {{ date('d F Y, H:i') }} WITA</p>
     </div>
 

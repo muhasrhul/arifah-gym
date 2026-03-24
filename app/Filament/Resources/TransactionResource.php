@@ -287,10 +287,11 @@ class TransactionResource extends Resource
             ])
             ->defaultSort('payment_date', 'desc')
             ->filters([
-                // Filter 1: Tipe Paket (berdasarkan member)
+                // Filter 1: Tipe Paket (berdasarkan transaction.type)
                 Tables\Filters\SelectFilter::make('type')
                     ->label('Tipe Paket')
                     ->options(function () {
+                        // Hanya paket aktif dari database
                         return \App\Models\Paket::where('is_active', true)
                             ->pluck('nama_paket', 'nama_paket')
                             ->toArray();
@@ -298,9 +299,18 @@ class TransactionResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['value'],
-                            fn (Builder $query, $value): Builder => $query->whereHas('member', function (Builder $query) use ($value) {
-                                $query->where('type', $value);
-                            })
+                            function (Builder $query, $value): Builder {
+                                if ($value === 'Member Harian') {
+                                    return $query->where('type', 'like', '%Harian%');
+                                } elseif ($value === 'Member 1 Bulan') {
+                                    return $query->where('type', 'like', '%1 Bulan%');
+                                } elseif ($value === 'Mingguan') {
+                                    return $query->where('type', 'like', '%Mingguan%');
+                                } else {
+                                    // Untuk paket lain, gunakan LIKE dengan nama paket
+                                    return $query->where('type', 'like', "%{$value}%");
+                                }
+                            }
                         );
                     })
                     ->placeholder('Semua Paket'),
@@ -361,9 +371,28 @@ class TransactionResource extends Resource
                                 ->closeOnDateSelection(),
                         ])
                     ])
-                    ->action(function (array $data) {
+                    ->action(function (array $data, $livewire) {
                         $params = ['format' => 'excel'];
                         
+                        // Ambil filter yang sedang aktif dari tabel
+                        $tableFilters = $livewire->getTableFiltersForm()->getState();
+                        
+                        // Tambahkan filter tipe paket jika ada
+                        if (!empty($tableFilters['type']['value'])) {
+                            $params['paket_type'] = $tableFilters['type']['value'];
+                        }
+                        
+                        // Tambahkan filter bulan ini jika aktif
+                        if (!empty($tableFilters['payment_this_month']['isActive'])) {
+                            $params['this_month'] = '1';
+                        }
+                        
+                        // Tambahkan filter trashed jika ada
+                        if (!empty($tableFilters['trashed']['value'])) {
+                            $params['trashed'] = $tableFilters['trashed']['value'];
+                        }
+                        
+                        // Tambahkan filter tanggal dari form
                         if ($data['filter_type'] === 'single' && !empty($data['single_date'])) {
                             $params['filter_type'] = 'single';
                             $params['single_date'] = $data['single_date'];
@@ -385,7 +414,7 @@ class TransactionResource extends Resource
                         return redirect()->away($url);
                     })
                     ->modalHeading('Filter Export Excel')
-                    ->modalSubheading('Pilih filter tanggal untuk data yang akan di-export ke Excel')
+                    ->modalSubheading('Export akan menggunakan filter yang sedang aktif di tabel + filter tanggal tambahan')
                     ->modalButton('Export Excel'),
 
                 Tables\Actions\Action::make('print_pdf')
@@ -425,9 +454,28 @@ class TransactionResource extends Resource
                                 ->closeOnDateSelection(),
                         ])
                     ])
-                    ->action(function (array $data) {
+                    ->action(function (array $data, $livewire) {
                         $params = ['format' => 'pdf'];
                         
+                        // Ambil filter yang sedang aktif dari tabel
+                        $tableFilters = $livewire->getTableFiltersForm()->getState();
+                        
+                        // Tambahkan filter tipe paket jika ada
+                        if (!empty($tableFilters['type']['value'])) {
+                            $params['paket_type'] = $tableFilters['type']['value'];
+                        }
+                        
+                        // Tambahkan filter bulan ini jika aktif
+                        if (!empty($tableFilters['payment_this_month']['isActive'])) {
+                            $params['this_month'] = '1';
+                        }
+                        
+                        // Tambahkan filter trashed jika ada
+                        if (!empty($tableFilters['trashed']['value'])) {
+                            $params['trashed'] = $tableFilters['trashed']['value'];
+                        }
+                        
+                        // Tambahkan filter tanggal dari form
                         if ($data['filter_type'] === 'single' && !empty($data['single_date'])) {
                             $params['filter_type'] = 'single';
                             $params['single_date'] = $data['single_date'];
@@ -449,9 +497,9 @@ class TransactionResource extends Resource
                         return redirect()->away($url);
                     })
                     ->modalHeading('Filter Cetak PDF')
-                    ->modalSubheading('Pilih filter tanggal untuk data yang akan dicetak ke PDF')
+                    ->modalSubheading('Export akan menggunakan filter yang sedang aktif di tabel + filter tanggal tambahan')
                     ->modalButton('Cetak PDF'),
-            ]);;
+            ]);
     }
 
     public static function getPages(): array

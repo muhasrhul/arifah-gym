@@ -142,24 +142,28 @@ class QuickTransactionResource extends Resource
                         'pending' => 'Belum Bayar',
                     ]),
                 
-                Tables\Filters\Filter::make('payment_date')
-                    ->form([
-                        Forms\Components\DatePicker::make('from')
-                            ->label('Dari Tanggal'),
-                        Forms\Components\DatePicker::make('until')
-                            ->label('Sampai Tanggal'),
-                    ])
+                Tables\Filters\SelectFilter::make('product_type')
+                    ->label('Jenis Produk')
+                    ->options(function () {
+                        return \App\Models\Product::where('is_active', true)
+                            ->orderBy('name')
+                            ->pluck('name', 'name')
+                            ->toArray();
+                    })
                     ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('payment_date', '>=', $date),
-                            )
-                            ->when(
-                                $data['until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('payment_date', '<=', $date),
-                            );
-                    }),
+                        return $query->when(
+                            $data['value'],
+                            fn (Builder $query, $value): Builder => $query->where('product_name', 'like', "%{$value}%")
+                        );
+                    })
+                    ->placeholder('Semua Produk'),
+
+                // Filter Transaksi Bulan Ini
+                Tables\Filters\Filter::make('payment_this_month')
+                    ->label('Transaksi Bulan Ini')
+                    ->query(fn ($query) => $query->whereMonth('payment_date', \Carbon\Carbon::now()->month)
+                        ->whereYear('payment_date', \Carbon\Carbon::now()->year))
+                    ->toggle(),
             ])
             ->defaultSort('payment_date', 'desc')
             ->headerActions([
@@ -200,9 +204,28 @@ class QuickTransactionResource extends Resource
                                 ->closeOnDateSelection(),
                         ])
                     ])
-                    ->action(function (array $data) {
+                    ->action(function (array $data, $livewire) {
                         $params = ['format' => 'excel'];
                         
+                        // Ambil filter yang sedang aktif dari tabel
+                        $tableFilters = $livewire->getTableFiltersForm()->getState();
+                        
+                        // Tambahkan filter status jika ada
+                        if (!empty($tableFilters['status']['value'])) {
+                            $params['status_filter'] = $tableFilters['status']['value'];
+                        }
+                        
+                        // Tambahkan filter jenis produk jika ada
+                        if (!empty($tableFilters['product_type']['value'])) {
+                            $params['product_type'] = $tableFilters['product_type']['value'];
+                        }
+                        
+                        // Tambahkan filter bulan ini jika aktif
+                        if (!empty($tableFilters['payment_this_month']['isActive'])) {
+                            $params['this_month'] = '1';
+                        }
+                        
+                        // Tambahkan filter tanggal dari form
                         if ($data['filter_type'] === 'single' && !empty($data['single_date'])) {
                             $params['filter_type'] = 'single';
                             $params['single_date'] = $data['single_date'];
@@ -224,7 +247,7 @@ class QuickTransactionResource extends Resource
                         return redirect()->away($url);
                     })
                     ->modalHeading('Filter Export Excel')
-                    ->modalSubheading('Pilih filter tanggal untuk data kasir cepat yang akan di-export ke Excel')
+                    ->modalSubheading('Export akan menggunakan filter yang sedang aktif di tabel + filter tanggal tambahan')
                     ->modalButton('Export Excel'),
 
                 Tables\Actions\Action::make('print_pdf')
@@ -264,9 +287,28 @@ class QuickTransactionResource extends Resource
                                 ->closeOnDateSelection(),
                         ])
                     ])
-                    ->action(function (array $data) {
+                    ->action(function (array $data, $livewire) {
                         $params = ['format' => 'pdf'];
                         
+                        // Ambil filter yang sedang aktif dari tabel
+                        $tableFilters = $livewire->getTableFiltersForm()->getState();
+                        
+                        // Tambahkan filter status jika ada
+                        if (!empty($tableFilters['status']['value'])) {
+                            $params['status_filter'] = $tableFilters['status']['value'];
+                        }
+                        
+                        // Tambahkan filter jenis produk jika ada
+                        if (!empty($tableFilters['product_type']['value'])) {
+                            $params['product_type'] = $tableFilters['product_type']['value'];
+                        }
+                        
+                        // Tambahkan filter bulan ini jika aktif
+                        if (!empty($tableFilters['payment_this_month']['isActive'])) {
+                            $params['this_month'] = '1';
+                        }
+                        
+                        // Tambahkan filter tanggal dari form
                         if ($data['filter_type'] === 'single' && !empty($data['single_date'])) {
                             $params['filter_type'] = 'single';
                             $params['single_date'] = $data['single_date'];
@@ -288,7 +330,7 @@ class QuickTransactionResource extends Resource
                         return redirect()->away($url);
                     })
                     ->modalHeading('Filter Cetak PDF')
-                    ->modalSubheading('Pilih filter tanggal untuk data kasir cepat yang akan dicetak ke PDF')
+                    ->modalSubheading('Export akan menggunakan filter yang sedang aktif di tabel + filter tanggal tambahan')
                     ->modalButton('Cetak PDF'),
             ]);
     }

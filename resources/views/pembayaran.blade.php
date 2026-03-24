@@ -409,13 +409,15 @@
                     </div>
                 </button>
 
-                <!-- Metode 2: Cash -->
+                <!-- Metode 2: Cash - DISABLED -->
+                <!-- 
                 <button onclick="savePaymentMethod('cash'); confirmPayment('cash');" class="w-full bg-white/5 hover:bg-[#0992C2]/10 border-2 border-white/10 hover:border-[#0992C2]/30 text-white font-bold py-5 rounded-xl text-xs uppercase tracking-wider shadow-md hover:shadow-[#0992C2]/30 transition-all duration-300 transform hover:scale-[1.02]">
                     <div class="flex items-center justify-center gap-3">
                         <i class="fa-solid fa-money-bill-wave text-[#0992C2] text-xl"></i> 
                         <span>CASH</span>
                     </div>
                 </button>
+                -->
             </div>
 
             <div class="mt-10 pt-8 border-t border-white/5 text-center">

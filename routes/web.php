@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\Member;
 use App\Models\Attendance;
 use App\Models\Transaction; 
@@ -166,10 +167,58 @@ Route::middleware(['auth:web'])->group(function () {
     Route::get('/cetak-laporan', function (Request $request) {
     // FILTER: Hanya transaksi member reguler (bukan kasir cepat)
     $query = Transaction::with('member')
-        ->whereHas('member', function ($query) {
-            $query->where('name', '!=', 'Tamu Harian')
-                  ->where('name', '!=', 'Tamu Latihan Harian');
+        ->where(function (Builder $query) {
+            // Filter hanya berdasarkan guest_name, bukan relasi member
+            $query->where('guest_name', '!=', 'Tamu Harian')
+                  ->where('guest_name', '!=', 'Tamu Latihan Harian')
+                  // ATAU jika member masih ada, filter berdasarkan member name
+                  ->orWhereHas('member', function (Builder $subQuery) {
+                      $subQuery->where('name', '!=', 'Tamu Harian')
+                               ->where('name', '!=', 'Tamu Latihan Harian');
+                  });
         });
+    
+    // FILTER TAMBAHAN DARI TABEL
+    $additionalFilters = [];
+    
+    // Filter berdasarkan tipe paket (transaction.type)
+    if ($request->query('paket_type')) {
+        $paketType = $request->query('paket_type');
+        
+        // Untuk paket standar, gunakan LIKE yang lebih fleksibel
+        if ($paketType === 'Member Harian') {
+            $query->where('type', 'like', '%Harian%');
+        } elseif ($paketType === 'Member 1 Bulan') {
+            $query->where('type', 'like', '%1 Bulan%');
+        } elseif ($paketType === 'Mingguan') {
+            $query->where('type', 'like', '%Mingguan%');
+        } else {
+            // Untuk paket lain, gunakan LIKE dengan nama paket
+            $query->where('type', 'like', "%{$paketType}%");
+        }
+        
+        $additionalFilters[] = 'Paket: ' . $paketType;
+    }
+    
+    // Filter transaksi bulan ini
+    if ($request->query('this_month') === '1') {
+        $query->whereMonth('payment_date', \Carbon\Carbon::now()->month)
+              ->whereYear('payment_date', \Carbon\Carbon::now()->year);
+        $additionalFilters[] = 'Bulan Ini';
+    }
+    
+    // Filter data yang dihapus
+    if ($request->query('trashed')) {
+        $trashedValue = $request->query('trashed');
+        if ($trashedValue === 'with') {
+            $query->withTrashed();
+            $additionalFilters[] = 'Termasuk Data Dihapus';
+        } elseif ($trashedValue === 'only') {
+            $query->onlyTrashed();
+            $additionalFilters[] = 'Hanya Data Dihapus';
+        }
+        // Default (without) tidak perlu ditambahkan karena sudah default behavior
+    }
     
     // FILTER TANGGAL
     $filterType = $request->query('filter_type');
@@ -186,6 +235,12 @@ Route::middleware(['auth:web'])->group(function () {
         $dateFilterText = ' - Periode: ' . \Carbon\Carbon::parse($startDate)->format('d/m/Y') . ' s/d ' . \Carbon\Carbon::parse($endDate)->format('d/m/Y');
     }
     
+    // Gabungkan filter tambahan ke dalam teks header
+    $additionalFilterText = '';
+    if (!empty($additionalFilters)) {
+        $additionalFilterText = ' - Filter: ' . implode(', ', $additionalFilters);
+    }
+    
     $data = $query->orderBy('payment_date', 'asc')->get();
     
     $data->transform(function ($item) {
@@ -195,7 +250,7 @@ Route::middleware(['auth:web'])->group(function () {
     });
 
     if ($request->query('format') == 'pdf') {
-        return view('laporan_pdf', compact('data', 'dateFilterText'));
+        return view('laporan_pdf', compact('data', 'dateFilterText', 'additionalFilterText'));
     }
 
     $filename = "Laporan_Keuangan_Member_ARIFAH_GYM_" . date('d-m-Y') . ".xls";
@@ -205,7 +260,7 @@ Route::middleware(['auth:web'])->group(function () {
     $total = 0;
     $output = "<table border='1'>
                 <tr>
-                    <th colspan='10' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LAPORAN KEUANGAN MEMBER - ARIFAH GYM{$dateFilterText}</th>
+                    <th colspan='10' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LAPORAN KEUANGAN MEMBER - ARIFAH GYM{$dateFilterText}{$additionalFilterText}</th>
                 </tr>
                 <tr style='background-color: #eeeeee;'>
                     <th>No</th>
@@ -265,7 +320,32 @@ Route::middleware(['auth:web'])->group(function () {
 Route::get('/cetak-laporan-kasir', function (Request $request) {
     $query = \App\Models\QuickTransaction::query();
     
-    // FILTER TANGGAL
+    // FILTER TAMBAHAN DARI TABEL
+    $additionalFilters = [];
+    
+    // Filter berdasarkan status
+    if ($request->query('status_filter')) {
+        $statusFilter = $request->query('status_filter');
+        $query->where('status', $statusFilter);
+        $statusLabel = $statusFilter === 'paid' ? 'Lunas' : 'Belum Bayar';
+        $additionalFilters[] = 'Status: ' . $statusLabel;
+    }
+    
+    // Filter berdasarkan jenis produk
+    if ($request->query('product_type')) {
+        $productType = $request->query('product_type');
+        $query->where('product_name', 'like', "%{$productType}%");
+        $additionalFilters[] = 'Produk: ' . $productType;
+    }
+    
+    // Filter transaksi bulan ini
+    if ($request->query('this_month') === '1') {
+        $query->whereMonth('payment_date', \Carbon\Carbon::now()->month)
+              ->whereYear('payment_date', \Carbon\Carbon::now()->year);
+        $additionalFilters[] = 'Bulan Ini';
+    }
+    
+    // FILTER TANGGAL DARI FORM (prioritas lebih tinggi dari filter tabel)
     $filterType = $request->query('filter_type');
     $dateFilterText = '';
     
@@ -280,6 +360,12 @@ Route::get('/cetak-laporan-kasir', function (Request $request) {
         $dateFilterText = ' - Periode: ' . \Carbon\Carbon::parse($startDate)->format('d/m/Y') . ' s/d ' . \Carbon\Carbon::parse($endDate)->format('d/m/Y');
     }
     
+    // Gabungkan filter tambahan ke dalam teks header
+    $additionalFilterText = '';
+    if (!empty($additionalFilters)) {
+        $additionalFilterText = ' - Filter: ' . implode(', ', $additionalFilters);
+    }
+    
     $data = $query->orderBy('payment_date', 'asc')->get();
     
     $data->transform(function ($item) {
@@ -289,7 +375,7 @@ Route::get('/cetak-laporan-kasir', function (Request $request) {
     });
 
     if ($request->query('format') == 'pdf') {
-        return view('laporan_kasir_pdf', compact('data', 'dateFilterText'));
+        return view('laporan_kasir_pdf', compact('data', 'dateFilterText', 'additionalFilterText'));
     }
 
     $filename = "Laporan_Kasir_Cepat_ARIFAH_GYM_" . date('d-m-Y') . ".xls";
@@ -299,7 +385,7 @@ Route::get('/cetak-laporan-kasir', function (Request $request) {
     $total = 0;
     $output = "<table border='1'>
                 <tr>
-                    <th colspan='8' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LAPORAN KEUANGAN KASIR CEPAT - ARIFAH GYM{$dateFilterText}</th>
+                    <th colspan='8' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LAPORAN KEUANGAN KASIR CEPAT - ARIFAH GYM{$dateFilterText}{$additionalFilterText}</th>
                 </tr>
                 <tr style='background-color: #eeeeee;'>
                     <th>No</th>
