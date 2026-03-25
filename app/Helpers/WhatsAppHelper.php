@@ -334,28 +334,37 @@ class WhatsAppHelper
             ];
         }
 
-        $message = "🚨 *LAPORAN REMINDER H-1 - ARIFAH GYM*\n\n";
-        $message .= "Tanggal: " . \Carbon\Carbon::now('Asia/Makassar')->translatedFormat('d F Y') . "\n\n";
-
+        $message = "🚨 *LAPORAN H-1 EXPIRED*\n\n";
+        
         if ($membersH1->count() > 0) {
-            $message .= "⚠️ *MEMBER YANG AKAN EXPIRED BESOK:*\n\n";
-            $message .= "Total: *{$membersH1->count()} member*\n\n";
+            // Ambil tanggal expired (besok) dari member pertama
+            $expiredDate = \Carbon\Carbon::parse($membersH1->first()->expiry_date)->translatedFormat('d F Y');
+            
+            // BAGIAN DAFTAR MEMBER
+            $message .= "DAFTAR MEMBER YANG AKAN EXPIRED\n";
+            $message .= "├─ Pada Tanggal : *{$expiredDate}*\n";
+            $message .= "└─ Total Member : *{$membersH1->count()} member*\n\n";
             
             foreach ($membersH1 as $member) {
-                $expiryDate = \Carbon\Carbon::parse($member->expiry_date)->translatedFormat('d F Y');
+                $memberExpiryDate = \Carbon\Carbon::parse($member->expiry_date)->translatedFormat('d F Y');
                 $message .= "• *{$member->name}*\n";
                 $message .= "  Paket: {$member->type}\n";
-                $message .= "  Expired: {$expiryDate}\n";
+                $message .= "  Expired: {$memberExpiryDate}\n";
                 $message .= "  HP: {$member->phone}\n\n";
             }
 
-            $message .= "Silakan hubungi member untuk perpanjangan membership.\n\n";
+            $message .= "💡 ACTION: Hubungi member untuk perpanjangan";
         } else {
-            $message .= "✅ *TIDAK ADA MEMBER YANG AKAN EXPIRED BESOK*\n\n";
-            $message .= "Semua member masih aman!\n\n";
+            // BAGIAN DAFTAR MEMBER (tidak ada member)
+            $tomorrowDate = \Carbon\Carbon::now('Asia/Makassar')->addDay()->translatedFormat('d F Y');
+            
+            $message .= "DAFTAR MEMBER YANG AKAN EXPIRED\n";
+            $message .= "├─ Pada Tanggal : *{$tomorrowDate}*\n";
+            $message .= "└─ Total Member : *0 member*\n\n";
+            
+            $message .= "✅ TIDAK ADA MEMBER YANG AKAN EXPIRED BESOK\n\n";
+            $message .= "💡 Semua member masih aman!";
         }
-
-        $message .= "ARIFAH Gym System";
 
         return self::sendMessage($ownerPhone, $message);
     }
