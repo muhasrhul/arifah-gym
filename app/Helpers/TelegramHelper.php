@@ -81,19 +81,14 @@ class TelegramHelper
      */
     public static function sendPendaftaranBaru($member, $paket)
     {
-        $message = "📝 *PENDAFTARAN MEMBER BARU*\n\n";
-        $message .= "👤 Data Member\n";
-        $message .= "├ Nama: {$member->name}\n";
-        $message .= "├ 📞 {$member->phone}\n";
-        $message .= "└ 📧 {$member->email}\n\n";
-        $message .= "📦 Paket Dipilih\n";
-        $message .= "├ {$paket}\n\n";
-        $message .= "🕐 Waktu Daftar\n";
-        $message .= "└ " . now()->format('d M Y, H:i') . " WITA\n\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "⚠️ Status: *Menunggu Aktivasi*\n";
-        $message .= "💡 Silakan aktivasi member di panel admin\n\n";
-        $message .= "_ARIFAH Gym Management System_";
+        $message = "📋 *PENDAFTARAN MEMBER BARU*\n";
+        $message .= "├─ Nama    : {$member->name}\n";
+        $message .= "├─ HP      : {$member->phone}\n";
+        $message .= "├─ Email   : {$member->email}\n";
+        $message .= "├─ Paket   : {$paket}\n";
+        $message .= "└─ Waktu   : " . now()->format('d M Y, H:i') . " WITA\n\n";
+        $message .= "⚠️ STATUS: MENUNGGU AKTIVASI\n\n";
+        $message .= "💡 ACTION: Aktivasi di panel admin";
         
         return self::send($message);
     }
@@ -112,30 +107,32 @@ class TelegramHelper
             'all_attributes' => $member->getAttributes()
         ]);
         
-        $message = "✅ *AKTIVASI MEMBER & TRANSAKSI*\n\n";
-        $message .= "👤 Data Member\n";
-        $message .= "├ Nama: {$member->name}\n";
-        $message .= "├ 📞 {$member->phone}\n";
+        $message = "✅ *AKTIVASI MEMBER*\n\n";
+        
+        // BAGIAN 1: DATA MEMBER
+        $message .= "DATA MEMBER\n";
+        $message .= "├─ Nama        : {$member->name}\n";
+        $message .= "├─ HP          : {$member->phone}\n";
         
         // Tambahkan Fingerprint ID
         if (!empty($member->fingerprint_id)) {
-            $message .= "└ 🔐 Fingerprint: {$member->fingerprint_id}\n\n";
+            $message .= "└─ Fingerprint : {$member->fingerprint_id}\n\n";
         } else {
-            $message .= "└ 🔐 Fingerprint: -\n\n";
+            $message .= "└─ Fingerprint : -\n\n";
         }
         
-        $message .= "📦 Paket\n";
-        $message .= "├ {$member->type}\n\n";
-        $message .= "💰 Pembayaran\n";
-        $message .= "├ Total: Rp " . number_format($transaction->amount, 0, ',', '.') . "\n";
-        $message .= "└ Metode: {$transaction->payment_method}\n\n";
-        $message .= "📅 Masa Aktif\n";
-        $message .= "├ s/d " . \Carbon\Carbon::parse($member->expiry_date)->format('d M Y') . "\n\n";
-        $message .= "🕐 Waktu Transaksi\n";
-        $message .= "└ " . now()->format('d M Y, H:i') . " WITA\n\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "🎉 Member aktif dan siap latihan!\n\n";
-        $message .= "_ARIFAH Gym Management System_";
+        // BAGIAN 2: PAKET & PEMBAYARAN
+        $message .= "PAKET & PEMBAYARAN\n";
+        $message .= "├─ Paket   : {$member->type}\n";
+        $message .= "├─ Total   : Rp " . number_format($transaction->amount, 0, ',', '.') . "\n";
+        $message .= "└─ Metode  : {$transaction->payment_method}\n\n";
+        
+        // BAGIAN 3: MASA AKTIF
+        $message .= "MASA AKTIF\n";
+        $message .= "├─ Aktif s/d : " . \Carbon\Carbon::parse($member->expiry_date)->format('d M Y') . "\n";
+        $message .= "└─ Waktu     : " . now()->format('d M Y, H:i') . " WITA\n\n";
+        
+        $message .= "🎉 Member aktif dan siap latihan!";
         
         return self::send($message);
     }
@@ -153,29 +150,31 @@ class TelegramHelper
         ]);
         
         $message = "🔄 *PERPANJANGAN MEMBERSHIP*\n\n";
-        $message .= "👤 Data Member\n";
-        $message .= "├ Nama: {$member->name}\n";
-        $message .= "├ 📞 {$member->phone}\n";
+        
+        // BAGIAN 1: DATA MEMBER
+        $message .= "DATA MEMBER\n";
+        $message .= "├─ Nama        : {$member->name}\n";
+        $message .= "├─ HP          : {$member->phone}\n";
         
         // Tambahkan Fingerprint ID
         if (!empty($member->fingerprint_id)) {
-            $message .= "└ 🔐 Fingerprint: {$member->fingerprint_id}\n\n";
+            $message .= "└─ Fingerprint : {$member->fingerprint_id}\n\n";
         } else {
-            $message .= "└ 🔐 Fingerprint: -\n\n";
+            $message .= "└─ Fingerprint : -\n\n";
         }
         
-        $message .= "📦 Paket\n";
-        $message .= "├ {$member->type}\n\n";
-        $message .= "💰 Pembayaran\n";
-        $message .= "├ Total: Rp " . number_format($transaction->amount, 0, ',', '.') . "\n";
-        $message .= "└ Metode: {$transaction->payment_method}\n\n";
-        $message .= "📅 Masa Aktif Baru\n";
-        $message .= "├ s/d " . \Carbon\Carbon::parse($member->expiry_date)->format('d M Y') . "\n\n";
-        $message .= "🕐 Waktu Transaksi\n";
-        $message .= "└ " . now()->format('d M Y, H:i') . " WITA\n\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "✅ Perpanjangan berhasil!\n\n";
-        $message .= "_ARIFAH Gym Management System_";
+        // BAGIAN 2: PAKET & PEMBAYARAN
+        $message .= "PAKET & PEMBAYARAN\n";
+        $message .= "├─ Paket   : {$member->type}\n";
+        $message .= "├─ Total   : Rp " . number_format($transaction->amount, 0, ',', '.') . "\n";
+        $message .= "└─ Metode  : {$transaction->payment_method}\n\n";
+        
+        // BAGIAN 3: MASA AKTIF
+        $message .= "MASA AKTIF\n";
+        $message .= "├─ Aktif s/d : " . \Carbon\Carbon::parse($member->expiry_date)->format('d M Y') . "\n";
+        $message .= "└─ Waktu     : " . now()->format('d M Y, H:i') . " WITA\n\n";
+        
+        $message .= "🎉 Perpanjangan berhasil!";
         
         return self::send($message);
     }
@@ -193,30 +192,32 @@ class TelegramHelper
         ]);
         
         $message = "⚡ *PERPANJANGAN EARLY*\n\n";
-        $message .= "👤 Data Member\n";
-        $message .= "├ Nama: {$member->name}\n";
-        $message .= "├ 📞 {$member->phone}\n";
+        
+        // BAGIAN 1: DATA MEMBER
+        $message .= "DATA MEMBER\n";
+        $message .= "├─ Nama        : {$member->name}\n";
+        $message .= "├─ HP          : {$member->phone}\n";
         
         // Tambahkan Fingerprint ID
         if (!empty($member->fingerprint_id)) {
-            $message .= "└ 🔐 Fingerprint: {$member->fingerprint_id}\n\n";
+            $message .= "└─ Fingerprint : {$member->fingerprint_id}\n\n";
         } else {
-            $message .= "└ 🔐 Fingerprint: -\n\n";
+            $message .= "└─ Fingerprint : -\n\n";
         }
         
-        $message .= "📦 Paket\n";
-        $message .= "├ {$member->type}\n\n";
-        $message .= "💰 Pembayaran\n";
-        $message .= "├ Total: Rp " . number_format($transaction->amount, 0, ',', '.') . "\n";
-        $message .= "└ Metode: {$transaction->payment_method}\n\n";
-        $message .= "📅 Masa Aktif Baru\n";
-        $message .= "├ s/d " . \Carbon\Carbon::parse($member->expiry_date)->format('d M Y') . "\n\n";
-        $message .= "🕐 Waktu Transaksi\n";
-        $message .= "└ " . now()->format('d M Y, H:i') . " WITA\n\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "✅ Perpanjangan early berhasil!\n";
-        $message .= "💡 Member tidak kehilangan sisa waktu membership\n\n";
-        $message .= "_ARIFAH Gym Management System_";
+        // BAGIAN 2: PAKET & PEMBAYARAN
+        $message .= "PAKET & PEMBAYARAN\n";
+        $message .= "├─ Paket   : {$member->type}\n";
+        $message .= "├─ Total   : Rp " . number_format($transaction->amount, 0, ',', '.') . "\n";
+        $message .= "└─ Metode  : {$transaction->payment_method}\n\n";
+        
+        // BAGIAN 3: MASA AKTIF
+        $message .= "MASA AKTIF\n";
+        $message .= "├─ Aktif s/d : " . \Carbon\Carbon::parse($member->expiry_date)->format('d M Y') . "\n";
+        $message .= "└─ Waktu     : " . now()->format('d M Y, H:i') . " WITA\n\n";
+        
+        $message .= "🎉 Perpanjangan early berhasil!\n";
+        $message .= "💡 Member tidak kehilangan sisa waktu membership";
         
         return self::send($message);
     }

@@ -447,16 +447,14 @@ class WhatsAppHelper
             ];
         }
 
-        $message = "📝 *PENDAFTARAN MEMBER BARU - ARIFAH GYM*\n\n";
-        $message .= "👤 *Data Member*\n";
-        $message .= "Nama: {$member->name}\n";
-        $message .= "HP: {$member->phone}\n";
-        $message .= "Email: {$member->email}\n\n";
-        $message .= "📦 *Paket:* {$paket}\n\n";
-        $message .= "🕐 *Waktu:* " . \Carbon\Carbon::now('Asia/Makassar')->translatedFormat('d F Y H:i') . "\n\n";
-        $message .= "⚠️ Status: Menunggu Aktivasi\n";
-        $message .= "Silakan aktivasi member di panel admin.\n\n";
-        $message .= "ARIFAH Gym System";
+        $message = "📋 *PENDAFTARAN MEMBER BARU*\n";
+        $message .= "├─ Nama    : {$member->name}\n";
+        $message .= "├─ HP      : {$member->phone}\n";
+        $message .= "├─ Email   : {$member->email}\n";
+        $message .= "├─ Paket   : {$paket}\n";
+        $message .= "└─ Waktu   : " . \Carbon\Carbon::now('Asia/Makassar')->translatedFormat('d F Y H:i') . "\n\n";
+        $message .= "⚠️ STATUS: MENUNGGU AKTIVASI\n\n";
+        $message .= "💡 ACTION: Aktivasi di panel admin";
 
         return self::sendMessage($ownerPhone, $message);
     }
@@ -476,25 +474,31 @@ class WhatsAppHelper
             ];
         }
 
-        $message = "✅ *AKTIVASI MEMBER - ARIFAH GYM*\n\n";
-        $message .= "👤 *Data Member*\n";
-        $message .= "Nama: {$member->name}\n";
-        $message .= "HP: {$member->phone}\n";
+        $message = "✅ *AKTIVASI MEMBER*\n\n";
+        
+        // BAGIAN 1: DATA MEMBER
+        $message .= "DATA MEMBER\n";
+        $message .= "├─ Nama        : {$member->name}\n";
+        $message .= "├─ HP          : {$member->phone}\n";
         
         if (!empty($member->fingerprint_id)) {
-            $message .= "Fingerprint: {$member->fingerprint_id}\n\n";
+            $message .= "└─ Fingerprint : {$member->fingerprint_id}\n\n";
         } else {
-            $message .= "Fingerprint: -\n\n";
+            $message .= "└─ Fingerprint : -\n\n";
         }
         
-        $message .= "📦 *Paket:* {$member->type}\n\n";
-        $message .= "💰 *Pembayaran*\n";
-        $message .= "Total: Rp " . number_format($transaction->amount, 0, ',', '.') . "\n";
-        $message .= "Metode: {$transaction->payment_method}\n\n";
-        $message .= "📅 *Aktif s/d:* " . \Carbon\Carbon::parse($member->expiry_date)->translatedFormat('d F Y') . "\n\n";
-        $message .= "🕐 *Waktu:* " . \Carbon\Carbon::now('Asia/Makassar')->translatedFormat('d F Y H:i') . "\n\n";
-        $message .= "Member aktif dan siap latihan!\n\n";
-        $message .= "ARIFAH Gym System";
+        // BAGIAN 2: PAKET & PEMBAYARAN
+        $message .= "PAKET & PEMBAYARAN\n";
+        $message .= "├─ Paket   : {$member->type}\n";
+        $message .= "├─ Total   : Rp " . number_format($transaction->amount, 0, ',', '.') . "\n";
+        $message .= "└─ Metode  : {$transaction->payment_method}\n\n";
+        
+        // BAGIAN 3: MASA AKTIF
+        $message .= "MASA AKTIF\n";
+        $message .= "├─ Aktif s/d : " . \Carbon\Carbon::parse($member->expiry_date)->translatedFormat('d F Y') . "\n";
+        $message .= "└─ Waktu     : " . \Carbon\Carbon::now('Asia/Makassar')->translatedFormat('d F Y H:i') . "\n\n";
+        
+        $message .= "🎉 Member aktif dan siap latihan!";
 
         return self::sendMessage($ownerPhone, $message);
     }
@@ -514,25 +518,31 @@ class WhatsAppHelper
             ];
         }
 
-        $message = "🔄 *PERPANJANGAN MEMBERSHIP - ARIFAH GYM*\n\n";
-        $message .= "👤 *Data Member*\n";
-        $message .= "Nama: {$member->name}\n";
-        $message .= "HP: {$member->phone}\n";
+        $message = "🔄 *PERPANJANGAN MEMBERSHIP*\n\n";
+        
+        // BAGIAN 1: DATA MEMBER
+        $message .= "DATA MEMBER\n";
+        $message .= "├─ Nama        : {$member->name}\n";
+        $message .= "├─ HP          : {$member->phone}\n";
         
         if (!empty($member->fingerprint_id)) {
-            $message .= "Fingerprint: {$member->fingerprint_id}\n\n";
+            $message .= "└─ Fingerprint : {$member->fingerprint_id}\n\n";
         } else {
-            $message .= "Fingerprint: -\n\n";
+            $message .= "└─ Fingerprint : -\n\n";
         }
         
-        $message .= "📦 *Paket:* {$member->type}\n\n";
-        $message .= "💰 *Pembayaran*\n";
-        $message .= "Total: Rp " . number_format($transaction->amount, 0, ',', '.') . "\n";
-        $message .= "Metode: {$transaction->payment_method}\n\n";
-        $message .= "📅 *Aktif s/d:* " . \Carbon\Carbon::parse($member->expiry_date)->translatedFormat('d F Y') . "\n\n";
-        $message .= "🕐 *Waktu:* " . \Carbon\Carbon::now('Asia/Makassar')->translatedFormat('d F Y H:i') . "\n\n";
-        $message .= "Perpanjangan berhasil!\n\n";
-        $message .= "ARIFAH Gym System";
+        // BAGIAN 2: PAKET & PEMBAYARAN
+        $message .= "PAKET & PEMBAYARAN\n";
+        $message .= "├─ Paket   : {$member->type}\n";
+        $message .= "├─ Total   : Rp " . number_format($transaction->amount, 0, ',', '.') . "\n";
+        $message .= "└─ Metode  : {$transaction->payment_method}\n\n";
+        
+        // BAGIAN 3: MASA AKTIF
+        $message .= "MASA AKTIF\n";
+        $message .= "├─ Aktif s/d : " . \Carbon\Carbon::parse($member->expiry_date)->translatedFormat('d F Y') . "\n";
+        $message .= "└─ Waktu     : " . \Carbon\Carbon::now('Asia/Makassar')->translatedFormat('d F Y H:i') . "\n\n";
+        
+        $message .= "🎉 Perpanjangan berhasil!";
 
         return self::sendMessage($ownerPhone, $message);
     }
@@ -552,26 +562,32 @@ class WhatsAppHelper
             ];
         }
 
-        $message = "⚡ *PERPANJANGAN EARLY - ARIFAH GYM*\n\n";
-        $message .= "👤 *Data Member*\n";
-        $message .= "Nama: {$member->name}\n";
-        $message .= "HP: {$member->phone}\n";
+        $message = "⚡ *PERPANJANGAN EARLY*\n\n";
+        
+        // BAGIAN 1: DATA MEMBER
+        $message .= "DATA MEMBER\n";
+        $message .= "├─ Nama        : {$member->name}\n";
+        $message .= "├─ HP          : {$member->phone}\n";
         
         if (!empty($member->fingerprint_id)) {
-            $message .= "Fingerprint: {$member->fingerprint_id}\n\n";
+            $message .= "└─ Fingerprint : {$member->fingerprint_id}\n\n";
         } else {
-            $message .= "Fingerprint: -\n\n";
+            $message .= "└─ Fingerprint : -\n\n";
         }
         
-        $message .= "📦 *Paket:* {$member->type}\n\n";
-        $message .= "💰 *Pembayaran*\n";
-        $message .= "Total: Rp " . number_format($transaction->amount, 0, ',', '.') . "\n";
-        $message .= "Metode: {$transaction->payment_method}\n\n";
-        $message .= "📅 *Aktif s/d:* " . \Carbon\Carbon::parse($member->expiry_date)->translatedFormat('d F Y') . "\n\n";
-        $message .= "🕐 *Waktu:* " . \Carbon\Carbon::now('Asia/Makassar')->translatedFormat('d F Y H:i') . "\n\n";
-        $message .= "✅ Perpanjangan early berhasil!\n";
-        $message .= "Member tidak kehilangan sisa waktu membership.\n\n";
-        $message .= "ARIFAH Gym System";
+        // BAGIAN 2: PAKET & PEMBAYARAN
+        $message .= "PAKET & PEMBAYARAN\n";
+        $message .= "├─ Paket   : {$member->type}\n";
+        $message .= "├─ Total   : Rp " . number_format($transaction->amount, 0, ',', '.') . "\n";
+        $message .= "└─ Metode  : {$transaction->payment_method}\n\n";
+        
+        // BAGIAN 3: MASA AKTIF
+        $message .= "MASA AKTIF\n";
+        $message .= "├─ Aktif s/d : " . \Carbon\Carbon::parse($member->expiry_date)->translatedFormat('d F Y') . "\n";
+        $message .= "└─ Waktu     : " . \Carbon\Carbon::now('Asia/Makassar')->translatedFormat('d F Y H:i') . "\n\n";
+        
+        $message .= "🎉 Perpanjangan early berhasil!\n";
+        $message .= "💡 Member tidak kehilangan sisa waktu membership";
 
         return self::sendMessage($ownerPhone, $message);
     }
@@ -588,34 +604,37 @@ class WhatsAppHelper
         $jamAbsen = $now->format('H:i');
         $tanggalAbsen = $now->translatedFormat('d F Y');
         
-        // Format pesan
+        // Format pesan dengan 3 bagian
         $message = "🏋️ *ABSEN MEMBER*\n\n";
-        $message .= "👤 *Nama:* {$member->name}\n";
-        $message .= "📱 *WhatsApp:* {$member->phone}\n";
-        $message .= "🎫 *Tipe:* {$member->type}\n";
-        $message .= "⏰ *Jam Absen:* {$jamAbsen} WITA\n";
-        $message .= "📅 *Tanggal:* {$tanggalAbsen}\n\n";
         
-        $message .= "📊 *Statistik Bulan Ini:*\n";
-        $message .= "├ Total Latihan: {$totalLatihan}x\n";
-        $message .= "└ Badge: {$badge}\n\n";
+        // BAGIAN 1: DATA MEMBER
+        $message .= "DATA MEMBER\n";
+        $message .= "├─ Nama     : {$member->name}\n";
+        $message .= "├─ WhatsApp : {$member->phone}\n";
+        $message .= "├─ Jam      : {$jamAbsen} WITA\n";
+        $message .= "└─ Tanggal  : {$tanggalAbsen}\n\n";
         
-        // Tambahkan info expired jika ada
+        // BAGIAN 2: PAKET
+        $message .= "PAKET\n";
+        $message .= "├─ Tipe         : {$member->type}\n";
+        $message .= "├─ Total Latihan: {$totalLatihan}x\n";
+        $message .= "└─ Badge        : {$badge}\n\n";
+        
+        // BAGIAN 3: MASA AKTIF
+        $message .= "MASA AKTIF\n";
         if ($member->expiry_date) {
             $expiredDate = Carbon::parse($member->expiry_date);
             $sisaHari = $expiredDate->diffInDays($now);
             
             if ($expiredDate->isFuture()) {
-                $message .= "⏳ *Masa Aktif:* {$sisaHari} hari lagi\n";
-                $message .= "📆 *Expired:* " . $expiredDate->translatedFormat('d F Y') . "\n\n";
+                $message .= "├─ Sisa Waktu : {$sisaHari} hari lagi\n";
+                $message .= "└─ Expired    : " . $expiredDate->translatedFormat('d F Y');
             } else {
-                $message .= "⚠️ *Status:* EXPIRED\n\n";
+                $message .= "└─ Status     : EXPIRED";
             }
+        } else {
+            $message .= "└─ Status     : Member Harian";
         }
-        
-        $message .= "---\n";
-        $message .= "🏢 *ARIFAH GYM MAKASSAR*\n";
-        $message .= "📱 Sistem Absensi Otomatis";
         
         return self::sendMessage($ownerPhone, $message);
     }
