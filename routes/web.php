@@ -536,7 +536,7 @@ Route::get('/export-attendance', function (Request $request) {
     
     $output = "<table border='1'>
                 <tr>
-                    <th colspan='6' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LOG ABSENSI ARIFAH GYM{$dateFilterText}</th>
+                    <th colspan='7' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LOG ABSENSI ARIFAH GYM{$dateFilterText}</th>
                 </tr>
                 <tr style='background-color: #eeeeee;'>
                     <th>No</th>
@@ -545,6 +545,7 @@ Route::get('/export-attendance', function (Request $request) {
                     <th>WhatsApp</th>
                     <th>Tanggal Absen</th>
                     <th>Jam Absen</th>
+                    <th>Hari</th>
                 </tr>";
                 
     $no = 1;
@@ -554,6 +555,7 @@ Route::get('/export-attendance', function (Request $request) {
         $memberPhone = $row->member ? $row->member->phone : '-';
         $tanggal = \Carbon\Carbon::parse($row->created_at)->format('d/m/Y');
         $jam = \Carbon\Carbon::parse($row->created_at)->format('H:i');
+        $hari = \Carbon\Carbon::parse($row->created_at)->translatedFormat('l');
 
         $output .= "<tr>
                         <td style='text-align: center;'>{$no}</td>
@@ -562,12 +564,13 @@ Route::get('/export-attendance', function (Request $request) {
                         <td>{$memberPhone}</td>
                         <td style='text-align: center;'>{$tanggal}</td>
                         <td style='text-align: center;'>{$jam}</td>
+                        <td style='text-align: center;'>{$hari}</td>
                     </tr>";
         $no++;
     }
     
     $output .= "<tr>
-                <th colspan='6' style='text-align:center; background-color: #eeeeee;'>TOTAL ABSENSI: " . $data->count() . " kali</th>
+                <th colspan='7' style='text-align:center; background-color: #eeeeee;'>TOTAL ABSENSI: " . $data->count() . " kali</th>
               </tr>";
     $output .= "</table>";
 
