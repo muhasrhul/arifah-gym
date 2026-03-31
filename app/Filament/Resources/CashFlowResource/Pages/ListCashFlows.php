@@ -65,6 +65,8 @@ class ListCashFlows extends ListRecords
     protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return parent::getTableQuery()
+            ->whereMonth('date', now()->month)
+            ->whereYear('date', now()->year)
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc');
     }

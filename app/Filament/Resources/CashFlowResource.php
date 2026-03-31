@@ -143,11 +143,14 @@ class CashFlowResource extends Resource
                 Tables\Columns\TextColumn::make('running_balance')
                     ->label('Saldo')
                     ->getStateUsing(function ($record) {
-                        // Hitung saldo berdasarkan URUTAN TANGGAL ASC, bukan tampilan
+                        // Hitung saldo berdasarkan URUTAN TANGGAL ASC dalam BULAN YANG SAMA
                         $balance = 0;
                         
-                        // Ambil semua record yang tanggalnya <= record ini, urutkan ASC untuk perhitungan
-                        $records = CashFlow::where(function($query) use ($record) {
+                        // Ambil semua record dalam bulan yang sama dengan record ini
+                        // yang tanggalnya <= record ini, urutkan ASC untuk perhitungan
+                        $records = CashFlow::whereMonth('date', $record->date->month)
+                            ->whereYear('date', $record->date->year)
+                            ->where(function($query) use ($record) {
                                 $query->where('date', '<', $record->date)
                                       ->orWhere(function($q) use ($record) {
                                           $q->where('date', '=', $record->date)
@@ -158,7 +161,7 @@ class CashFlowResource extends Resource
                             ->orderBy('id', 'asc')
                             ->get(['type', 'amount']);
                             
-                        // Hitung saldo kumulatif berdasarkan urutan chronological
+                        // Hitung saldo kumulatif berdasarkan urutan chronological dalam bulan
                         foreach ($records as $r) {
                             if ($r->type === 'income') {
                                 $balance += $r->amount;
