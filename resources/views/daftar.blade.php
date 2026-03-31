@@ -183,6 +183,47 @@
         .custom-scroll::-webkit-scrollbar-thumb { background: #0992C2; border-radius: 10px; }
         
         body.light .custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+
+        /* Light mode button styling */
+        body.light .light-mode-btn {
+            background: #0992C2 !important;
+            color: white !important;
+        }
+        
+        body.light .light-mode-btn:hover {
+            background: #0771a1 !important;
+            color: white !important;
+        }
+        
+        /* Daftar button - white text in light mode only */
+        body.light .daftar-btn {
+            color: white !important;
+        }
+
+        /* Signature Modal Styles */
+        #signatureModal {
+            background: rgba(0, 0, 0, 0.95);
+            transition: all 0.3s ease;
+        }
+        
+        body.light #signatureModal {
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        #signatureCanvas {
+            touch-action: none; /* Prevent scrolling on mobile */
+        }
+        
+        /* Signature success state */
+        .signature-success {
+            background: rgba(34, 197, 94, 0.1) !important;
+            border-color: rgba(34, 197, 94, 0.3) !important;
+        }
+        
+        body.light .signature-success {
+            background: rgba(34, 197, 94, 0.05) !important;
+            border-color: rgba(34, 197, 94, 0.2) !important;
+        }
     </style>
 </head>
 <body class="bg-gym min-h-screen flex flex-col items-center justify-center p-4 md:p-8 text-white">
@@ -307,7 +348,10 @@
                     </label>
                 </div>
 
-                <button type="submit" id="btnSubmit" class="w-full bg-[#0992C2] hover:bg-[#0992C2] text-black font-black py-5 md:py-6 rounded-xl md:rounded-2xl text-lg md:text-xl uppercase italic transition-all shadow-2xl group tracking-widest">
+                <!-- Hidden field untuk signature -->
+                <input type="hidden" id="signature_data" name="signature_data" required>
+
+                <button type="submit" id="btnSubmit" class="w-full bg-[#0992C2] hover:bg-[#0992C2] text-black font-black py-5 md:py-6 rounded-xl md:rounded-2xl text-lg md:text-xl uppercase italic transition-all shadow-2xl group tracking-widest daftar-btn">
                     Daftar Sekarang <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-2 transition-transform"></i>
                 </button>
             </form>
@@ -320,16 +364,44 @@
             
             <!-- Tab Navigation -->
             <div class="flex gap-2 mb-6 border-b border-white/10">
-                <button onclick="switchTab('larangan')" id="tab-larangan" class="tab-btn flex-1 py-3 px-4 font-black text-xs uppercase tracking-wider transition-all border-b-2 border-[#0992C2] text-[#0992C2]">
-                    Larangan
-                </button>
-                <button onclick="switchTab('aturan')" id="tab-aturan" class="tab-btn flex-1 py-3 px-4 font-black text-xs uppercase tracking-wider transition-all border-b-2 border-transparent text-zinc-500 hover:text-zinc-300">
+                <button onclick="switchTab('aturan')" id="tab-aturan" class="tab-btn flex-1 py-3 px-4 font-black text-xs uppercase tracking-wider transition-all border-b-2 border-[#0992C2] text-[#0992C2]">
                     Aturan
+                </button>
+                <button onclick="switchTab('larangan')" id="tab-larangan" class="tab-btn flex-1 py-3 px-4 font-black text-xs uppercase tracking-wider transition-all border-b-2 border-transparent text-zinc-500 hover:text-zinc-300">
+                    Larangan
                 </button>
             </div>
 
+            <!-- Tab Content: Aturan -->
+            <div id="content-aturan" class="tab-content">
+                <div class="space-y-4 text-zinc-300 text-[10px] md:text-[11px] font-bold uppercase tracking-wider mb-8 leading-relaxed px-2 h-80 overflow-y-auto custom-scroll">
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Pembayaran member harus transfer/qris (termasuk pembelian air minum). Jika admin menerima dalam bentuk uang tunai, di nyatakan tidak SAH</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Dana yang masuk tidak boleh di refund</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member bebas masuk setiap hari selama 1 bulan (unlimited)</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>1 member berlaku untuk 1 orang/1 nama, tidak boleh di pindahkan ke orang lain</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Mengisi formulir pendaftaran member secara online melalui barcode</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib absen member secara online melalui barcode</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib memakai sepatu agar lebih safety</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Di larang memakai sendal di area gym</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Setelah menjadi member & tidak melanjutkan member di bulan berikutnya sampai minimal 6 bulan berturut, akan di kenakan biaya admin jika member tersebut ingin mengaktifkan member kembali</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Pembayaran member harus tepat waktu. Lewat dari 21.00 finger pintu akan di close. Jika telat pembayaran perpanjangan beberapa hari, tetap perpanjangan di bulan berikutnya di tanggal yang sama seperti tanggal pertama masuk member & member yg expired tidak boleh masuk lagi jika belum melakukan payment perpanjangan di hari expired</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Jika ingin mengubah tanggal perpanjangan pembayaran, member di wajibkan menghilang/non aktif selama minimal 1 bulan terhitung dari tanggal expired member</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Usia member minimal 12 tahun dengan ijin tertulis maupun lisan dari orang tua & wajib di pantau langsung oleh orang tua maupun personal trainer</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Setiap masuk gym member harus absen secara online. Caranya scan barcode yang ada di atas meja kasir, kemudian klik absen member & masukkan nomor whatsapp</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib membersihkan keringat setelah memakai alat dengan antiseptik yang telah di sediakan & wajib membawa handuk kecil</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak di perbolehkan memakai sepatu masuk ke area musholla & kamar mandi</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak di perbolehkan bermain handphone di area alat beban</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member yang bermasalah & tidak mengindahkan aturan akan di keluarkan & di BLACKLIST</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib mengembalikan beban ke tempat semula</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Gym tutup 01.00 dini hari</p></div>
+                    <div class="mt-6 p-4 bg-[#0992C2]/10 rounded-xl border border-[#0992C2]/20">
+                        <p class="text-[#0992C2] font-black text-[9px] md:text-[10px]">NB : Di harapkan member yang masuk telah membaca & menyetujui persayaratan di atas</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Tab Content: Larangan -->
-            <div id="content-larangan" class="tab-content">
+            <div id="content-larangan" class="tab-content hidden">
                 <div class="space-y-4 text-zinc-300 text-[10px] md:text-[11px] font-bold uppercase tracking-wider mb-8 leading-relaxed px-2 h-80 overflow-y-auto custom-scroll">
                     <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member di larang menyimpan air di showcase (pendingin). Members are prohibited from storing water in the showcase.</p></div>
                     <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member di larang duduk di kursi kasir maupun di atas meja kasir. Members are prohibited from sitting on the cashier's chair or on the cashier's table.</p></div>
@@ -343,13 +415,61 @@
             <!-- Tab Content: Aturan -->
             <div id="content-aturan" class="tab-content hidden">
                 <div class="space-y-4 text-zinc-300 text-[10px] md:text-[11px] font-bold uppercase tracking-wider mb-8 leading-relaxed px-2 h-80 overflow-y-auto custom-scroll">
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Hanya member yang bisa akses pintu masuk. Only members can access the entrance.</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Telat pembayaran member, Face ID/Sidik jari tertolak (tidak bisa masuk) kecuali melakukan pembayaran member kembali. Late member payment, Face ID or fingerprint (cannot log in) except for making member payments again.</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Siapapun yang membukakan pintu yang lambat membayar member, akan di kenakan sebanyak harga pervisit (Rp.75.000). Tidak terima alasan. Anyone who opens the door a late paying member will be charged the visit fee (Rp.75,000). No excuses accepted.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Pembayaran member harus transfer/qris (termasuk pembelian air minum). Jika admin menerima dalam bentuk uang tunai, di nyatakan tidak SAH</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Dana yang masuk tidak boleh di refund</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member bebas masuk setiap hari selama 1 bulan (unlimited)</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>1 member berlaku untuk 1 orang/1 nama, tidak boleh di pindahkan ke orang lain</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Mengisi formulir pendaftaran member secara online melalui barcode</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib absen member secara online melalui barcode</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib memakai sepatu agar lebih safety</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Di larang memakai sendal di area gym</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Setelah menjadi member & tidak melanjutkan member di bulan berikutnya sampai minimal 6 bulan berturut, akan di kenakan biaya admin jika member tersebut ingin mengaktifkan member kembali</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Pembayaran member harus tepat waktu. Lewat dari 21.00 finger pintu akan di close. Jika telat pembayaran perpanjangan beberapa hari, tetap perpanjangan di bulan berikutnya di tanggal yang sama seperti tanggal pertama masuk member & member yg expired tidak boleh masuk lagi jika belum melakukan payment perpanjangan di hari expired</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Jika ingin mengubah tanggal perpanjangan pembayaran, member di wajibkan menghilang/non aktif selama minimal 1 bulan terhitung dari tanggal expired member</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Usia member minimal 12 tahun dengan ijin tertulis maupun lisan dari orang tua & wajib di pantau langsung oleh orang tua maupun personal trainer</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Setiap masuk gym member harus absen secara online. Caranya scan barcode yang ada di atas meja kasir, kemudian klik absen member & masukkan nomor whatsapp</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib membersihkan keringat setelah memakai alat dengan antiseptik yang telah di sediakan & wajib membawa handuk kecil</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak di perbolehkan memakai sepatu masuk ke area musholla & kamar mandi</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak di perbolehkan bermain handphone di area alat beban</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member yang bermasalah & tidak mengindahkan aturan akan di keluarkan & di BLACKLIST</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib mengembalikan beban ke tempat semula</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Gym tutup 01.00 dini hari</p></div>
+                    <div class="mt-6 p-4 bg-[#0992C2]/10 rounded-xl border border-[#0992C2]/20">
+                        <p class="text-[#0992C2] font-black text-[9px] md:text-[10px]">NB : Di harapkan member yang masuk telah membaca & menyetujui persayaratan di atas</p>
+                    </div>
                 </div>
             </div>
 
-            <button onclick="toggleModal()" class="w-full bg-zinc-800 hover:bg-white hover:text-black text-white font-black py-4 rounded-xl uppercase transition-all tracking-widest">Saya Mengerti</button>
+            <button onclick="toggleModal()" class="w-full bg-zinc-800 hover:bg-white hover:text-black text-white font-black py-4 rounded-xl uppercase transition-all tracking-widest light-mode-btn">Saya Mengerti</button>
+        </div>
+    </div>
+
+    <!-- Modal Tanda Tangan Digital -->
+    <div id="signatureModal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 bg-black/95 backdrop-blur-xl">
+        <div class="bg-zinc-900 border border-[#0992C2]/20 w-full max-w-lg rounded-[2rem] p-8 shadow-2xl relative">
+            <div class="text-center mb-6">
+                <h3 class="text-2xl font-hero text-[#0992C2] orange-glow italic mb-2">TANDA TANGAN DIGITAL</h3>
+                <p class="text-zinc-400 text-xs uppercase tracking-widest font-bold">Tanda tangani persetujuan Anda</p>
+            </div>
+
+            <div class="bg-white rounded-xl p-4 mb-6">
+                <canvas id="signatureCanvas" width="400" height="200" class="w-full border-2 border-dashed border-gray-300 rounded cursor-crosshair"></canvas>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="button" onclick="clearSignature()" class="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-eraser mr-2"></i>Hapus
+                </button>
+                <button type="button" onclick="saveSignature()" class="flex-1 bg-[#0992C2] hover:bg-[#0992C2]/80 text-black font-bold py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-check mr-2"></i>Simpan
+                </button>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="button" onclick="closeSignatureModal()" class="text-zinc-500 text-xs hover:text-zinc-300 transition">
+                    Batal
+                </button>
+            </div>
         </div>
     </div>
 
@@ -421,6 +541,143 @@
                 btn.disabled = true;
             };
         }
+        
+        // Signature Canvas Functionality
+        let canvas, ctx, isDrawing = false;
+        let signatureData = null;
+
+        function initSignatureCanvas() {
+            canvas = document.getElementById('signatureCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * 2; // High DPI
+            canvas.height = rect.height * 2;
+            ctx.scale(2, 2);
+            
+            // Set drawing styles
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // Mouse events
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            
+            // Touch events for mobile
+            canvas.addEventListener('touchstart', handleTouch);
+            canvas.addEventListener('touchmove', handleTouch);
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 
+                                            e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+
+        function clearSignature() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            signatureData = null;
+        }
+
+        function saveSignature() {
+            // Check if canvas is empty
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const isEmpty = !imageData.data.some(channel => channel !== 0);
+            
+            if (isEmpty) {
+                alert('Silakan buat tanda tangan terlebih dahulu!');
+                return;
+            }
+            
+            // Save signature data
+            signatureData = canvas.toDataURL('image/png');
+            document.getElementById('signature_data').value = signatureData;
+            
+            // Server akan generate timestamp sendiri dengan timezone Indonesia
+            
+            // Close modal
+            closeSignatureModal();
+            
+            // Show success message
+            const checkbox = document.getElementById('agree');
+            const checkboxContainer = checkbox.parentElement;
+            checkbox.checked = true;
+            
+            // Visual feedback
+            const label = checkbox.nextElementSibling;
+            label.innerHTML = label.innerHTML.replace('Saya menyetujui', '✓ Saya telah menandatangani dan menyetujui');
+            label.classList.add('text-green-400');
+            checkboxContainer.classList.add('signature-success');
+            
+            // Show success animation
+            checkboxContainer.style.transform = 'scale(1.02)';
+            setTimeout(() => {
+                checkboxContainer.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        function openSignatureModal() {
+            document.getElementById('signatureModal').classList.remove('hidden');
+            document.getElementById('signatureModal').classList.add('flex');
+            setTimeout(() => initSignatureCanvas(), 100);
+        }
+
+        function closeSignatureModal() {
+            document.getElementById('signatureModal').classList.add('hidden');
+            document.getElementById('signatureModal').classList.remove('flex');
+        }
+
+        // Modify checkbox behavior to show signature modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkbox = document.getElementById('agree');
+            const form = document.getElementById('formDaftar');
+            
+            checkbox.addEventListener('change', function() {
+                if (this.checked && !signatureData) {
+                    this.checked = false; // Uncheck until signature is provided
+                    openSignatureModal();
+                }
+            });
+            
+            // Validate signature before form submission
+            form.addEventListener('submit', function(e) {
+                if (!signatureData) {
+                    e.preventDefault();
+                    alert('Tanda tangan digital diperlukan untuk melanjutkan pendaftaran!');
+                    openSignatureModal();
+                    return false;
+                }
+            });
+        });
     </script>
 </body>
 </html>

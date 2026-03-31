@@ -42,13 +42,6 @@ class KasirCepat extends Page
      */
     public function bayarHarian($productId, $paymentMethod = 'cash', $quantity = 1)
     {
-        // Debug: Log parameter yang diterima
-        \Log::info('bayarHarian called with:', [
-            'productId' => $productId,
-            'paymentMethod' => $paymentMethod,
-            'quantity' => $quantity
-        ]);
-
         // 1. Ambil data produk dari database berdasarkan ID yang diklik
         $product = Product::find($productId);
 
@@ -100,12 +93,6 @@ class KasirCepat extends Page
             default => 'Cash'
         };
 
-        // Debug: Log payment method yang akan disimpan
-        \Log::info('Payment method processing:', [
-            'received' => $paymentMethod,
-            'formatted' => $paymentMethodLabel
-        ]);
-
         // 6. SIMPAN KE TABEL QUICK_TRANSACTIONS
         $quickTransaction = QuickTransaction::create([
             'guest_name'     => str_contains(strtolower($itemName), 'latihan') || str_contains(strtolower($itemName), 'harian') 
@@ -118,6 +105,16 @@ class KasirCepat extends Page
             'payment_method' => $paymentMethodLabel,
             'payment_date'   => now(),
         ]);
+
+        // 6.1. CATAT KE CASH FLOW (SEPERTI MEMBER TRANSACTIONS)
+        \App\Models\CashFlow::createEntry(
+            'income',
+            'kasir',
+            'Penjualan - ' . ($quantity > 1 ? "{$itemName} ({$quantity}x)" : $itemName) . ' (' . $quickTransaction->guest_name . ')',
+            $totalAmount,
+            $quickTransaction->id,
+            now()
+        );
 
         // 7. KIRIM NOTIFIKASI KE DATABASE ADMIN
         $admins = User::all();
@@ -287,6 +284,16 @@ class KasirCepat extends Page
             'payment_method' => $paymentMethodLabel,
             'payment_date' => now(), // Update waktu pembayaran
         ]);
+
+        // CATAT KE CASH FLOW KETIKA HUTANG DIBAYAR
+        \App\Models\CashFlow::createEntry(
+            'income',
+            'kasir',
+            'Pembayaran Hutang - ' . $transaction->product_name . ' (' . $transaction->guest_name . ')',
+            $transaction->amount,
+            $transaction->id,
+            now()
+        );
 
         // Notifikasi sukses
         $nominal = "Rp " . number_format($transaction->amount, 0, ',', '.');

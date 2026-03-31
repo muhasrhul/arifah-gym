@@ -101,7 +101,8 @@ class FrontMemberController extends Controller
                 'email'     => 'nullable|email|unique:members,email', 
                 'phone'     => 'required|unique:members,phone',
                 'paket_id'  => 'required|exists:pakets,id',
-                'nik'       => 'nullable|digits:16|unique:members,nik', 
+                'nik'       => 'nullable|digits:16|unique:members,nik',
+                'signature_data' => 'required|string', // Validasi tanda tangan
             ]);
 
             // B. Ambil Data Paket
@@ -130,6 +131,8 @@ class FrontMemberController extends Controller
                     'is_active'      => false,
                     'order_id'       => $orderId,
                     'payment_method' => 'Pending', // Menunggu pembayaran manual
+                    'digital_signature' => $request->signature_data, // Simpan tanda tangan
+                    'signature_timestamp' => Carbon::now('Asia/Makassar'), // Gunakan server time dengan timezone Indonesia
                 ]);
                 
                 Log::info("Member created successfully", [

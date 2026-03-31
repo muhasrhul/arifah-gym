@@ -20,9 +20,9 @@ class TransactionResource extends Resource
     protected static ?string $model = Transaction::class;
     protected static ?string $navigationIcon = 'heroicon-o-cash';
     protected static ?int $navigationSort = 1; // Urutan pertama
-    protected static ?string $navigationLabel = 'Keuangan Member';
-    protected static ?string $pluralLabel = 'Keuangan Member';
-    protected static ?string $navigationGroup = 'Laporan Transaksi';
+    protected static ?string $navigationLabel = 'Transaksi Member';
+    protected static ?string $pluralLabel = 'Transaksi Member';
+    protected static ?string $navigationGroup = 'Keuangan';
     
     // PERMISSION: Staff hanya bisa lihat, tidak bisa create/edit/delete
     public static function canCreate(): bool

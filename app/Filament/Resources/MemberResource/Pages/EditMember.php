@@ -384,6 +384,16 @@ class EditMember extends EditRecord
                         'guest_name'     => $record->name,
                     ]);
                     
+                    // CATAT KE CASH FLOW
+                    \App\Models\CashFlow::createEntry(
+                        'income',
+                        'member',
+                        'Pendaftaran - ' . $record->name . ' (' . $data['type'] . ')',
+                        $totalHarga,
+                        $transaction->id,
+                        $now
+                    );
+                    
                     // Commit jika semua berhasil
                     DB::commit();
                     
@@ -510,6 +520,16 @@ class EditMember extends EditRecord
                             'payment_date'   => $now,
                             'guest_name'     => $record->name,
                         ]);
+                        
+                        // CATAT KE CASH FLOW
+                        \App\Models\CashFlow::createEntry(
+                            'income',
+                            'member',
+                            'Perpanjangan - ' . $record->name . ' (' . $data['type'] . ')',
+                            $totalHarga,
+                            $transaction->id,
+                            $now
+                        );
                         
                         // Commit jika semua berhasil
                         DB::commit();
@@ -793,6 +813,16 @@ class EditMember extends EditRecord
                     'payment_date'   => $now,
                     'guest_name'     => $record->name,
                 ]);
+                
+                // CATAT KE CASH FLOW (PERPANJANGAN EARLY)
+                \App\Models\CashFlow::createEntry(
+                    'income',
+                    'member',
+                    'Perpanjangan Early - ' . $record->name . ' (' . $selectedType . ')',
+                    $harga,
+                    $transaction->id,
+                    $now
+                );
                 
                 // Commit jika semua berhasil
                 DB::commit();

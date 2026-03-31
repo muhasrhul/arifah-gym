@@ -130,6 +130,16 @@ class CreateMember extends CreateRecord
                 'guest_name'     => $member->name,
             ]);
             
+            // --- D. CATAT KE CASH FLOW ---
+            \App\Models\CashFlow::createEntry(
+                'income',
+                'member',
+                'Pendaftaran - ' . $member->name . ' (' . $member->type . ')',
+                $totalHarga,
+                $transaction->id,
+                Carbon::now('Asia/Makassar')
+            );
+            
             // Pastikan semua data sudah tersimpan ke database
             if ($transaction) {
                 // Tunggu sebentar untuk memastikan database sudah commit

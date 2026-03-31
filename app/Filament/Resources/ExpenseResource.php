@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\QuickTransactionResource\Pages;
-use App\Models\QuickTransaction;
+use App\Filament\Resources\ExpenseResource\Pages;
+use App\Models\Expense;
 use Filament\Forms;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
@@ -11,13 +11,13 @@ use Filament\Resources\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 
-class QuickTransactionResource extends Resource
+class ExpenseResource extends Resource
 {
-    protected static ?string $model = QuickTransaction::class;
-    protected static ?string $navigationIcon = 'heroicon-o-cash';
-    protected static ?int $navigationSort = 2; // Urutan kedua
-    protected static ?string $navigationLabel = 'Transaksi Kasir Cepat';
-    protected static ?string $pluralLabel = 'Transaksi Kasir Cepat';
+    protected static ?string $model = Expense::class;
+    protected static ?string $navigationIcon = 'heroicon-o-pencil';
+    protected static ?int $navigationSort = 3; // Urutan ketiga
+    protected static ?string $navigationLabel = 'Catatan Pengeluaran';
+    protected static ?string $pluralLabel = 'Catatan Pengeluaran';
     protected static ?string $navigationGroup = 'Keuangan';
     
     // PERMISSION: Staff hanya bisa lihat, tidak bisa create/edit/delete
@@ -45,58 +45,58 @@ class QuickTransactionResource extends Resource
     {
         return $form->schema([
             Forms\Components\Card::make()->schema([
-                Forms\Components\TextInput::make('guest_name')
-                    ->label('Nama Tamu')
-                    ->required(),
+                Forms\Components\DateTimePicker::make('expense_date')
+                    ->label('Tanggal & Waktu Pengeluaran')
+                    ->default(now())
+                    ->required()
+                    ->displayFormat('d/m/Y H:i'),
 
-                Forms\Components\TextInput::make('product_name')
-                    ->label('Nama Produk')
-                    ->required(),
-
-                Forms\Components\TextInput::make('order_id')
-                    ->label('ID Transaksi')
-                    ->default('KASIR-' . uniqid())
-                    ->required(),
-
-                Forms\Components\TextInput::make('amount')
-                    ->label('Nominal (Rp)')
-                    ->numeric()
-                    ->prefix('Rp')
-                    ->required(),
-
-                Forms\Components\Select::make('type')
+                Forms\Components\Select::make('category')
                     ->label('Kategori')
                     ->options([
-                        'Latihan Harian' => 'Latihan Harian',
-                        'Minuman/Kantin' => 'Minuman/Kantin',
-                        'Snack' => 'Snack',
+                        'Operasional Harian' => 'Operasional Harian',
+                        'Peralatan & Maintenance' => 'Peralatan & Maintenance',
+                        'Utilitas (Listrik, Air, Internet)' => 'Utilitas (Listrik, Air, Internet)',
+                        'Kebersihan & Sanitasi' => 'Kebersihan & Sanitasi',
+                        'Marketing & Promosi' => 'Marketing & Promosi',
+                        'Administrasi & Pajak' => 'Administrasi & Pajak',
                         'Lainnya' => 'Lainnya',
                     ])
-                    ->required(),
+                    ->required()
+                    ->searchable(),
 
-                Forms\Components\Select::make('payment_method')
-                    ->label('Metode Bayar')
-                    ->options([
-                        'Cash' => 'Cash',
-                        'Transfer Bank' => 'Transfer Bank',
-                    ])
-                    ->default('Cash')
-                    ->required(),
+                Forms\Components\TextInput::make('item')
+                    ->label('Item/Barang')
+                    ->required()
+                    ->placeholder('Contoh: Sabun cuci tangan, Lampu LED, dll'),
 
-                Forms\Components\DateTimePicker::make('payment_date')
-                    ->label('Tanggal & Jam Bayar')
-                    ->default(now())
-                    ->required(),
-                    
-                Forms\Components\Hidden::make('status')
-                    ->default('paid')
-                    ->afterStateUpdated(function ($state, $set, $get) {
-                        // Log untuk debug
-                        file_put_contents('form_debug.log', 
-                            date('Y-m-d H:i:s') . " - Hidden status field updated: " . $state . "\n",
-                            FILE_APPEND
-                        );
-                    }),
+                Forms\Components\TextInput::make('quantity')
+                    ->label('Quantity')
+                    ->numeric()
+                    ->default(1)
+                    ->required()
+                    ->minValue(1),
+
+                Forms\Components\TextInput::make('amount')
+                    ->label('Total Harga (Rp)')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->required()
+                    ->minValue(0),
+
+                Forms\Components\TextInput::make('receipt_number')
+                    ->label('Nomor Nota/Kwitansi')
+                    ->placeholder('Opsional - untuk tracking')
+                    ->helperText('Nomor nota pembelian atau kwitansi (jika ada)'),
+
+                Forms\Components\Textarea::make('notes')
+                    ->label('Catatan')
+                    ->placeholder('Catatan tambahan (opsional)')
+                    ->rows(3)
+                    ->helperText('Keterangan tambahan tentang pengeluaran ini'),
+
+                Forms\Components\Hidden::make('created_by')
+                    ->default(auth()->id()),
             ])
         ]);
     }
@@ -105,77 +105,80 @@ class QuickTransactionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\BadgeColumn::make('source')
-                    ->label('Sumber')
-                    ->getStateUsing(fn () => 'Kasir Cepat')
-                    ->color('warning')
-                    ->icon('heroicon-o-lightning-bolt'),
+                Tables\Columns\TextColumn::make('expense_date')
+                    ->label('Tanggal')
+                    ->dateTime('d M Y, H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
-                Tables\Columns\TextColumn::make('guest_name')
-                    ->label('Nama Tamu')
-                    ->searchable(),
+                Tables\Columns\BadgeColumn::make('category')
+                    ->label('Kategori')
+                    ->color('primary')
+                    ->toggleable(isToggledHiddenByDefault: false),
 
-                Tables\Columns\TextColumn::make('product_name')
-                    ->label('Produk')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('item')
+                    ->label('Item/Barang')
+                    ->searchable()
+                    ->limit(30)
+                    ->toggleable(isToggledHiddenByDefault: false),
+
+                Tables\Columns\TextColumn::make('quantity')
+                    ->label('Qty')
+                    ->alignCenter()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 
                 Tables\Columns\TextColumn::make('amount')
-                    ->label('Nominal')
+                    ->label('Total Harga')
                     ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.'))
-                    ->color('success')
-                    ->weight('bold'),
-                
-                Tables\Columns\BadgeColumn::make('status')
-                    ->label('Status')
-                    ->enum([
-                        'paid' => 'Lunas',
-                        'pending' => 'Belum Bayar',
-                    ])
-                    ->colors([
-                        'success' => 'paid',
-                        'warning' => 'pending',
-                    ]),
-                
-                Tables\Columns\TextColumn::make('payment_method')
-                    ->label('Metode'),
-                
-                Tables\Columns\TextColumn::make('payment_date')
-                    ->label('Waktu')
-                    ->dateTime('d M Y, H:i')
-                    ->sortable(),
-            ])
-            ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->label('Status')
-                    ->options([
-                        'paid' => 'Lunas',
-                        'pending' => 'Belum Bayar',
-                    ]),
-                
-                Tables\Filters\SelectFilter::make('product_type')
-                    ->label('Jenis Produk')
-                    ->options(function () {
-                        return \App\Models\Product::where('is_active', true)
-                            ->orderBy('name')
-                            ->pluck('name', 'name')
-                            ->toArray();
-                    })
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->when(
-                            $data['value'],
-                            fn (Builder $query, $value): Builder => $query->where('product_name', 'like', "%{$value}%")
-                        );
-                    })
-                    ->placeholder('Semua Produk'),
+                    ->color('danger')
+                    ->weight('bold')
+                    ->toggleable(isToggledHiddenByDefault: false),
 
-                // Filter Transaksi Bulan Ini
-                Tables\Filters\Filter::make('payment_this_month')
-                    ->label('Transaksi Bulan Ini')
-                    ->query(fn ($query) => $query->whereMonth('payment_date', \Carbon\Carbon::now()->month)
-                        ->whereYear('payment_date', \Carbon\Carbon::now()->year))
+                Tables\Columns\TextColumn::make('receipt_number')
+                    ->label('No. Nota')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->label('Dicatat Oleh')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Waktu Input')
+                    ->dateTime('d M Y, H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->defaultSort('expense_date', 'desc')
+            ->filters([
+                // Filter 1: Kategori
+                Tables\Filters\SelectFilter::make('category')
+                    ->label('Kategori')
+                    ->options([
+                        'Operasional Harian' => 'Operasional Harian',
+                        'Peralatan & Maintenance' => 'Peralatan & Maintenance',
+                        'Utilitas (Listrik, Air, Internet)' => 'Utilitas (Listrik, Air, Internet)',
+                        'Kebersihan & Sanitasi' => 'Kebersihan & Sanitasi',
+                        'Marketing & Promosi' => 'Marketing & Promosi',
+                        'Administrasi & Pajak' => 'Administrasi & Pajak',
+                        'Lainnya' => 'Lainnya',
+                    ])
+                    ->placeholder('Semua Kategori'),
+
+                // Filter 2: Pengeluaran Bulan Ini
+                Tables\Filters\Filter::make('expense_this_month')
+                    ->label('Pengeluaran Bulan Ini')
+                    ->query(fn ($query) => $query->whereMonth('expense_date', \Carbon\Carbon::now()->month)
+                        ->whereYear('expense_date', \Carbon\Carbon::now()->year))
                     ->toggle(),
             ])
-            ->defaultSort('payment_date', 'desc')
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make(),
+            ])
             ->headerActions([
                 Tables\Actions\Action::make('export_excel')
                     ->label('Export Excel')
@@ -220,18 +223,13 @@ class QuickTransactionResource extends Resource
                         // Ambil filter yang sedang aktif dari tabel
                         $tableFilters = $livewire->getTableFiltersForm()->getState();
                         
-                        // Tambahkan filter status jika ada
-                        if (!empty($tableFilters['status']['value'])) {
-                            $params['status_filter'] = $tableFilters['status']['value'];
-                        }
-                        
-                        // Tambahkan filter jenis produk jika ada
-                        if (!empty($tableFilters['product_type']['value'])) {
-                            $params['product_type'] = $tableFilters['product_type']['value'];
+                        // Tambahkan filter kategori jika ada
+                        if (!empty($tableFilters['category']['value'])) {
+                            $params['category'] = $tableFilters['category']['value'];
                         }
                         
                         // Tambahkan filter bulan ini jika aktif
-                        if (!empty($tableFilters['payment_this_month']['isActive'])) {
+                        if (!empty($tableFilters['expense_this_month']['isActive'])) {
                             $params['this_month'] = '1';
                         }
                         
@@ -245,7 +243,7 @@ class QuickTransactionResource extends Resource
                             $params['end_date'] = $data['end_date'];
                         }
                         
-                        $url = route('cetak-laporan-kasir', $params);
+                        $url = route('cetak-laporan-pengeluaran', $params);
                         
                         // Show notification
                         \Filament\Notifications\Notification::make()
@@ -303,18 +301,13 @@ class QuickTransactionResource extends Resource
                         // Ambil filter yang sedang aktif dari tabel
                         $tableFilters = $livewire->getTableFiltersForm()->getState();
                         
-                        // Tambahkan filter status jika ada
-                        if (!empty($tableFilters['status']['value'])) {
-                            $params['status_filter'] = $tableFilters['status']['value'];
-                        }
-                        
-                        // Tambahkan filter jenis produk jika ada
-                        if (!empty($tableFilters['product_type']['value'])) {
-                            $params['product_type'] = $tableFilters['product_type']['value'];
+                        // Tambahkan filter kategori jika ada
+                        if (!empty($tableFilters['category']['value'])) {
+                            $params['category'] = $tableFilters['category']['value'];
                         }
                         
                         // Tambahkan filter bulan ini jika aktif
-                        if (!empty($tableFilters['payment_this_month']['isActive'])) {
+                        if (!empty($tableFilters['expense_this_month']['isActive'])) {
                             $params['this_month'] = '1';
                         }
                         
@@ -328,7 +321,7 @@ class QuickTransactionResource extends Resource
                             $params['end_date'] = $data['end_date'];
                         }
                         
-                        $url = route('cetak-laporan-kasir', $params);
+                        $url = route('cetak-laporan-pengeluaran', $params);
                         
                         // Show notification
                         \Filament\Notifications\Notification::make()
@@ -348,9 +341,9 @@ class QuickTransactionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListQuickTransactions::route('/'),
-            'create' => Pages\CreateQuickTransaction::route('/create'),
-            'edit' => Pages\EditQuickTransaction::route('/{record}/edit'),
+            'index' => Pages\ListExpenses::route('/'),
+            'create' => Pages\CreateExpense::route('/create'),
+            'edit' => Pages\EditExpense::route('/{record}/edit'),
         ];
     }
 }

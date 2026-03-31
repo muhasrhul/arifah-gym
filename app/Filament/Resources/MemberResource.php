@@ -511,7 +511,7 @@ class MemberResource extends Resource
                                 return false; // Jika tidak aktif, toggle bisa dinyalakan
                             })
                             ->default(false),
-                    ])
+                    ]),
                 ])
             ]);
     }
@@ -673,6 +673,17 @@ class MemberResource extends Resource
                     ->openUrlInNewTab()
                     ->toggleable(isToggledHiddenByDefault: false),
 
+                // Kolom Preview Tanda Tangan dengan Modal
+                Tables\Columns\ViewColumn::make('signature_preview')
+                    ->label('TTD Digital')
+                    ->view('filament.tables.columns.signature-preview')
+                    ->toggleable(isToggledHiddenByDefault: false),
+
+                Tables\Columns\TextColumn::make('signature_timestamp')
+                    ->label('Waktu TTD')
+                    ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->setTimezone('Asia/Makassar')->format('d/m/Y H:i') : '-')
+                    ->toggleable(isToggledHiddenByDefault: false), // Tampilkan by default
+
                 // --- KOLOM STATUS YANG SUDAH DIPERBARUI LOGIKANYA ---
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Status')
@@ -770,6 +781,12 @@ class MemberResource extends Resource
                 Tables\Filters\Filter::make('has_fingerprint')
                     ->label('Punya Fingerprint')
                     ->query(fn ($query) => $query->whereNotNull('fingerprint_id'))
+                    ->toggle(),
+
+                // Filter 5: Tanda Tangan Digital
+                Tables\Filters\Filter::make('has_signature')
+                    ->label('Sudah TTD Digital')
+                    ->query(fn ($query) => $query->whereNotNull('digital_signature'))
                     ->toggle(),
 
                 // Filter 5: Data yang dihapus - Tidak perlu lagi karena soft delete dihapus

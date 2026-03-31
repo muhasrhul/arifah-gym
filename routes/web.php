@@ -424,6 +424,101 @@ Route::get('/cetak-laporan-kasir', function (Request $request) {
     return Response::make($output);
 })->name('cetak-laporan-kasir');
 
+// 4.2 LAPORAN PENGELUARAN
+Route::get('/cetak-laporan-pengeluaran', function (Request $request) {
+    $query = \App\Models\Expense::with('creator');
+    
+    // FILTER TAMBAHAN DARI TABEL
+    $additionalFilters = [];
+    
+    // Filter berdasarkan kategori
+    if ($request->query('category')) {
+        $category = $request->query('category');
+        $query->where('category', $category);
+        $additionalFilters[] = 'Kategori: ' . $category;
+    }
+    
+    // Filter pengeluaran bulan ini
+    if ($request->query('this_month') === '1') {
+        $query->whereMonth('expense_date', \Carbon\Carbon::now()->month)
+              ->whereYear('expense_date', \Carbon\Carbon::now()->year);
+        $additionalFilters[] = 'Bulan Ini';
+    }
+    
+    // FILTER TANGGAL DARI FORM (prioritas lebih tinggi dari filter tabel)
+    $filterType = $request->query('filter_type');
+    $dateFilterText = '';
+    
+    if ($filterType === 'single' && $request->query('single_date')) {
+        $singleDate = $request->query('single_date');
+        $query->whereDate('expense_date', $singleDate);
+        $dateFilterText = ' - Tanggal: ' . \Carbon\Carbon::parse($singleDate)->format('d/m/Y');
+    } elseif ($filterType === 'range' && $request->query('start_date') && $request->query('end_date')) {
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+        $query->whereBetween('expense_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        $dateFilterText = ' - Periode: ' . \Carbon\Carbon::parse($startDate)->format('d/m/Y') . ' s/d ' . \Carbon\Carbon::parse($endDate)->format('d/m/Y');
+    }
+    
+    // Gabungkan filter tambahan ke dalam teks header
+    $additionalFilterText = '';
+    if (!empty($additionalFilters)) {
+        $additionalFilterText = ' - Filter: ' . implode(', ', $additionalFilters);
+    }
+    
+    $data = $query->orderBy('expense_date', 'asc')->get();
+
+    if ($request->query('format') == 'pdf') {
+        return view('laporan_pengeluaran_pdf', compact('data', 'dateFilterText', 'additionalFilterText'));
+    }
+
+    $filename = "Laporan_Pengeluaran_ARIFAH_GYM_" . date('d-m-Y') . ".xls";
+    header("Content-Type: application/vnd.ms-excel");
+    header("Content-Disposition: attachment; filename=\"$filename\"");
+    
+    $total = 0;
+    $output = "<table border='1'>
+                <tr>
+                    <th colspan='8' style='background-color: #f97316; font-size: 16px; height: 35px; color: white;'>LAPORAN PENGELUARAN - ARIFAH GYM{$dateFilterText}{$additionalFilterText}</th>
+                </tr>
+                <tr style='background-color: #eeeeee;'>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>Kategori</th>
+                    <th>Item/Barang</th>
+                    <th>Qty</th>
+                    <th>Total Harga</th>
+                    <th>No. Nota</th>
+                    <th>Dicatat Oleh</th>
+                </tr>";
+                
+    $no = 1;
+    foreach ($data as $row) {
+        $total += $row->amount;
+        $creatorName = $row->creator ? $row->creator->name : 'User Dihapus';
+        
+        $output .= "<tr>
+                        <td style='text-align: center;'>{$no}</td>
+                        <td style='text-align: center;'>" . \Carbon\Carbon::parse($row->expense_date)->format('d/m/Y') . "</td>
+                        <td>" . $row->category . "</td>
+                        <td>" . $row->item . "</td>
+                        <td style='text-align: center;'>" . $row->quantity . "</td>
+                        <td style='text-align: right;'>Rp " . number_format($row->amount, 0, ',', '.') . "</td>
+                        <td>" . ($row->receipt_number ?? '-') . "</td>
+                        <td>" . $creatorName . "</td>
+                    </tr>";
+        $no++;
+    }
+    
+    $output .= "<tr>
+                <th colspan='7' style='text-align:right; background-color: #eeeeee;'>TOTAL PENGELUARAN:</th>
+                <th style='background-color: #ef4444; color: white; text-align: right;'>Rp " . number_format($total, 0, ',', '.') . "</th>
+              </tr>";
+    $output .= "</table>";
+
+    return Response::make($output);
+})->name('cetak-laporan-pengeluaran');
+
 // 5. EXPORT DAFTAR MEMBER
 Route::get('/export-members', function (Request $request) {
     $data = Member::orderBy('created_at', 'desc')->get();
@@ -667,3 +762,78 @@ Route::get('/backup-database', function () {
 })->name('backup-database');
 
 }); // End of auth middleware group
+
+// 12. ROUTE UNTUK MELIHAT TANDA TANGAN DIGITAL
+Route::get('/signature/{member}', function (Member $member) {
+    if (!$member->digital_signature) {
+        abort(404, 'Tanda tangan tidak ditemukan');
+    }
+    
+    return view('signature-view', compact('member'));
+})->name('member.signature');
+
+// Export Pembukuan PDF
+Route::get('/export/pembukuan', function (Request $request) {
+    $period = $request->get('period', 'today');
+    $now = \Carbon\Carbon::now('Asia/Makassar');
+    
+    // Tentukan range tanggal berdasarkan periode
+    switch ($period) {
+        case 'today':
+            $startDate = $now->copy()->startOfDay();
+            $endDate = $now->copy()->endOfDay();
+            $periodLabel = 'Hari Ini - ' . $now->format('d F Y');
+            break;
+            
+        case 'week':
+            $startDate = $now->copy()->subDays(6)->startOfDay(); // 7 hari terakhir
+            $endDate = $now->copy()->endOfDay();
+            $periodLabel = 'Minggu Ini - ' . $startDate->format('d') . ' s/d ' . $endDate->format('d F Y');
+            break;
+            
+        case 'month':
+            $startDate = $now->copy()->startOfMonth();
+            $endDate = $now->copy()->endOfMonth();
+            $periodLabel = 'Bulan ' . $now->format('F Y');
+            break;
+            
+        default:
+            $startDate = $now->copy()->startOfDay();
+            $endDate = $now->copy()->endOfDay();
+            $periodLabel = 'Hari Ini - ' . $now->format('d F Y');
+    }
+    
+    // Ambil data berdasarkan periode
+    $data = \App\Models\CashFlow::whereBetween('date', [$startDate, $endDate])
+        ->orderBy('date', 'asc')
+        ->orderBy('id', 'asc')
+        ->get();
+        
+    // Hitung totals
+    $totalIncome = $data->where('type', 'income')->sum('amount');
+    $totalExpense = $data->where('type', 'expense')->sum('amount');
+    $finalBalance = $totalIncome - $totalExpense;
+    
+    // Hitung running balance untuk setiap record
+    $runningBalance = 0;
+    $dataWithBalance = $data->map(function ($record) use (&$runningBalance) {
+        if ($record->type === 'income') {
+            $runningBalance += $record->amount;
+        } else {
+            $runningBalance -= $record->amount;
+        }
+        $record->running_balance = $runningBalance;
+        return $record;
+    });
+    
+    return view('laporan_pembukuan_pdf', [
+        'data' => $dataWithBalance,
+        'periodLabel' => $periodLabel,
+        'startDate' => $startDate,
+        'endDate' => $endDate,
+        'totalIncome' => $totalIncome,
+        'totalExpense' => $totalExpense,
+        'finalBalance' => $finalBalance,
+        'generatedAt' => $now->format('d F Y, H:i') . ' WITA'
+    ]);
+})->name('export.pembukuan');

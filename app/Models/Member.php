@@ -14,6 +14,10 @@ class Member extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'signature_timestamp' => 'datetime',
+    ];
+
     /**
      * Logika Perpanjangan Dinamis (Renewal via Tombol Khusus)
      */
@@ -84,6 +88,16 @@ class Member extends Model
                 'payment_date'   => $now,
                 'guest_name'     => $this->name,
             ]);
+            
+            // 4️⃣ CATAT KE CASH FLOW
+            \App\Models\CashFlow::createEntry(
+                'income',
+                'member',
+                'Perpanjangan - ' . $this->name . ' (' . $this->type . ')',
+                $harga,
+                $transaction->id,
+                $now
+            );
             
             // Commit jika semua berhasil
             \DB::commit();
