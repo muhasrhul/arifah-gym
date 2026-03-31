@@ -4,10 +4,10 @@ namespace App\Filament\Widgets;
 
 use App\Models\Attendance;
 use App\Models\Member;
-use App\Models\Transaction; 
-use App\Models\QuickTransaction; // TAMBAHAN: Untuk kasir cepat 
+use App\Models\CashFlow; // UBAH: Gunakan CashFlow sebagai sumber data
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Card;
+use Carbon\Carbon;
 
 class StatsOverview extends BaseWidget
 {
@@ -22,25 +22,42 @@ class StatsOverview extends BaseWidget
     
     protected function getColumns(): int
     {
-        return 4; // 4 kolom per baris
+        return 4; // 4 kolom per baris (seperti semula)
     }
     
     protected function getCards(): array
     {
+        $now = Carbon::now('Asia/Makassar');
+        
         // Cache selama 30 detik untuk update lebih cepat
-        $omsetHariIni = cache()->remember('stats_omset_hari_ini', 30, function () {
-            // Gabungkan dari kedua tabel
-            $memberTransactions = Transaction::whereDate('payment_date', now())->sum('amount');
-            $quickTransactions = QuickTransaction::whereDate('payment_date', now())->sum('amount');
-            return $memberTransactions + $quickTransactions;
+        $omsetHariIni = cache()->remember('stats_omset_hari_ini', 30, function () use ($now) {
+            // Ambil dari CashFlow hari ini (pemasukan saja)
+            return CashFlow::whereDate('date', $now->format('Y-m-d'))
+                ->where('type', 'income')
+                ->sum('amount');
         });
 
-        $totalOmzet = cache()->remember('stats_total_omzet', 30, function () {
-            // Hitung total omzet mulai dari hari ini jam 12:00 WITA
-            $startDate = '2026-03-02 12:00:00'; // Hari ini jam 12 siang
-            $memberTransactions = Transaction::where('payment_date', '>=', $startDate)->sum('amount');
-            $quickTransactions = QuickTransaction::where('payment_date', '>=', $startDate)->sum('amount');
-            return $memberTransactions + $quickTransactions;
+        $pengeluaranBulanIni = cache()->remember('stats_pengeluaran_bulan', 30, function () use ($now) {
+            // Hitung total pengeluaran bulan berjalan
+            return CashFlow::whereMonth('date', $now->month)
+                ->whereYear('date', $now->year)
+                ->where('type', 'expense')
+                ->sum('amount');
+        });
+
+        $totalPendapatanBersihBulanIni = cache()->remember('stats_pendapatan_bersih_bulan', 30, function () use ($now) {
+            // UBAH: Hitung pendapatan bersih bulan berjalan (pemasukan - pengeluaran)
+            $totalPemasukan = CashFlow::whereMonth('date', $now->month)
+                ->whereYear('date', $now->year)
+                ->where('type', 'income')
+                ->sum('amount');
+                
+            $totalPengeluaran = CashFlow::whereMonth('date', $now->month)
+                ->whereYear('date', $now->year)
+                ->where('type', 'expense')
+                ->sum('amount');
+                
+            return $totalPemasukan - $totalPengeluaran;
         });
 
         $totalMember = cache()->remember('stats_total_member', 30, function () {
@@ -67,25 +84,31 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-s-trending-up')
                 ->color('success'),
 
-            // KARTU 2: TOTAL OMZET KESELURUHAN (Mencolok dengan warna primary/biru/orange)
-            Card::make('Total Omzet Keseluruhan', 'Rp ' . number_format($totalOmzet, 0, ',', '.'))
-                ->description('Total pendapatan keseluruhan')
-                ->descriptionIcon('heroicon-s-currency-dollar')
-                ->color('primary'),
+            // KARTU 2: PENGELUARAN BULAN INI
+            Card::make('Pengeluaran ' . $now->translatedFormat('F Y'), 'Rp ' . number_format($pengeluaranBulanIni, 0, ',', '.'))
+                ->description('Total biaya operasional')
+                ->descriptionIcon('heroicon-s-trending-down')
+                ->color('danger'),
 
-            // KARTU 3: TOTAL MEMBER AKTIF
+            // KARTU 3: PENDAPATAN BERSIH BULAN INI (pemasukan - pengeluaran)
+            Card::make('Pendapatan Bersih ' . $now->translatedFormat('F Y'), 'Rp ' . number_format($totalPendapatanBersihBulanIni, 0, ',', '.'))
+                ->description('Keuntungan bersih')
+                ->descriptionIcon('heroicon-s-calculator')
+                ->color($totalPendapatanBersihBulanIni >= 0 ? 'success' : 'danger'),
+
+            // KARTU 4: TOTAL MEMBER AKTIF
             Card::make('Total Member Aktif', $totalMember . ' Orang')
                 ->description('Member dengan status aktif')
                 ->descriptionIcon('heroicon-s-user-group')
                 ->color('primary'),
             
-            // KARTU 4: TOTAL MEMBER EXPIRED
+            // KARTU 5: TOTAL MEMBER EXPIRED
             Card::make('Total Member Expired', $memberExpired . ' Orang')
                 ->description('Member yang sudah expired')
                 ->descriptionIcon('heroicon-s-clock')
                 ->color('danger'),
             
-            // KARTU 5: LOG ABSENSI HARI INI
+            // KARTU 6: LOG ABSENSI HARI INI
             Card::make('Absensi Hari Ini', $sedangLatihan . ' Check-in')
                 ->description('Jumlah orang latihan hari ini')
                 ->descriptionIcon('heroicon-s-clipboard-check')
