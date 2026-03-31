@@ -49,6 +49,22 @@ class Kernel extends ConsoleKernel
         // $schedule->command('membership:send-reminders')
         //     ->everyMinute()
         //     ->appendOutputTo(storage_path('logs/whatsapp-reminders.log'));
+
+        // ========================================
+        // AUTO KIRIM LAPORAN PEMBUKUAN HARIAN
+        // ========================================
+        
+        // PRODUCTION: Jalankan setiap hari jam 23:30 malam (akhir hari)
+        $schedule->command('cashflow:daily-report')
+            ->dailyAt('23:30')
+            ->timezone('Asia/Makassar')
+            ->appendOutputTo(storage_path('logs/daily-cashflow-report.log'));
+        
+        // TESTING: Uncomment baris di bawah untuk test (jalankan setiap menit)
+        // Setelah test berhasil, comment lagi dan gunakan yang dailyAt
+        // $schedule->command('cashflow:daily-report')
+        //     ->everyMinute()
+        //     ->appendOutputTo(storage_path('logs/daily-cashflow-report.log'));
     }
 
     /**

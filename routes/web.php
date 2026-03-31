@@ -772,8 +772,8 @@ Route::get('/signature/{member}', function (Member $member) {
     return view('signature-view', compact('member'));
 })->name('member.signature');
 
-// Export Pembukuan PDF
-Route::get('/export/pembukuan', function (Request $request) {
+// Export Pembukuan PDF - PROTECTED
+Route::middleware(['auth'])->get('/export/pembukuan', function (Request $request) {
     $period = $request->get('period', 'today');
     $now = \Carbon\Carbon::now('Asia/Makassar');
     

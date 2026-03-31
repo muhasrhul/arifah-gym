@@ -602,6 +602,48 @@ class WhatsAppHelper
     }
 
     /**
+     * Template: Laporan pembukuan harian ke owner
+     */
+    public static function sendDailyCashFlowReport($date, $cashFlows, $totalIncome, $totalExpense, $netBalance)
+    {
+        $ownerPhone = config('services.whatsapp.owner');
+        
+        if (!$ownerPhone) {
+            Log::warning('OWNER_WHATSAPP tidak ditemukan di config');
+            return [
+                'success' => false,
+                'message' => 'OWNER_WHATSAPP tidak dikonfigurasi'
+            ];
+        }
+        
+        // Format tanggal Indonesia
+        $tanggal = $date->translatedFormat('d F Y');
+        
+        // Buat pesan laporan
+        $message = "📊 *LAPORAN PEMBUKUAN HARIAN*\n";
+        $message .= "🗓️ Tanggal: *{$tanggal}*\n\n";
+        
+        // RINGKASAN KEUANGAN
+        $message .= "💰 *RINGKASAN KEUANGAN*\n";
+        $message .= "├─ Pemasukan : Rp " . number_format($totalIncome, 0, ',', '.') . "\n";
+        $message .= "├─ Pengeluaran: Rp " . number_format($totalExpense, 0, ',', '.') . "\n";
+        $message .= "└─ Saldo Bersih: Rp " . number_format($netBalance, 0, ',', '.') . "\n\n";
+        
+        // Hapus bagian detail transaksi
+        // Langsung ke link export PDF
+        
+        // LINK EXPORT PDF (protected dengan auth)
+        $exportUrl = url('/export/pembukuan?period=today');
+        $message .= "📄 *EXPORT LAPORAN PDF*\n";
+        $message .= "Klik link berikut untuk download:\n";
+        $message .= "{$exportUrl}\n\n";
+        
+        $message .= "ARIFAH Gym System";
+        
+        return self::sendMessage($ownerPhone, $message);
+    }
+
+    /**
      * Kirim notifikasi absen member ke owner
      */
     public static function sendAbsenNotification($member, $totalLatihan, $badge)
