@@ -65,6 +65,22 @@ class Kernel extends ConsoleKernel
         // $schedule->command('cashflow:daily-report')
         //     ->everyMinute()
         //     ->appendOutputTo(storage_path('logs/daily-cashflow-report.log'));
+
+        // ========================================
+        // AUTO CLEAR NOTIFICATIONS
+        // ========================================
+        
+        // PRODUCTION: Hapus notifikasi lama setiap hari jam 02:00 dini hari
+        $schedule->command('notifications:clear --days=0')
+            ->dailyAt('02:00')
+            ->timezone('Asia/Makassar')
+            ->appendOutputTo(storage_path('logs/clear-notifications.log'));
+        
+        // TESTING: Uncomment baris di bawah untuk test (jalankan setiap menit)
+        // Setelah test berhasil, comment lagi dan gunakan yang dailyAt
+        // $schedule->command('notifications:clear --days=1')
+        //     ->everyMinute()
+        //     ->appendOutputTo(storage_path('logs/clear-notifications.log'));
     }
 
     /**
