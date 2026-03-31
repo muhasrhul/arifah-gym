@@ -677,12 +677,12 @@ class MemberResource extends Resource
                 Tables\Columns\ViewColumn::make('signature_preview')
                     ->label('TTD Digital')
                     ->view('filament.tables.columns.signature-preview')
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('signature_timestamp')
                     ->label('Waktu TTD')
                     ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->setTimezone('Asia/Makassar')->format('d/m/Y H:i') : '-')
-                    ->toggleable(isToggledHiddenByDefault: false), // Tampilkan by default
+                    ->toggleable(isToggledHiddenByDefault: true), // Hidden by default
 
                 // --- KOLOM STATUS YANG SUDAH DIPERBARUI LOGIKANYA ---
                 Tables\Columns\BadgeColumn::make('status')
