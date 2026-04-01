@@ -689,5 +689,55 @@ class WhatsAppHelper
         
         return self::sendMessage($ownerPhone, $message);
     }
-}
 
+    /**
+     * Template: Notifikasi hutang yang belum lunas ke owner
+     */
+    public static function sendUnpaidDebtReminder($unpaidDebts)
+    {
+        $ownerPhone = config('services.whatsapp.owner');
+        
+        if (!$ownerPhone) {
+            Log::warning('OWNER_WHATSAPP tidak ditemukan di config');
+            return [
+                'success' => false,
+                'message' => 'OWNER_WHATSAPP tidak dikonfigurasi'
+            ];
+        }
+
+        $now = Carbon::now('Asia/Makassar');
+        $tanggal = $now->translatedFormat('d F Y');
+        
+        $totalHutang = $unpaidDebts->sum('amount');
+        
+        $message = "💳 *REMINDER HUTANG BELUM LUNAS*\n";
+        $message .= "🗓️ Tanggal: *{$tanggal}*\n\n";
+        
+        $message .= "⚠️ *DAFTAR HUTANG BELUM LUNAS*\n";
+        $message .= "├─ Total Hutang : *{$unpaidDebts->count()} transaksi*\n";
+        $message .= "└─ Total Nominal: *Rp " . number_format($totalHutang, 0, ',', '.') . "*\n\n";
+        
+        $message .= "DETAIL HUTANG:\n\n";
+        
+        foreach ($unpaidDebts as $index => $debt) {
+            $tanggalHutang = Carbon::parse($debt->payment_date)->translatedFormat('d M Y');
+            $sisaHari = Carbon::parse($debt->payment_date)->diffInDays($now);
+            
+            $message .= ($index + 1) . ". *{$debt->guest_name}*\n";
+            $message .= "   Produk  : {$debt->product_name}\n";
+            $message .= "   Nominal : Rp " . number_format($debt->amount, 0, ',', '.') . "\n";
+            $message .= "   Tanggal : {$tanggalHutang} ({$sisaHari} hari lalu)\n";
+            
+            if (!empty($debt->customer_phone)) {
+                $message .= "   HP      : {$debt->customer_phone}\n";
+            }
+            
+            $message .= "\n";
+        }
+        
+        $message .= "💡 ACTION: Hubungi customer untuk pelunasan";
+        $message .= "\n\nARIFAH Gym System";
+        
+        return self::sendMessage($ownerPhone, $message);
+    }
+}

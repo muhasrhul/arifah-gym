@@ -81,6 +81,22 @@ class Kernel extends ConsoleKernel
         // $schedule->command('notifications:clear --days=1')
         //     ->everyMinute()
         //     ->appendOutputTo(storage_path('logs/clear-notifications.log'));
+
+        // ========================================
+        // AUTO KIRIM REMINDER HUTANG BELUM LUNAS
+        // ========================================
+        
+        // PRODUCTION: Jalankan setiap hari jam 22:30 malam (10:30 malam)
+        $schedule->command('debt:send-reminder')
+            ->dailyAt('22:30')
+            ->timezone('Asia/Makassar')
+            ->appendOutputTo(storage_path('logs/debt-reminder.log'));
+        
+        // TESTING: Uncomment baris di bawah untuk test (jalankan setiap menit)
+        // Setelah test berhasil, comment lagi dan gunakan yang dailyAt
+        // $schedule->command('debt:send-reminder')
+        //     ->everyMinute()
+        //     ->appendOutputTo(storage_path('logs/debt-reminder.log'));
     }
 
     /**
