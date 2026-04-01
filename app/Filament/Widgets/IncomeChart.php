@@ -3,12 +3,12 @@
 namespace App\Filament\Widgets;
 
 use Filament\Widgets\LineChartWidget;
-use App\Models\Transaction; 
+use App\Models\CashFlow; 
 use Carbon\Carbon;
 
 class IncomeChart extends LineChartWidget
 {
-    protected static ?string $heading = 'Grafik Pendapatan (7 Hari Terakhir)';
+    protected static ?string $heading = 'Grafik Pendapatan Bulan Ini';
     protected static ?int $sort = 2;
     
     // Polling setiap 60 detik
@@ -29,25 +29,31 @@ class IncomeChart extends LineChartWidget
     protected function getData(): array
     {
         // Cache selama 10 menit
-        return cache()->remember('chart_income_7days', 600, function () {
+        return cache()->remember('chart_income_monthly_daily', 600, function () {
             $dataUang = [];
             $dataTanggal = [];
-
-            // Ambil data 7 hari terakhir
-            $startDate = Carbon::now()->subDays(6)->startOfDay();
             
-            $transactions = Transaction::selectRaw('DATE(payment_date) as date, SUM(amount) as total')
-                ->where('payment_date', '>=', $startDate)
+            $now = Carbon::now('Asia/Makassar');
+            $startOfMonth = $now->copy()->startOfMonth();
+            $endOfMonth = $now->copy()->endOfMonth();
+
+            // Ambil data CashFlow untuk bulan ini, group by tanggal
+            $cashFlows = CashFlow::selectRaw('DATE(date) as date, SUM(amount) as total')
+                ->whereMonth('date', $now->month)
+                ->whereYear('date', $now->year)
+                ->where('type', 'income')
                 ->groupBy('date')
                 ->pluck('total', 'date');
 
-            // Loop 7 hari ke belakang
-            for ($i = 6; $i >= 0; $i--) {
-                $tanggal = Carbon::now()->subDays($i);
-                $dateKey = $tanggal->format('Y-m-d');
+            // Loop setiap hari dalam bulan ini
+            $currentDate = $startOfMonth->copy();
+            while ($currentDate <= $endOfMonth) {
+                $dateKey = $currentDate->format('Y-m-d');
                 
-                $dataTanggal[] = $tanggal->format('d M');
-                $dataUang[] = $transactions[$dateKey] ?? 0;
+                $dataTanggal[] = $currentDate->format('d M'); // 01 Mar, 02 Mar, dst
+                $dataUang[] = $cashFlows[$dateKey] ?? 0;
+                
+                $currentDate->addDay();
             }
 
             return [
@@ -75,6 +81,14 @@ class IncomeChart extends LineChartWidget
                 'y' => [
                     'ticks' => [
                         'display' => true,
+                        'callback' => 'function(value) { return "Rp " + value.toLocaleString("id-ID"); }',
+                    ],
+                ],
+            ],
+            'plugins' => [
+                'tooltip' => [
+                    'callbacks' => [
+                        'label' => 'function(context) { return "Pendapatan: Rp " + context.parsed.y.toLocaleString("id-ID"); }',
                     ],
                 ],
             ],
