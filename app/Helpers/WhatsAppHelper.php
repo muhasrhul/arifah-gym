@@ -633,7 +633,7 @@ class WhatsAppHelper
         // Langsung ke link export PDF
         
         // LINK EXPORT PDF (protected dengan auth)
-        $exportUrl = url('/export/pembukuan?period=today');
+        $exportUrl = 'https://arifahgym.my.id/export/pembukuan?period=today';
         $message .= "📄 *EXPORT LAPORAN PDF*\n";
         $message .= "Klik link berikut untuk download:\n";
         $message .= "{$exportUrl}\n\n";
