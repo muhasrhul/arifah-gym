@@ -27,7 +27,7 @@ class KasirCepat extends Page
         $products = Product::where('is_active', true)->get();
         
         // Ambil hutang yang belum lunas (status pending) untuk ditampilkan
-        $unpaidDebts = QuickTransaction::pending()->orderBy('payment_date', 'desc')->take(5)->get();
+        $unpaidDebts = QuickTransaction::pending()->orderBy('payment_date', 'desc')->get();
         
         return [
             'products' => $products,
