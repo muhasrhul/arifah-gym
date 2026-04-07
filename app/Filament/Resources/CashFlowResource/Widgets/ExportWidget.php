@@ -29,18 +29,29 @@ class ExportWidget extends Widget implements HasForms
 
     public function form(Form $form): Form
     {
+        // Generate opsi bulan untuk 12 bulan terakhir
+        $monthOptions = [];
+        $now = \Carbon\Carbon::now('Asia/Makassar');
+        
+        for ($i = 0; $i < 12; $i++) {
+            $date = $now->copy()->subMonths($i);
+            $key = $date->format('Y-m');
+            $monthOptions[$key] = $date->translatedFormat('F Y');
+        }
+        
         return $form
             ->schema([
                 Select::make('period')
                     ->label('Periode Laporan')
-                    ->options([
+                    ->options(array_merge([
                         'today' => 'Hari Ini',
                         'week' => 'Minggu Ini (7 hari terakhir)',
                         'month' => 'Bulan Ini',
-                    ])
+                    ], $monthOptions))
                     ->default('today')
                     ->required()
-                    ->selectablePlaceholder(false),
+                    ->selectablePlaceholder(false)
+                    ->native(false),
             ])
             ->statePath('data');
     }
@@ -48,9 +59,10 @@ class ExportWidget extends Widget implements HasForms
     public function exportPDF(): void
     {
         $data = $this->form->getState();
-        $url = route('export.pembukuan', ['period' => $data['period']]);
+        $period = $data['period'] ?? 'today';
+        $url = route('export.pembukuan', ['period' => $period]);
         
-        // Redirect ke URL export
-        $this->redirect($url, navigate: false);
+        // Buka di tab baru menggunakan JavaScript
+        $this->dispatch('open-url', url: $url);
     }
 }

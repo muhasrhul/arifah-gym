@@ -46,4 +46,12 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('open-url', (event) => {
+                window.open(event.url, '_blank');
+            });
+        });
+    </script>
 </div>

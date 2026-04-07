@@ -126,17 +126,17 @@
                     @endif
                 </td>
                 <td>{{ $record->description }}</td>
-                <td class="text-right">
+                <td class="text-center">
                     @if($record->type === 'income')
                         <span class="text-success">Rp {{ number_format($record->amount, 0, ',', '.') }}</span>
                     @endif
                 </td>
-                <td class="text-right">
+                <td class="text-center">
                     @if($record->type === 'expense')
                         <span class="text-danger">Rp {{ number_format($record->amount, 0, ',', '.') }}</span>
                     @endif
                 </td>
-                <td class="text-right">
+                <td class="text-center">
                     <span class="text-primary" style="font-weight: bold;">
                         Rp {{ number_format($record->running_balance, 0, ',', '.') }}
                     </span>

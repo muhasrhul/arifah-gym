@@ -778,37 +778,55 @@ Route::middleware(['auth'])->get('/export/pembukuan', function (Request $request
     $now = \Carbon\Carbon::now('Asia/Makassar');
     
     // Tentukan range tanggal berdasarkan periode
-    switch ($period) {
-        case 'today':
-            $startDate = $now->copy()->startOfDay();
-            $endDate = $now->copy()->endOfDay();
-            $periodLabel = 'Hari Ini - ' . $now->format('d F Y');
-            break;
+    if ($period === 'today') {
+        $periodLabel = 'Hari Ini - ' . $now->format('d F Y');
+        $data = \App\Models\CashFlow::whereDate('date', $now->toDateString())
+            ->orderBy('date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+        $startDate = $now->copy()->startOfDay();
+        $endDate = $now->copy()->endOfDay();
+    
+    } elseif ($period === 'week') {
+        $periodLabel = 'Minggu Ini (7 Hari Terakhir)';
+        $startDate = $now->copy()->subDays(6)->startOfDay();
+        $endDate = $now->copy()->endOfDay();
+        $data = \App\Models\CashFlow::whereBetween('date', [$startDate, $endDate])
+            ->orderBy('date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+    
+    } elseif ($period === 'month') {
+        $periodLabel = 'Bulan ' . $now->translatedFormat('F Y');
+        $startDate = $now->copy()->startOfMonth();
+        $endDate = $now->copy()->endOfMonth();
+        $data = \App\Models\CashFlow::whereMonth('date', $now->month)
+            ->whereYear('date', $now->year)
+            ->orderBy('date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
             
-        case 'week':
-            $startDate = $now->copy()->subDays(6)->startOfDay(); // 7 hari terakhir
-            $endDate = $now->copy()->endOfDay();
-            $periodLabel = 'Minggu Ini - ' . $startDate->format('d') . ' s/d ' . $endDate->format('d F Y');
-            break;
+    } elseif (preg_match('/^\d{4}-\d{2}$/', $period)) {
+        $date = \Carbon\Carbon::createFromFormat('Y-m-d', $period . '-01', 'Asia/Makassar');
+        $periodLabel = 'Bulan ' . $date->translatedFormat('F Y');
+        $data = \App\Models\CashFlow::whereMonth('date', $date->month)
+            ->whereYear('date', $date->year)
+            ->orderBy('date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+        $startDate = $date->copy()->startOfMonth();
+        $endDate = $date->copy()->endOfMonth();
             
-        case 'month':
-            $startDate = $now->copy()->startOfMonth();
-            $endDate = $now->copy()->endOfMonth();
-            $periodLabel = 'Bulan ' . $now->format('F Y');
-            break;
-            
-        default:
-            $startDate = $now->copy()->startOfDay();
-            $endDate = $now->copy()->endOfDay();
-            $periodLabel = 'Hari Ini - ' . $now->format('d F Y');
+    } else {
+        $periodLabel = 'Hari Ini - ' . $now->format('d F Y');
+        $data = \App\Models\CashFlow::whereDate('date', $now->toDateString())
+            ->orderBy('date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+        $startDate = $now->copy()->startOfDay();
+        $endDate = $now->copy()->endOfDay();
     }
     
-    // Ambil data berdasarkan periode
-    $data = \App\Models\CashFlow::whereBetween('date', [$startDate, $endDate])
-        ->orderBy('date', 'asc')
-        ->orderBy('id', 'asc')
-        ->get();
-        
     // Hitung totals
     $totalIncome = $data->where('type', 'income')->sum('amount');
     $totalExpense = $data->where('type', 'expense')->sum('amount');
@@ -825,6 +843,14 @@ Route::middleware(['auth'])->get('/export/pembukuan', function (Request $request
         $record->running_balance = $runningBalance;
         return $record;
     });
+    
+    // Set default startDate dan endDate jika belum ada
+    if (!isset($startDate)) {
+        $startDate = $data->first()->date ?? $now;
+    }
+    if (!isset($endDate)) {
+        $endDate = $data->last()->date ?? $now;
+    }
     
     return view('laporan_pembukuan_pdf', [
         'data' => $dataWithBalance,

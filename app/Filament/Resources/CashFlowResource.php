@@ -178,24 +178,42 @@ class CashFlowResource extends Resource
                     ->color('primary'),
             ])
             ->filters([
-                Filter::make('date_range')
+                Filter::make('month')
                     ->form([
-                        DatePicker::make('date_from')
-                            ->label('Dari Tanggal'),
-                        DatePicker::make('date_until')
-                            ->label('Sampai Tanggal'),
+                        \Filament\Forms\Components\Select::make('month')
+                            ->label('Pilih Bulan')
+                            ->options(function () {
+                                $months = [];
+                                $now = \Carbon\Carbon::now('Asia/Makassar');
+                                
+                                // Generate 24 bulan (2 tahun terakhir)
+                                for ($i = 0; $i < 24; $i++) {
+                                    $date = $now->copy()->subMonths($i);
+                                    $key = $date->format('Y-m'); // 2026-04
+                                    $value = $date->translatedFormat('F Y'); // April 2026
+                                    $months[$key] = $value;
+                                }
+                                
+                                return $months;
+                            })
+                            ->searchable()
+                            ->placeholder('Pilih bulan...')
+                            ->default(now()->format('Y-m')),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['date_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('date', '>=', $date),
-                            )
-                            ->when(
-                                $data['date_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('date', '<=', $date),
-                            );
-                    }),
+                        // Jika ada filter bulan yang dipilih, gunakan itu
+                        if (!empty($data['month'])) {
+                            $date = \Carbon\Carbon::parse($data['month'] . '-01');
+                            return $query->whereMonth('date', $date->month)
+                                        ->whereYear('date', $date->year);
+                        }
+                        
+                        // Jika tidak ada filter, default ke bulan berjalan
+                        $now = \Carbon\Carbon::now('Asia/Makassar');
+                        return $query->whereMonth('date', $now->month)
+                                    ->whereYear('date', $now->year);
+                    })
+                    ->default(),
                     
                 SelectFilter::make('type')
                     ->label('Tipe')
