@@ -1397,8 +1397,8 @@
                             <div style="font-size: 0.8rem; font-weight: 700;">Cash</div>
                         </div>
                         <div class="payment-btn" data-method="transfer" style="padding: 12px; border: 2px solid; border-radius: 12px; cursor: pointer; text-align: center; transition: all 0.3s ease;">
-                            <div style="font-size: 1.2rem; margin-bottom: 4px;">🏦</div>
-                            <div style="font-size: 0.8rem; font-weight: 700;">Transfer</div>
+                            <div style="font-size: 1.2rem; margin-bottom: 4px;">📱</div>
+                            <div style="font-size: 0.8rem; font-weight: 700;">QRIS</div>
                         </div>
                     </div>
                 </div>
@@ -1450,8 +1450,8 @@
                         <div class="payment-label">Cash</div>
                     </div>
                     <div class="payment-btn" data-method="transfer">
-                        <div class="payment-icon">🏦</div>
-                        <div class="payment-label">Transfer</div>
+                        <div class="payment-icon">📱</div>
+                        <div class="payment-label">QRIS</div>
                     </div>
                 </div>
             </div>

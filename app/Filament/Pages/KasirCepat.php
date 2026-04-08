@@ -89,7 +89,7 @@ class KasirCepat extends Page
         // 5. Format metode pembayaran
         $paymentMethodLabel = match($paymentMethod) {
             'cash' => 'Cash',
-            'transfer' => 'Transfer Bank',
+            'transfer' => 'QRIS',
             default => 'Cash'
         };
 
@@ -274,7 +274,7 @@ class KasirCepat extends Page
         // Format metode pembayaran
         $paymentMethodLabel = match($paymentMethod) {
             'cash' => 'Cash',
-            'transfer' => 'Transfer Bank',
+            'transfer' => 'QRIS',
             default => 'Cash'
         };
 
