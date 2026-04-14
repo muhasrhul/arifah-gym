@@ -88,9 +88,9 @@ class KasirCepat extends Page
 
         // 5. Format metode pembayaran
         $paymentMethodLabel = match($paymentMethod) {
-            'cash' => 'Cash',
+            'cash' => 'Transfer Bank',
             'transfer' => 'QRIS',
-            default => 'Cash'
+            default => 'Transfer Bank'
         };
 
         // 6. SIMPAN KE TABEL QUICK_TRANSACTIONS
@@ -273,9 +273,9 @@ class KasirCepat extends Page
 
         // Format metode pembayaran
         $paymentMethodLabel = match($paymentMethod) {
-            'cash' => 'Cash',
+            'cash' => 'Transfer Bank',
             'transfer' => 'QRIS',
-            default => 'Cash'
+            default => 'Transfer Bank'
         };
 
         // Update status menjadi paid dan update payment_method

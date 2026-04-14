@@ -1393,8 +1393,8 @@
                     <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #374151; margin-bottom: 8px;">Metode Pembayaran</label>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div class="payment-btn selected" data-method="cash" style="padding: 12px; border: 2px solid; border-radius: 12px; cursor: pointer; text-align: center; transition: all 0.3s ease;">
-                            <div style="font-size: 1.2rem; margin-bottom: 4px;">💵</div>
-                            <div style="font-size: 0.8rem; font-weight: 700;">Cash</div>
+                            <div style="font-size: 1.2rem; margin-bottom: 4px;">🏦</div>
+                            <div style="font-size: 0.8rem; font-weight: 700;">TRANSFER BANK</div>
                         </div>
                         <div class="payment-btn" data-method="transfer" style="padding: 12px; border: 2px solid; border-radius: 12px; cursor: pointer; text-align: center; transition: all 0.3s ease;">
                             <div style="font-size: 1.2rem; margin-bottom: 4px;">📱</div>
@@ -1446,8 +1446,8 @@
                 
                 <div class="payment-methods">
                     <div class="payment-btn selected" data-method="cash">
-                        <div class="payment-icon">💵</div>
-                        <div class="payment-label">Cash</div>
+                        <div class="payment-icon">🏦</div>
+                        <div class="payment-label">Transfer Bank</div>
                     </div>
                     <div class="payment-btn" data-method="transfer">
                         <div class="payment-icon">📱</div>
