@@ -56,22 +56,22 @@ class TelegramHelper
     /**
      * Format pesan transaksi kasir cepat
      */
-    public static function sendTransaksiKasir($itemName, $amount, $stockTersisa)
+    public static function sendTransaksiKasir($quickTransaction)
     {
-        $message = "🛒 *TRANSAKSI KASIR CEPAT*\n\n";
-        $message .= "📦 Produk\n";
-        $message .= "├ {$itemName}\n\n";
-        $message .= "💰 Harga\n";
-        $message .= "├ Rp " . number_format($amount, 0, ',', '.') . "\n\n";
-        $message .= "📊 Stock Tersisa\n";
-        $message .= "├ {$stockTersisa} unit\n\n";
-        $message .= "💳 Pembayaran\n";
-        $message .= "├ Tunai (Kasir)\n\n";
-        $message .= "🕐 Waktu\n";
-        $message .= "└ " . now()->format('d M Y, H:i') . " WITA\n\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "✅ Transaksi berhasil dicatat\n\n";
-        $message .= "_ARIFAH Gym Management System_";
+        $message = "⚡ *KASIR CEPAT - ARIFAH GYM*\n\n";
+        $message .= "Tanggal: " . \Carbon\Carbon::parse($quickTransaction->payment_date)->format('d M Y H:i') . "\n\n";
+        
+        // Customer info
+        $message .= "👤 *Customer:* {$quickTransaction->guest_name}\n";
+        
+        // Transaction details
+        $message .= "📦 *Produk:* {$quickTransaction->product_name}\n";
+        $message .= "💵 *Harga:* Rp " . number_format($quickTransaction->amount, 0, ',', '.') . "\n";
+        $message .= "💳 *Metode:* {$quickTransaction->payment_method}\n";
+        $message .= "✅ *Status:* Lunas\n\n";
+        
+        $message .= "Terima kasih!\n\n";
+        $message .= "ARIFAH Gym System";
         
         return self::send($message);
     }
@@ -86,7 +86,7 @@ class TelegramHelper
         $message .= "├─ HP      : {$member->phone}\n";
         $message .= "├─ Email   : {$member->email}\n";
         $message .= "├─ Paket   : {$paket}\n";
-        $message .= "└─ Waktu   : " . now()->format('d M Y, H:i') . " WITA\n\n";
+        $message .= "└─ Waktu   : " . \Carbon\Carbon::now('Asia/Makassar')->format('d M Y H:i') . "\n\n";
         $message .= "⚠️ STATUS: MENUNGGU AKTIVASI\n\n";
         $message .= "💡 ACTION: Aktivasi di panel admin";
         
@@ -218,6 +218,160 @@ class TelegramHelper
         
         $message .= "🎉 Perpanjangan early berhasil!\n";
         $message .= "💡 Member tidak kehilangan sisa waktu membership";
+        
+        return self::send($message);
+    }
+
+    /**
+     * Format pesan laporan H-1 expired ke owner
+     */
+    public static function sendReminderReportToOwner($membersH1)
+    {
+        $message = "🚨 *LAPORAN H-1 EXPIRED*\n\n";
+        
+        if ($membersH1->count() > 0) {
+            // Ambil tanggal expired (besok) dari member pertama
+            $expiredDate = \Carbon\Carbon::parse($membersH1->first()->expiry_date)->format('d M Y');
+            
+            // BAGIAN DAFTAR MEMBER
+            $message .= "DAFTAR MEMBER YANG AKAN EXPIRED\n";
+            $message .= "├─ Pada Tanggal : *{$expiredDate}*\n";
+            $message .= "└─ Total Member : *{$membersH1->count()} member*\n\n";
+            
+            foreach ($membersH1 as $member) {
+                $memberExpiryDate = \Carbon\Carbon::parse($member->expiry_date)->format('d M Y');
+                $message .= "• *{$member->name}*\n";
+                $message .= "  Paket: {$member->type}\n";
+                $message .= "  Expired: {$memberExpiryDate}\n";
+                $message .= "  HP: {$member->phone}\n\n";
+            }
+
+            $message .= "💡 ACTION: Hubungi member untuk perpanjangan";
+        } else {
+            // BAGIAN DAFTAR MEMBER (tidak ada member)
+            $tomorrowDate = \Carbon\Carbon::now('Asia/Makassar')->addDay()->format('d M Y');
+            
+            $message .= "DAFTAR MEMBER YANG AKAN EXPIRED\n";
+            $message .= "├─ Pada Tanggal : *{$tomorrowDate}*\n";
+            $message .= "└─ Total Member : *0 member*\n\n";
+            
+            $message .= "✅ TIDAK ADA MEMBER YANG AKAN EXPIRED BESOK\n\n";
+            $message .= "💡 Semua member masih aman!";
+        }
+
+        return self::send($message);
+    }
+
+    /**
+     * Format pesan laporan pembukuan harian ke owner
+     */
+    public static function sendDailyCashFlowReport($date, $cashFlows, $totalIncome, $totalExpense, $netBalance)
+    {
+        // Format tanggal Indonesia
+        $tanggal = $date->format('d M Y');
+        
+        // Buat pesan laporan
+        $message = "📊 *LAPORAN PEMBUKUAN HARIAN*\n";
+        $message .= "🗓️ Tanggal: *{$tanggal}*\n\n";
+        
+        // RINGKASAN KEUANGAN
+        $message .= "💰 *RINGKASAN KEUANGAN*\n";
+        $message .= "├─ Pemasukan : Rp " . number_format($totalIncome, 0, ',', '.') . "\n";
+        $message .= "├─ Pengeluaran: Rp " . number_format($totalExpense, 0, ',', '.') . "\n";
+        $message .= "└─ Saldo Bersih: Rp " . number_format($netBalance, 0, ',', '.') . "\n\n";
+        
+        // LINK EXPORT PDF (protected dengan auth)
+        $exportUrl = 'https://arifahgym.my.id/export/pembukuan?period=today';
+        $message .= "📄 *EXPORT LAPORAN PDF*\n";
+        $message .= "Klik link berikut untuk download:\n";
+        $message .= "{$exportUrl}\n\n";
+        
+        $message .= "ARIFAH Gym System";
+        
+        return self::send($message);
+    }
+
+    /**
+     * Format pesan notifikasi absen member ke owner
+     */
+    public static function sendAbsenNotification($member, $totalLatihan, $badge)
+    {
+        $now = \Carbon\Carbon::now('Asia/Makassar');
+        $jamAbsen = $now->format('H:i');
+        $tanggalAbsen = $now->format('d M Y');
+        
+        // Format pesan dengan 3 bagian
+        $message = "🏋️ *ABSEN MEMBER*\n\n";
+        
+        // BAGIAN 1: DATA MEMBER
+        $message .= "DATA MEMBER\n";
+        $message .= "├─ Nama     : {$member->name}\n";
+        $message .= "├─ WhatsApp : {$member->phone}\n";
+        $message .= "├─ Jam      : {$jamAbsen} WITA\n";
+        $message .= "└─ Tanggal  : {$tanggalAbsen}\n\n";
+        
+        // BAGIAN 2: PAKET
+        $message .= "PAKET\n";
+        $message .= "├─ Tipe         : {$member->type}\n";
+        $message .= "├─ Total Latihan: {$totalLatihan}x\n";
+        $message .= "└─ Badge        : {$badge}\n\n";
+        
+        // BAGIAN 3: MASA AKTIF
+        $message .= "MASA AKTIF\n";
+        if ($member->expiry_date) {
+            $expiredDate = \Carbon\Carbon::parse($member->expiry_date);
+            $sisaHari = $expiredDate->diffInDays($now);
+            
+            if ($expiredDate->isFuture()) {
+                $message .= "├─ Sisa Waktu : {$sisaHari} hari lagi\n";
+                $message .= "└─ Expired    : " . $expiredDate->format('d M Y');
+            } else {
+                $message .= "└─ Status     : EXPIRED";
+            }
+        } else {
+            $message .= "└─ Status     : Member Harian";
+        }
+        
+        return self::send($message);
+    }
+
+    /**
+     * Format pesan notifikasi hutang belum lunas ke owner
+     */
+    public static function sendUnpaidDebtReminder($unpaidDebts)
+    {
+        $now = \Carbon\Carbon::now('Asia/Makassar');
+        $tanggal = $now->format('d M Y');
+        
+        $totalHutang = $unpaidDebts->sum('amount');
+        
+        $message = "💳 *REMINDER HUTANG BELUM LUNAS*\n";
+        $message .= "🗓️ Tanggal: *{$tanggal}*\n\n";
+        
+        $message .= "⚠️ *DAFTAR HUTANG BELUM LUNAS*\n";
+        $message .= "├─ Total Hutang : *{$unpaidDebts->count()} transaksi*\n";
+        $message .= "└─ Total Nominal: *Rp " . number_format($totalHutang, 0, ',', '.') . "*\n\n";
+        
+        $message .= "DETAIL HUTANG:\n\n";
+        
+        foreach ($unpaidDebts as $index => $debt) {
+            $tanggalHutang = \Carbon\Carbon::parse($debt->payment_date)->format('d M Y');
+            $sisaHari = \Carbon\Carbon::parse($debt->payment_date)->diffInDays($now);
+            
+            $message .= ($index + 1) . ". *{$debt->guest_name}*\n";
+            $message .= "   Produk  : {$debt->product_name}\n";
+            $message .= "   Nominal : Rp " . number_format($debt->amount, 0, ',', '.') . "\n";
+            $message .= "   Tanggal : {$tanggalHutang} ({$sisaHari} hari lalu)\n";
+            
+            if (!empty($debt->customer_phone)) {
+                $message .= "   HP      : {$debt->customer_phone}\n";
+            }
+            
+            $message .= "\n";
+        }
+        
+        $message .= "💡 ACTION: Hubungi customer untuk pelunasan";
+        $message .= "\n\nARIFAH Gym System";
         
         return self::send($message);
     }

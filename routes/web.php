@@ -142,7 +142,15 @@ Route::post('/absen', function (Request $request) {
         \Log::error('WhatsApp notification failed: ' . $e->getMessage());
     }
 
-    // 6. Kembalikan Respon Sukses + Data Statistik ke View
+    // 7. Kirim Notifikasi Telegram ke Owner
+    try {
+        \App\Helpers\TelegramHelper::sendAbsenNotification($member, $totalLatihan, $badge);
+    } catch (\Exception $e) {
+        // Log error tapi jangan stop proses absen
+        \Log::error('Telegram notification failed: ' . $e->getMessage());
+    }
+
+    // 8. Kembalikan Respon Sukses + Data Statistik ke View
     return back()->with([
         'success'      => true,
         'member_name'  => $member->name,

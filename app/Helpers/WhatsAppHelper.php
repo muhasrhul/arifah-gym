@@ -461,7 +461,7 @@ class WhatsAppHelper
         $message .= "├─ HP      : {$member->phone}\n";
         $message .= "├─ Email   : {$member->email}\n";
         $message .= "├─ Paket   : {$paket}\n";
-        $message .= "└─ Waktu   : " . \Carbon\Carbon::now('Asia/Makassar')->translatedFormat('d F Y H:i') . "\n\n";
+        $message .= "└─ Waktu   : " . \Carbon\Carbon::now('Asia/Makassar')->format('d M Y H:i') . "\n\n";
         $message .= "⚠️ STATUS: MENUNGGU AKTIVASI\n\n";
         $message .= "💡 ACTION: Aktivasi di panel admin";
 

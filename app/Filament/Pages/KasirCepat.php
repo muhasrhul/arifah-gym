@@ -129,7 +129,7 @@ class KasirCepat extends Page
         }
 
         // 8. KIRIM NOTIFIKASI TELEGRAM
-        \App\Helpers\TelegramHelper::sendTransaksiKasir($itemName, $totalAmount, $product->stock);
+        \App\Helpers\TelegramHelper::sendTransaksiKasir($quickTransaction);
 
         // 9. KIRIM NOTIFIKASI WHATSAPP KE OWNER
         \App\Helpers\WhatsAppHelper::sendQuickTransactionNotification($quickTransaction);

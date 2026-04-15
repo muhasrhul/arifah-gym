@@ -90,13 +90,24 @@ class SendMembershipReminders extends Command
         
         $this->info("📋 Member yang akan expired besok: {$membersH1->count()} member");
         
+        // Kirim ke WhatsApp
         $ownerResult = WhatsAppHelper::sendReminderReportToOwner($membersH1);
         
         if ($ownerResult['success']) {
-            $this->info('✅ Laporan berhasil dikirim ke Owner');
+            $this->info('✅ Laporan WhatsApp berhasil dikirim ke Owner');
         } else {
-            $this->error('❌ Gagal kirim laporan ke Owner: ' . ($ownerResult['message'] ?? 'Unknown error'));
+            $this->error('❌ Gagal kirim laporan WhatsApp ke Owner: ' . ($ownerResult['message'] ?? 'Unknown error'));
             $this->warn('💡 Pastikan OWNER_WHATSAPP sudah diset di .env');
+        }
+        
+        // Kirim ke Telegram
+        $telegramResult = \App\Helpers\TelegramHelper::sendReminderReportToOwner($membersH1);
+        
+        if ($telegramResult) {
+            $this->info('✅ Laporan Telegram berhasil dikirim');
+        } else {
+            $this->error('❌ Gagal kirim laporan Telegram');
+            $this->warn('💡 Pastikan TELEGRAM_BOT_TOKEN dan TELEGRAM_CHAT_ID sudah diset di .env');
         }
 
         $this->info('✅ Selesai!');

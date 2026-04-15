@@ -46,18 +46,29 @@ class SendUnpaidDebtReminder extends Command
             }
             
             // Kirim notifikasi ke owner hanya jika ada hutang
-            $result = WhatsAppHelper::sendUnpaidDebtReminder($unpaidDebts);
+            $waResult = WhatsAppHelper::sendUnpaidDebtReminder($unpaidDebts);
+            $telegramResult = \App\Helpers\TelegramHelper::sendUnpaidDebtReminder($unpaidDebts);
             
-            if ($result['success']) {
-                $this->info("Notifikasi berhasil dikirim! Total hutang: {$unpaidDebts->count()}");
-                Log::info('Debt Reminder: Notifikasi berhasil dikirim', [
+            if ($waResult['success']) {
+                $this->info("Notifikasi WhatsApp berhasil dikirim! Total hutang: {$unpaidDebts->count()}");
+                Log::info('Debt Reminder WhatsApp: Notifikasi berhasil dikirim', [
                     'total_debts' => $unpaidDebts->count()
                 ]);
             } else {
-                $this->error("Gagal mengirim notifikasi: {$result['message']}");
-                Log::error('Debt Reminder: Gagal mengirim notifikasi', [
-                    'error' => $result['message']
+                $this->error("Gagal mengirim notifikasi WhatsApp: {$waResult['message']}");
+                Log::error('Debt Reminder WhatsApp: Gagal mengirim notifikasi', [
+                    'error' => $waResult['message']
                 ]);
+            }
+            
+            if ($telegramResult) {
+                $this->info("Notifikasi Telegram berhasil dikirim! Total hutang: {$unpaidDebts->count()}");
+                Log::info('Debt Reminder Telegram: Notifikasi berhasil dikirim', [
+                    'total_debts' => $unpaidDebts->count()
+                ]);
+            } else {
+                $this->error("Gagal mengirim notifikasi Telegram");
+                Log::error('Debt Reminder Telegram: Gagal mengirim notifikasi');
             }
             
             return 0;

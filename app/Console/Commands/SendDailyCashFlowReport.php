@@ -40,15 +40,22 @@ class SendDailyCashFlowReport extends Command
         $netBalance = $totalIncome - $totalExpense;
         
         // Kirim notifikasi ke owner
-        $result = $this->sendReportToOwner($date, $cashFlows, $totalIncome, $totalExpense, $netBalance);
+        $waResult = $this->sendReportToOwner($date, $cashFlows, $totalIncome, $totalExpense, $netBalance);
+        $telegramResult = $this->sendReportToTelegram($date, $cashFlows, $totalIncome, $totalExpense, $netBalance);
         
-        if ($result['success']) {
-            $this->info("✅ Daily cash flow report sent successfully!");
+        if ($waResult['success']) {
+            $this->info("✅ Daily cash flow report sent to WhatsApp successfully!");
         } else {
-            $this->error("❌ Failed to send report: " . $result['message']);
+            $this->error("❌ Failed to send WhatsApp report: " . $waResult['message']);
         }
         
-        return $result['success'] ? 0 : 1;
+        if ($telegramResult) {
+            $this->info("✅ Daily cash flow report sent to Telegram successfully!");
+        } else {
+            $this->error("❌ Failed to send Telegram report");
+        }
+        
+        return ($waResult['success'] || $telegramResult) ? 0 : 1;
     }
     
     /**
@@ -57,5 +64,13 @@ class SendDailyCashFlowReport extends Command
     private function sendReportToOwner($date, $cashFlows, $totalIncome, $totalExpense, $netBalance)
     {
         return WhatsAppHelper::sendDailyCashFlowReport($date, $cashFlows, $totalIncome, $totalExpense, $netBalance);
+    }
+    
+    /**
+     * Kirim laporan ke owner via Telegram
+     */
+    private function sendReportToTelegram($date, $cashFlows, $totalIncome, $totalExpense, $netBalance)
+    {
+        return \App\Helpers\TelegramHelper::sendDailyCashFlowReport($date, $cashFlows, $totalIncome, $totalExpense, $netBalance);
     }
 }
