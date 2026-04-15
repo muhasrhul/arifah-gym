@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>ARIFAH Gym - Absensi Member</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -91,7 +92,7 @@
                 </div>
 
                 <!-- Modern Member Card dengan Glassmorphism -->
-                <div class="relative w-[310px] h-[185px] rounded-[2.5rem] overflow-hidden shadow-2xl mb-8 mx-auto transition-all duration-500 hover:scale-105 hover:shadow-[0_20px_60px_-15px_rgba(9,146,194,0.5)] group" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%); backdrop-filter: blur(20px);">
+                <div class="relative w-full max-w-[310px] h-[185px] rounded-[2.5rem] overflow-hidden shadow-2xl mb-8 mx-auto transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_60px_-15px_rgba(9,146,194,0.5)] group" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%); backdrop-filter: blur(20px);">
                     
                     <!-- Animated Background Pattern -->
                     <div class="absolute inset-0 opacity-[0.03] pointer-events-none">
@@ -109,27 +110,27 @@
                     <!-- Shimmer Effect on Hover -->
                     <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" style="background: linear-gradient(90deg, transparent 0%, rgba(9, 146, 194, 0.1) 50%, transparent 100%); animation: shimmer 2s infinite;"></div>
 
-                    <div class="p-5 text-left h-full flex flex-col justify-between relative z-10">
+                    <div class="p-4 sm:p-5 text-left h-full flex flex-col justify-between relative z-10">
                         <!-- Header Section -->
-                        <div class="flex justify-between items-start">
-                            <h2 class="text-sm font-black italic transition-all duration-300 group-hover:text-[#0992C2]" style="font-family: 'Poppins'; color: #0992C2; text-shadow: 0 0 20px rgba(9, 146, 194, 0.5);">ARIFAH GYM</h2>
-                            <span class="text-[6px] border px-2 py-0.5 rounded-full uppercase font-bold transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg" style="border-color: #0992C2; color: #0992C2; background: rgba(9, 146, 194, 0.15); box-shadow: 0 0 15px rgba(9, 146, 194, 0.3);">{{ session('paket_nama') }}</span>
+                        <div class="flex justify-between items-start gap-2">
+                            <h2 class="text-xs sm:text-sm font-black italic transition-all duration-300 group-hover:text-[#0992C2] flex-shrink-0" style="font-family: 'Poppins'; color: #0992C2; text-shadow: 0 0 20px rgba(9, 146, 194, 0.5);">ARIFAH GYM</h2>
+                            <span class="text-[6px] border px-2 py-0.5 rounded-full uppercase font-bold transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg whitespace-nowrap" style="border-color: #0992C2; color: #0992C2; background: rgba(9, 146, 194, 0.15); box-shadow: 0 0 15px rgba(9, 146, 194, 0.3);">{{ session('paket_nama') }}</span>
                         </div>
                         
                         <!-- Member Info Section -->
-                        <div class="transform transition-all duration-300 group-hover:translate-x-1">
-                            <h3 class="text-lg font-bold uppercase truncate tracking-tight text-white transition-all duration-300 group-hover:text-[#0992C2]">{{ session('member_name') }}</h3>
-                            <p class="text-[8px] opacity-50 font-mono tracking-widest transition-all duration-300 group-hover:opacity-70">ID: {{ session('member_id') }}</p>
+                        <div class="transform transition-all duration-300 group-hover:translate-x-1 min-w-0">
+                            <h3 class="text-base sm:text-lg font-bold uppercase truncate tracking-tight text-white transition-all duration-300 group-hover:text-[#0992C2]">{{ session('member_name') }}</h3>
+                            <p class="text-[7px] sm:text-[8px] opacity-50 font-mono tracking-widest transition-all duration-300 group-hover:opacity-70 truncate">ID: {{ session('member_id') }}</p>
                         </div>
                         
                         <!-- Footer Section -->
-                        <div class="flex justify-between items-end border-t border-white/20 pt-2 transition-all duration-300 group-hover:border-[#0992C2]/30">
-                            <div class="transform transition-all duration-300 group-hover:translate-y-[-2px]">
-                                <p class="text-[7px] opacity-50 uppercase transition-all duration-300 group-hover:opacity-70">Berlaku Hingga</p>
-                                <p class="text-[10px] font-bold opacity-60 text-white uppercase tracking-wider transition-all duration-300 group-hover:text-[#0992C2]">{{ session('expiry_date') }}</p>
+                        <div class="flex justify-between items-end border-t border-white/20 pt-2 transition-all duration-300 group-hover:border-[#0992C2]/30 gap-2">
+                            <div class="transform transition-all duration-300 group-hover:translate-y-[-2px] min-w-0 flex-1">
+                                <p class="text-[6px] sm:text-[7px] opacity-50 uppercase transition-all duration-300 group-hover:opacity-70">Berlaku Hingga</p>
+                                <p class="text-[9px] sm:text-[10px] font-bold opacity-60 text-white uppercase tracking-wider transition-all duration-300 group-hover:text-[#0992C2] truncate">{{ session('expiry_date') }}</p>
                             </div>
-                            <div class="bg-white p-1 rounded-md transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-2xl" style="box-shadow: 0 4px 20px rgba(9, 146, 194, 0.3);">
-                                <img id="qrSrc" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ session('member_id') }}" class="w-8 h-8" crossorigin="anonymous">
+                            <div class="bg-white p-1 rounded-md transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-2xl flex-shrink-0" style="box-shadow: 0 4px 20px rgba(9, 146, 194, 0.3);">
+                                <img id="qrSrc" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ session('member_id') }}" class="w-7 h-7 sm:w-8 sm:h-8" crossorigin="anonymous">
                             </div>
                         </div>
                     </div>
@@ -178,7 +179,7 @@
                         </div>
                     @endif
 
-                    <form action="/absen" method="POST" class="space-y-10">
+                    <form action="/absen" method="POST" class="space-y-10" id="absenForm">
                         @csrf
                         <div class="relative group">
                             <div class="absolute left-8 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-[#0992C2] transition-all text-xl">
@@ -188,8 +189,11 @@
                                    class="input-premium w-full pl-20 pr-10 py-7 rounded-[2.5rem] outline-none text-2xl font-black text-[#0992C2] placeholder:text-zinc-800 placeholder:text-sm placeholder:tracking-[0.4em]">
                         </div>
 
-                        <button type="submit" class="w-full bg-[#0992C2] hover:bg-[#0992C2] text-black font-black py-7 rounded-[2.5rem] text-sm uppercase italic tracking-[0.3em] shadow-[0_20px_40px_-10px_rgba(9,146,194,0.4)] active:scale-95 transition-all">
-                            TAP-IN NOW <i class="fa-solid fa-arrow-right-long ml-3"></i>
+                        <button type="submit" id="submitBtn" class="w-full bg-[#0992C2] hover:bg-[#0992C2] text-black font-black py-7 rounded-[2.5rem] text-sm uppercase italic tracking-[0.3em] shadow-[0_20px_40px_-10px_rgba(9,146,194,0.4)] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span id="btnText">TAP-IN NOW <i class="fa-solid fa-arrow-right-long ml-3"></i></span>
+                            <span id="btnLoading" class="hidden">
+                                <i class="fa-solid fa-spinner fa-spin"></i> PROCESSING...
+                            </span>
                         </button>
                     </form>
                 </div>
@@ -201,6 +205,39 @@
 
     <script>
         WebFont.load({ google: { families: ['Poppins:400,700,900,900i'] } });
+
+        // Prevent double submit dan tampilkan loading state
+        const absenForm = document.getElementById('absenForm');
+        if (absenForm) {
+            let formSubmitted = false;
+            
+            absenForm.addEventListener('submit', function(e) {
+                if (formSubmitted) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                formSubmitted = true;
+                const submitBtn = document.getElementById('submitBtn');
+                const btnText = document.getElementById('btnText');
+                const btnLoading = document.getElementById('btnLoading');
+                
+                // Disable button dan tampilkan loading
+                submitBtn.disabled = true;
+                btnText.classList.add('hidden');
+                btnLoading.classList.remove('hidden');
+                
+                // Set timeout untuk re-enable button jika terlalu lama (10 detik)
+                // Jika lebih dari 10 detik, kemungkinan ada masalah
+                setTimeout(function() {
+                    if (submitBtn.disabled && formSubmitted) {
+                        // Reload halaman jika stuck
+                        console.warn('Form submission timeout, reloading page...');
+                        window.location.reload();
+                    }
+                }, 10000);
+            });
+        }
 
         async function drawAndDownload() {
             const btn = document.getElementById('btnDownload');

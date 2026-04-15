@@ -50,8 +50,7 @@ class TelegramHelper
         }
         
         try {
-            $response = Http::timeout(60) // Tingkatkan timeout jadi 60 detik
-                ->retry(3, 100) // Retry 3x dengan delay 100ms
+            $response = Http::timeout(3) // Timeout 3 detik saja untuk notifikasi cepat
                 ->post("https://api.telegram.org/bot{$botToken}/sendMessage", [
                     'chat_id' => $chatId,
                     'text' => $message,

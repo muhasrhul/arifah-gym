@@ -31,9 +31,8 @@ class WhatsAppHelper
         $phone = self::formatPhoneNumber($phone);
 
         try {
-            // Kirim request ke Fonnte API dengan timeout dan retry
-            $response = Http::timeout(30)
-                ->retry(3, 1000) // Retry 3x dengan delay 1 detik
+            // Kirim request ke Fonnte API dengan timeout pendek dan tanpa retry untuk absen
+            $response = Http::timeout(3) // Timeout 3 detik saja
                 ->withHeaders([
                     'Authorization' => $token,
                 ])->post('https://api.fonnte.com/send', [

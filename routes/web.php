@@ -134,23 +134,28 @@ Route::post('/absen', function (Request $request) {
             
     }
 
-    // 6. Kirim Notifikasi WhatsApp ke Owner
+    // 6 & 7. Kirim Notifikasi WhatsApp & Telegram ke Owner (NON-BLOCKING)
+    // Notifikasi berjalan dengan timeout sangat pendek agar tidak mengganggu response
     try {
-        \App\Helpers\WhatsAppHelper::sendAbsenNotification($member, $totalLatihan, $badge);
+        // WhatsApp Notification dengan timeout protection
+        try {
+            \App\Helpers\WhatsAppHelper::sendAbsenNotification($member, $totalLatihan, $badge);
+        } catch (\Exception $e) {
+            \Log::warning('WhatsApp notification skipped: ' . $e->getMessage());
+        }
+        
+        // Telegram Notification dengan timeout protection
+        try {
+            \App\Helpers\TelegramHelper::sendAbsenNotification($member, $totalLatihan, $badge);
+        } catch (\Exception $e) {
+            \Log::warning('Telegram notification skipped: ' . $e->getMessage());
+        }
     } catch (\Exception $e) {
-        // Log error tapi jangan stop proses absen
-        \Log::error('WhatsApp notification failed: ' . $e->getMessage());
+        // Jika ada error apapun, log saja dan lanjutkan
+        \Log::error('Notification error (non-blocking): ' . $e->getMessage());
     }
 
-    // 7. Kirim Notifikasi Telegram ke Owner
-    try {
-        \App\Helpers\TelegramHelper::sendAbsenNotification($member, $totalLatihan, $badge);
-    } catch (\Exception $e) {
-        // Log error tapi jangan stop proses absen
-        \Log::error('Telegram notification failed: ' . $e->getMessage());
-    }
-
-    // 8. Kembalikan Respon Sukses + Data Statistik ke View
+    // 8. Kembalikan Respon Sukses + Data Statistik ke View (PRIORITAS UTAMA)
     return back()->with([
         'success'      => true,
         'member_name'  => $member->name,
