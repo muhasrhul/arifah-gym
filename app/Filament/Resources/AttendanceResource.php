@@ -66,9 +66,12 @@ class AttendanceResource extends Resource
                     ->rules([
                         function () {
                             return function (string $attribute, $value, \Closure $fail) {
-                                // 1. Cek double absen
+                                // 1. Cek double absen dengan timezone Asia/Makassar
+                                $today = Carbon::now('Asia/Makassar')->startOfDay();
+                                $tomorrow = Carbon::now('Asia/Makassar')->endOfDay();
+                                
                                 $sudahAbsen = Attendance::where('member_id', $value)
-                                    ->whereDate('created_at', Carbon::today())
+                                    ->whereBetween('created_at', [$today, $tomorrow])
                                     ->exists();
 
                                 if ($sudahAbsen) {
