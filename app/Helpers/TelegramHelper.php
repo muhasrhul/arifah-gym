@@ -8,6 +8,31 @@ use Illuminate\Support\Facades\Log;
 class TelegramHelper
 {
     /**
+     * Format nomor HP menjadi link WhatsApp untuk Telegram
+     * 
+     * @param string $phone Nomor HP (format: 08xxx atau 628xxx)
+     * @return string Link WhatsApp yang bisa diklik di Telegram
+     */
+    private static function formatPhoneLink($phone)
+    {
+        // Hapus semua karakter non-digit
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        
+        // Jika dimulai dengan 0, ganti dengan 62
+        if (substr($phone, 0, 1) === '0') {
+            $phone = '62' . substr($phone, 1);
+        }
+        
+        // Jika tidak dimulai dengan 62, tambahkan 62
+        if (substr($phone, 0, 2) !== '62') {
+            $phone = '62' . $phone;
+        }
+        
+        // Return format link Telegram dengan Markdown
+        return "[{$phone}](https://wa.me/{$phone})";
+    }
+    
+    /**
      * Kirim pesan ke Telegram
      * 
      * @param string $message Pesan yang akan dikirim (support Markdown)
@@ -81,9 +106,11 @@ class TelegramHelper
      */
     public static function sendPendaftaranBaru($member, $paket)
     {
+        $phoneLink = self::formatPhoneLink($member->phone);
+        
         $message = "📋 *PENDAFTARAN MEMBER BARU*\n";
         $message .= "├─ Nama    : {$member->name}\n";
-        $message .= "├─ HP      : {$member->phone}\n";
+        $message .= "├─ HP      : {$phoneLink}\n";
         $message .= "├─ Email   : {$member->email}\n";
         $message .= "├─ Paket   : {$paket}\n";
         $message .= "└─ Waktu   : " . \Carbon\Carbon::now('Asia/Makassar')->format('d M Y H:i') . "\n\n";
@@ -98,6 +125,8 @@ class TelegramHelper
      */
     public static function sendAktivasiMember($member, $transaction)
     {
+        $phoneLink = self::formatPhoneLink($member->phone);
+        
         // Log untuk debug
         \Illuminate\Support\Facades\Log::info('[Telegram] Data member untuk notifikasi', [
             'member_id' => $member->id,
@@ -112,7 +141,7 @@ class TelegramHelper
         // BAGIAN 1: DATA MEMBER
         $message .= "DATA MEMBER\n";
         $message .= "├─ Nama        : {$member->name}\n";
-        $message .= "├─ HP          : {$member->phone}\n";
+        $message .= "├─ HP          : {$phoneLink}\n";
         
         // Tambahkan Fingerprint ID
         if (!empty($member->fingerprint_id)) {
@@ -142,6 +171,8 @@ class TelegramHelper
      */
     public static function sendPerpanjanganMember($member, $transaction)
     {
+        $phoneLink = self::formatPhoneLink($member->phone);
+        
         // Log untuk debug
         \Illuminate\Support\Facades\Log::info('[Telegram] Data member untuk notifikasi perpanjangan', [
             'member_id' => $member->id,
@@ -154,7 +185,7 @@ class TelegramHelper
         // BAGIAN 1: DATA MEMBER
         $message .= "DATA MEMBER\n";
         $message .= "├─ Nama        : {$member->name}\n";
-        $message .= "├─ HP          : {$member->phone}\n";
+        $message .= "├─ HP          : {$phoneLink}\n";
         
         // Tambahkan Fingerprint ID
         if (!empty($member->fingerprint_id)) {
@@ -184,6 +215,8 @@ class TelegramHelper
      */
     public static function sendPerpanjanganEarly($member, $transaction)
     {
+        $phoneLink = self::formatPhoneLink($member->phone);
+        
         // Log untuk debug
         \Illuminate\Support\Facades\Log::info('[Telegram] Data member untuk notifikasi perpanjangan early', [
             'member_id' => $member->id,
@@ -196,7 +229,7 @@ class TelegramHelper
         // BAGIAN 1: DATA MEMBER
         $message .= "DATA MEMBER\n";
         $message .= "├─ Nama        : {$member->name}\n";
-        $message .= "├─ HP          : {$member->phone}\n";
+        $message .= "├─ HP          : {$phoneLink}\n";
         
         // Tambahkan Fingerprint ID
         if (!empty($member->fingerprint_id)) {
@@ -239,11 +272,12 @@ class TelegramHelper
             $message .= "└─ Total Member : *{$membersH1->count()} member*\n\n";
             
             foreach ($membersH1 as $member) {
+                $phoneLink = self::formatPhoneLink($member->phone);
                 $memberExpiryDate = \Carbon\Carbon::parse($member->expiry_date)->format('d M Y');
                 $message .= "• *{$member->name}*\n";
                 $message .= "  Paket: {$member->type}\n";
                 $message .= "  Expired: {$memberExpiryDate}\n";
-                $message .= "  HP: {$member->phone}\n\n";
+                $message .= "  HP: {$phoneLink}\n\n";
             }
 
             $message .= "💡 ACTION: Hubungi member untuk perpanjangan";
@@ -296,6 +330,7 @@ class TelegramHelper
      */
     public static function sendAbsenNotification($member, $totalLatihan, $badge)
     {
+        $phoneLink = self::formatPhoneLink($member->phone);
         $now = \Carbon\Carbon::now('Asia/Makassar');
         $jamAbsen = $now->format('H:i');
         $tanggalAbsen = $now->format('d M Y');
@@ -306,7 +341,7 @@ class TelegramHelper
         // BAGIAN 1: DATA MEMBER
         $message .= "DATA MEMBER\n";
         $message .= "├─ Nama     : {$member->name}\n";
-        $message .= "├─ WhatsApp : {$member->phone}\n";
+        $message .= "├─ WhatsApp : {$phoneLink}\n";
         $message .= "├─ Jam      : {$jamAbsen} WITA\n";
         $message .= "└─ Tanggal  : {$tanggalAbsen}\n\n";
         
@@ -364,7 +399,8 @@ class TelegramHelper
             $message .= "   Tanggal : {$tanggalHutang} ({$sisaHari} hari lalu)\n";
             
             if (!empty($debt->customer_phone)) {
-                $message .= "   HP      : {$debt->customer_phone}\n";
+                $phoneLink = self::formatPhoneLink($debt->customer_phone);
+                $message .= "   HP      : {$phoneLink}\n";
             }
             
             $message .= "\n";
