@@ -115,8 +115,8 @@ class CreateMember extends CreateRecord
             $paymentMethod = $member->payment_method ?? 'cash';
             $paymentMethodLabel = match($paymentMethod) {
                 'transfer_bank' => 'Transfer Bank',
-                'cash' => 'Cash',
-                default => 'Cash'
+                'cash' => 'QRIS',
+                default => 'QRIS'
             };
             
             $transaction = Transaction::create([

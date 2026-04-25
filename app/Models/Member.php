@@ -84,7 +84,7 @@ class Member extends Model
                 'order_id'       => 'RNW-' . strtoupper(uniqid()), 
                 'amount'         => $harga, 
                 'type'           => 'Perpanjangan: ' . $this->type,
-                'payment_method' => 'Tunai (Kasir)',
+                'payment_method' => 'QRIS',
                 'payment_date'   => $now,
                 'guest_name'     => $this->name,
             ]);

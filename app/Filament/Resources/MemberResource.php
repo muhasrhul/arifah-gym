@@ -157,7 +157,7 @@ class MemberResource extends Resource
                         Forms\Components\Select::make('payment_method')
                             ->label('Metode Pembayaran')
                             ->options([
-                                'cash' => 'Cash',
+                                'cash' => 'QRIS',
                                 'transfer_bank' => 'Transfer Bank',
                             ])
                             ->placeholder('Pilih metode pembayaran')

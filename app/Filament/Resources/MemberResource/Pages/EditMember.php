@@ -73,7 +73,7 @@ class EditMember extends EditRecord
                             Forms\Components\Select::make('payment_method')
                                 ->label('Metode Pembayaran')
                                 ->options([
-                                    'cash' => 'Cash',
+                                    'cash' => 'QRIS',
                                     'transfer_bank' => 'Transfer Bank',
                                 ])
                                 ->placeholder('Pilih metode pembayaran')
@@ -369,8 +369,8 @@ class EditMember extends EditRecord
                     $paymentMethod = $data['payment_method'] ?? $record->payment_method ?? 'cash';
                     $paymentMethodLabel = match($paymentMethod) {
                         'transfer_bank' => 'Transfer Bank',
-                        'cash' => 'Cash',
-                        default => 'Cash'
+                        'cash' => 'QRIS',
+                        default => 'QRIS'
                     };
                     
                     $transaction = Transaction::create([
@@ -505,8 +505,8 @@ class EditMember extends EditRecord
                         $paymentMethod = $data['payment_method'] ?? $record->payment_method ?? 'cash';
                         $paymentMethodLabel = match($paymentMethod) {
                             'transfer_bank' => 'Transfer Bank',
-                            'cash' => 'Cash',
-                            default => 'Cash'
+                            'cash' => 'QRIS',
+                            default => 'QRIS'
                         };
                         
                         // Catat transaksi perpanjangan SETELAH member diupdate
@@ -799,8 +799,8 @@ class EditMember extends EditRecord
                 // 3️⃣ CATAT TRANSAKSI BERDASARKAN DATA TERBARU
                 $paymentMethodLabel = match($selectedPaymentMethod) {
                     'transfer_bank' => 'Transfer Bank',
-                    'cash' => 'Cash',
-                    default => 'Cash'
+                    'cash' => 'QRIS',
+                    default => 'QRIS'
                 };
                 
                 $transaction = Transaction::create([
