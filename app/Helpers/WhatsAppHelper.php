@@ -617,6 +617,7 @@ class WhatsAppHelper
         
         // Format tanggal Indonesia
         $tanggal = $date->translatedFormat('d F Y');
+        $tanggalUrl = $date->format('Y-m-d'); // Format untuk URL
         
         // Buat pesan laporan
         $message = "📊 *LAPORAN PEMBUKUAN HARIAN*\n";
@@ -631,8 +632,8 @@ class WhatsAppHelper
         // Hapus bagian detail transaksi
         // Langsung ke link export PDF
         
-        // LINK EXPORT PDF (protected dengan auth)
-        $exportUrl = 'https://arifahgym.my.id/export/pembukuan?period=today';
+        // LINK EXPORT PDF dengan tanggal spesifik (protected dengan auth)
+        $exportUrl = "https://arifahgym.my.id/export/pembukuan?period=single&date={$tanggalUrl}";
         $message .= "📄 *EXPORT LAPORAN PDF*\n";
         $message .= "Klik link berikut untuk download:\n";
         $message .= "{$exportUrl}\n\n";

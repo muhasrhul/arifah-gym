@@ -791,7 +791,18 @@ Route::middleware(['auth'])->get('/export/pembukuan', function (Request $request
     $now = \Carbon\Carbon::now('Asia/Makassar');
     
     // Tentukan range tanggal berdasarkan periode
-    if ($period === 'today') {
+    if ($period === 'single' && $request->has('date')) {
+        // BARU: Support untuk tanggal spesifik dari link notifikasi
+        $specificDate = \Carbon\Carbon::parse($request->get('date'), 'Asia/Makassar');
+        $periodLabel = 'Tanggal ' . $specificDate->translatedFormat('d F Y');
+        $data = \App\Models\CashFlow::whereDate('date', $specificDate->toDateString())
+            ->orderBy('date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+        $startDate = $specificDate->copy()->startOfDay();
+        $endDate = $specificDate->copy()->endOfDay();
+    
+    } elseif ($period === 'today') {
         $periodLabel = 'Hari Ini - ' . $now->format('d F Y');
         $data = \App\Models\CashFlow::whereDate('date', $now->toDateString())
             ->orderBy('date', 'asc')
