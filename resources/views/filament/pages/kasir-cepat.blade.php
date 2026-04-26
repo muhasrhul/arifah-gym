@@ -475,8 +475,8 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 20px;
             padding: 0;
-            max-width: min(380px, 90vw);
-            width: 90%;
+            max-width: min(420px, 90vw);
+            width: 100%;
             box-shadow: 
                 0 25px 50px -12px rgba(0, 0, 0, 0.25),
                 0 0 0 1px rgba(255, 255, 255, 0.1);
