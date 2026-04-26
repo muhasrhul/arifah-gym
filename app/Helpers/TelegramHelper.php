@@ -40,12 +40,12 @@ class TelegramHelper
      */
     public static function send($message)
     {
-        $botToken = env('TELEGRAM_BOT_TOKEN');
-        $chatId = env('TELEGRAM_CHAT_ID');
+        $botToken = config('services.telegram.bot_token');
+        $chatId = config('services.telegram.chat_id');
         
         // Jika tidak ada konfigurasi Telegram, skip
         if (!$botToken || !$chatId) {
-            Log::warning('[Telegram] Bot token atau chat ID belum diset di .env');
+            Log::warning('[Telegram] Bot token atau chat ID belum diset di config');
             return false;
         }
         
