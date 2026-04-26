@@ -234,6 +234,70 @@ class KasirCepat extends Page
     }
 
     /**
+     * Method untuk mencatat hutang dengan harga custom (Lain-lain)
+     */
+    public function catatHutangCustom($customerName, $phone, $totalAmount, $notes = null)
+    {
+        // 1. Validasi nama pelanggan
+        if (empty(trim($customerName))) {
+            Notification::make()
+                ->title('Nama Pelanggan Wajib Diisi!')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        // 2. Validasi total amount (pastikan numeric dan > 0)
+        $totalAmount = filter_var($totalAmount, FILTER_VALIDATE_INT);
+        if ($totalAmount === false || $totalAmount <= 0) {
+            Notification::make()
+                ->title('Total Hutang Tidak Valid!')
+                ->body('Total hutang harus berupa angka dan lebih dari 0.')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        // 3. SIMPAN HUTANG KE QUICK_TRANSACTIONS dengan status PENDING
+        $quickTransaction = QuickTransaction::create([
+            'guest_name' => trim($customerName),
+            'customer_phone' => $phone ? trim($phone) : null,
+            'notes' => $notes ? trim($notes) : null,
+            'product_name' => 'Hutang: Lain-lain',
+            'order_id' => 'HUTANG-' . date('YmdHis'),
+            'amount' => $totalAmount,
+            'type' => 'Hutang: Lain-lain',
+            'payment_method' => 'Pending', // Belum ada pembayaran
+            'payment_date' => now(),
+            'status' => 'pending', // Status hutang
+        ]);
+
+        // 4. KIRIM NOTIFIKASI KE ADMIN
+        $admins = User::all();
+        $nominal = "Rp " . number_format($totalAmount, 0, ',', '.');
+        
+        foreach ($admins as $admin) {
+            Notification::make()
+                ->title("Hutang Baru Dicatat")
+                ->body("Kasir mencatat hutang **{$customerName}** untuk **Lain-lain** senilai **{$nominal}**.")
+                ->icon('heroicon-o-information-circle')
+                ->iconColor('warning')
+                ->sendToDatabase($admin);
+        }
+
+        // 5. Notifikasi sukses
+        Notification::make()
+            ->title('Hutang Berhasil Dicatat!')
+            ->body("Hutang **{$customerName}** untuk **Lain-lain** senilai **{$nominal}** telah dicatat.")
+            ->success()
+            ->send();
+
+        // Clear cache
+        cache()->forget('stats_omset_hari_ini');
+        cache()->forget('stats_total_omzet');
+    }
+
+    /**
      * Method untuk mengambil data members untuk autocomplete
      */
     public function getMembersData()

@@ -1294,6 +1294,23 @@
                             " onclick="selectProduct('', '-- Pilih Produk --', 0)">
                                 -- Pilih Produk --
                             </div>
+                            
+                            <!-- Opsi Lain-lain (Hardcoded) -->
+                            <div class="dropdown-option" data-value="lain-lain" style="
+                                padding: 12px 16px;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                color: var(--modal-input-text);
+                                border-bottom: 1px solid rgba(0,0,0,0.05);
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+                            " onclick="selectProduct('lain-lain', 'Lain-lain', 0, true)">
+                                <span style="font-weight: 700;">Lain-lain</span>
+                                <span style="font-size: 0.75rem; opacity: 0.7; font-style: italic;">Harga Custom</span>
+                            </div>
+                            
                             @foreach($products as $product)
                                 @if($product->stock > 0)
                                     <div class="dropdown-option" data-value="{{ $product->id }}" style="
@@ -1318,8 +1335,24 @@
                     <input type="hidden" id="debtProductSelect" value="">
                 </div>
 
+                <!-- Input Total Hutang (Muncul jika pilih Lain-lain) -->
+                <div id="customPriceSection" style="margin-bottom: 20px; display: none;">
+                    <label class="modal-form-label" style="display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 8px;">
+                        Total Hutang *
+                    </label>
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--modal-input-text); opacity: 0.7;">Rp</span>
+                        <input type="number" id="customPrice" class="modal-form-input" placeholder="0" min="0" 
+                               oninput="updateDebtTotal()"
+                               style="width: 100%; padding: 12px 12px 12px 45px; border: 2px solid #f59e0b; border-radius: 12px; font-size: 1rem; font-weight: 600;">
+                    </div>
+                    <p style="font-size: 0.75rem; color: #6b7280; margin-top: 6px; font-style: italic;">
+                        Masukkan total hutang
+                    </p>
+                </div>
+
                 <!-- Nama Pelanggan dan Jumlah -->
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 20px;">
+                <div id="customerInfoSection" style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 20px;">
                     <div style="position: relative;">
                         <label class="modal-form-label" style="display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 8px;">Nama Pelanggan *</label>
                         <input type="text" id="customerName" class="modal-form-input" placeholder="Masukkan nama pelanggan" 
@@ -1345,7 +1378,7 @@
                             <!-- Suggestions will be populated here -->
                         </div>
                     </div>
-                    <div>
+                    <div id="quantitySection">
                         <label class="modal-form-label" style="display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 8px;">Jumlah</label>
                         <input type="number" id="debtQuantity" class="modal-form-input" value="1" min="1" onchange="updateDebtTotal()" style="width: 100%; padding: 12px; border: 2px solid; border-radius: 12px; font-size: 1rem; text-align: center;">
                     </div>
@@ -1727,7 +1760,7 @@
             }
         }
 
-        function selectProduct(productId, productName, productPrice) {
+        function selectProduct(productId, productName, productPrice, isCustom = false) {
             // Update the button text
             document.getElementById('selectedProduct').textContent = productName;
             
@@ -1737,6 +1770,29 @@
             // Store product data for calculations
             if (productId) {
                 document.getElementById('debtProductSelect').dataset.price = productPrice;
+                document.getElementById('debtProductSelect').dataset.isCustom = isCustom ? 'true' : 'false';
+            }
+            
+            // Show/hide custom price input and quantity field
+            const customPriceSection = document.getElementById('customPriceSection');
+            const quantitySection = document.getElementById('quantitySection');
+            const customerInfoSection = document.getElementById('customerInfoSection');
+            
+            if (isCustom) {
+                // Untuk produk Lain-lain
+                customPriceSection.style.display = 'block';
+                quantitySection.style.display = 'none'; // Sembunyikan field jumlah
+                customerInfoSection.style.gridTemplateColumns = '1fr'; // Full width untuk nama
+                document.getElementById('customPrice').value = '';
+                document.getElementById('debtQuantity').value = 1; // Reset ke 1
+                document.getElementById('customPrice').focus();
+            } else {
+                // Untuk produk biasa
+                customPriceSection.style.display = 'none';
+                quantitySection.style.display = 'block'; // Tampilkan field jumlah
+                customerInfoSection.style.gridTemplateColumns = '2fr 1fr'; // Grid normal
+                document.getElementById('customPrice').value = '';
+                document.getElementById('debtQuantity').value = 1;
             }
             
             // Close dropdown
@@ -1768,11 +1824,20 @@
             // Reset form
             document.getElementById('debtProductSelect').value = '';
             document.getElementById('debtProductSelect').dataset.price = '';
+            document.getElementById('debtProductSelect').dataset.isCustom = 'false';
             document.getElementById('selectedProduct').textContent = '-- Pilih Produk --';
             document.getElementById('customerName').value = '';
             document.getElementById('customerPhone').value = '';
             document.getElementById('debtQuantity').value = 1;
             document.getElementById('debtTotalAmount').textContent = 'Rp 0';
+            
+            // Hide custom price section
+            document.getElementById('customPriceSection').style.display = 'none';
+            document.getElementById('customPrice').value = '';
+            
+            // Show quantity section and reset grid
+            document.getElementById('quantitySection').style.display = 'block';
+            document.getElementById('customerInfoSection').style.gridTemplateColumns = '2fr 1fr';
             
             // Reset dropdown state
             isDropdownOpen = false;
@@ -1792,11 +1857,19 @@
             const productSelect = document.getElementById('debtProductSelect');
             const quantity = parseInt(document.getElementById('debtQuantity').value) || 1;
             
-            if (productSelect.value && productSelect.dataset.price) {
-                const price = parseInt(productSelect.dataset.price);
+            if (productSelect.value) {
+                let total = 0;
                 
-                // Calculate total
-                const total = price * quantity;
+                // Check if this is a custom price product
+                if (productSelect.dataset.isCustom === 'true') {
+                    // Untuk Lain-lain, langsung ambil total (tidak dikali quantity)
+                    total = parseInt(document.getElementById('customPrice').value) || 0;
+                } else {
+                    // Untuk produk biasa, harga dikali quantity
+                    const price = parseInt(productSelect.dataset.price) || 0;
+                    total = price * quantity;
+                }
+                
                 document.getElementById('debtTotalAmount').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
             } else {
                 document.getElementById('debtTotalAmount').textContent = 'Rp 0';
@@ -1819,8 +1892,20 @@
                 return;
             }
 
-            // Call Livewire method (notes dihilangkan)
-            @this.call('catatHutang', productSelect.value, customerName, customerPhone, quantity, null);
+            // Check if custom price is required
+            if (productSelect.dataset.isCustom === 'true') {
+                const customPrice = parseInt(document.getElementById('customPrice').value) || 0;
+                if (customPrice <= 0) {
+                    alert('Total hutang wajib diisi dan harus lebih dari 0!');
+                    return;
+                }
+                // Call Livewire method with custom price (quantity selalu 1 untuk lain-lain)
+                @this.call('catatHutangCustom', customerName, customerPhone, customPrice, null);
+            } else {
+                // Call Livewire method for regular product
+                @this.call('catatHutang', productSelect.value, customerName, customerPhone, quantity, null);
+            }
+            
             closeDebtModal();
         }
 
