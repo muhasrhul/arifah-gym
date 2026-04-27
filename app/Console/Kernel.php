@@ -97,6 +97,22 @@ class Kernel extends ConsoleKernel
         // $schedule->command('debt:send-reminder')
         //     ->everyMinute()
         //     ->appendOutputTo(storage_path('logs/debt-reminder.log'));
+
+        // ========================================
+        // AUTO BACKUP DATABASE
+        // ========================================
+        
+        // PRODUCTION: Backup database setiap hari jam 03:00 dini hari
+        $schedule->command('backup:database')
+            ->dailyAt('03:00')
+            ->timezone('Asia/Makassar')
+            ->appendOutputTo(storage_path('logs/backup.log'));
+        
+        // TESTING: Uncomment baris di bawah untuk test (jalankan setiap menit)
+        // Setelah test berhasil, comment lagi dan gunakan yang dailyAt
+        // $schedule->command('backup:database')
+        //     ->everyMinute()
+        //     ->appendOutputTo(storage_path('logs/backup.log'));
     }
 
     /**
