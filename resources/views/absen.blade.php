@@ -82,7 +82,7 @@
 
                 <div class="grid grid-cols-2 gap-4 w-full mb-8 text-center">
                     <div class="bg-white/[0.03] p-5 rounded-3xl border border-white/5">
-                        <p class="text-[9px] text-zinc-500 uppercase font-black mb-1">TOTAL SESI</p>
+                        <p class="text-[9px] text-zinc-500 uppercase font-black mb-1">SESI BULAN INI</p>
                         <h3 class="text-3xl font-black italic">{{ session('total_latihan') }}<span class="text-sm text-green-500 ml-1">X</span></h3>
                     </div>
                     <div class="bg-white/[0.03] p-5 rounded-3xl border border-white/5 flex flex-col justify-center items-center">

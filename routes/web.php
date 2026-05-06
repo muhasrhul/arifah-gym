@@ -100,24 +100,31 @@ Route::post('/absen', function (Request $request) {
         'created_at' => now(),
     ]);
 
-    // --- FITUR BARU: HITUNG STATISTIK LATIHAN (UNTUK DITAMPILKAN DI LAYAR) ---
+    // --- FITUR: HITUNG STATISTIK LATIHAN ---
+    // 1. Total sesi BULAN INI (untuk ditampilkan di layar - reset per bulan)
     $bulanIni = \Carbon\Carbon::now('Asia/Makassar')->month;
     $tahunIni = \Carbon\Carbon::now('Asia/Makassar')->year;
-
-    $totalLatihan = Attendance::where('member_id', $member->id)
+    
+    $totalLatihanBulanIni = Attendance::where('member_id', $member->id)
         ->whereMonth('created_at', $bulanIni)
         ->whereYear('created_at', $tahunIni)
         ->count();
+    
+    // 2. Total sesi ALL TIME (untuk badge - tidak reset)
+    $totalLatihanAllTime = Attendance::where('member_id', $member->id)->count();
 
-    // Tentukan Level Motivasi & Badge
-    $motivasi = 'Semangat!';
+    // Tentukan Level Motivasi & Badge berdasarkan total ALL TIME
+    $motivasi = 'Semangat! Perjalanan baru dimulai!';
     $badge = 'BEGINNER';
     
-    if ($totalLatihan >= 15) {
-        $motivasi = 'Luar Biasa! Anda adalah Iron Warrior!';
-        $badge = 'IRON WARRIOR';
-    } elseif ($totalLatihan >= 8) {
-        $motivasi = 'Konsistensi yang mantap!';
+    if ($totalLatihanAllTime >= 100) {
+        $motivasi = 'LEGEND! Anda adalah Gym Master!';
+        $badge = 'GYM MASTER';
+    } elseif ($totalLatihanAllTime >= 50) {
+        $motivasi = 'Luar Biasa! Anda adalah Arifah Warrior!';
+        $badge = 'ARIFAH WARRIOR';
+    } elseif ($totalLatihanAllTime >= 20) {
+        $motivasi = 'Konsistensi yang mantap! Keep going!';
         $badge = 'CONSISTENT';
     }
 
@@ -127,7 +134,7 @@ Route::post('/absen', function (Request $request) {
         // JALUR 1: Filament (Untuk memicu lonceng live)
         Notification::make()
             ->title('Member Absen Baru!')
-            ->body("**{$member->name}** baru saja melakukan absensi. (Total: {$totalLatihan}x bulan ini)")
+            ->body("**{$member->name}** baru saja melakukan absensi. (Total: {$totalLatihanBulanIni}x bulan ini)")
             ->icon('heroicon-o-check-circle')
             ->iconColor('success')
             ->sendToDatabase($admin);
@@ -139,14 +146,14 @@ Route::post('/absen', function (Request $request) {
     try {
         // WhatsApp Notification dengan timeout protection
         try {
-            \App\Helpers\WhatsAppHelper::sendAbsenNotification($member, $totalLatihan, $badge);
+            \App\Helpers\WhatsAppHelper::sendAbsenNotification($member, $totalLatihanBulanIni, $badge);
         } catch (\Exception $e) {
             \Log::warning('WhatsApp notification skipped: ' . $e->getMessage());
         }
         
         // Telegram Notification dengan timeout protection
         try {
-            \App\Helpers\TelegramHelper::sendAbsenNotification($member, $totalLatihan, $badge);
+            \App\Helpers\TelegramHelper::sendAbsenNotification($member, $totalLatihanBulanIni, $badge);
         } catch (\Exception $e) {
             \Log::warning('Telegram notification skipped: ' . $e->getMessage());
         }
@@ -165,8 +172,8 @@ Route::post('/absen', function (Request $request) {
         'expiry_date'  => $member->expiry_date 
             ? \Carbon\Carbon::parse($member->expiry_date)->translatedFormat('d F Y') 
             : 'Member Harian',
-        'total_latihan'=> $totalLatihan,
-        'badge'        => $badge,
+        'total_latihan'=> $totalLatihanBulanIni, // Tampilkan total bulan ini
+        'badge'        => $badge, // Badge berdasarkan all-time
         'motivasi'     => $motivasi
     ]);
 });
