@@ -789,6 +789,12 @@ class MemberResource extends Resource
                     ->query(fn ($query) => $query->whereNotNull('fingerprint_id'))
                     ->toggle(),
 
+                // Filter 5: Tidak Punya Fingerprint
+                Tables\Filters\Filter::make('no_fingerprint')
+                    ->label('Belum Ada Fingerprint')
+                    ->query(fn ($query) => $query->whereNull('fingerprint_id'))
+                    ->toggle(),
+
                 // Filter 5: Tanda Tangan Digital
                 Tables\Filters\Filter::make('has_signature')
                     ->label('Sudah TTD Digital')
