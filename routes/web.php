@@ -55,6 +55,90 @@ Route::get('/absen', function () {
     return view('absen');
 });
 
+// 3.1 HALAMAN SCAN QR ABSENSI
+Route::get('/absen-qr', function () {
+    return view('absen-qr');
+});
+
+// 3.2 API: PROSES ABSENSI VIA QR CODE
+Route::post('/absen-qr', function (Request $request) {
+    $memberId = $request->input('member_id');
+
+    if (!$memberId || !is_numeric($memberId)) {
+        return response()->json(['status' => 'error', 'message' => 'QR Code tidak valid.']);
+    }
+
+    $member = Member::find($memberId);
+
+    if (!$member) {
+        return response()->json(['status' => 'error', 'message' => 'Member tidak ditemukan.']);
+    }
+
+    if (!$member->is_active) {
+        return response()->json(['status' => 'error', 'message' => 'Member Non-Aktif/Expired. Silakan perpanjang.']);
+    }
+
+    // Cek tanggal expired
+    if ($member->expiry_date) {
+        $today = \Carbon\Carbon::now('Asia/Makassar')->startOfDay();
+        $expiryDate = \Carbon\Carbon::parse($member->expiry_date)->startOfDay();
+        if ($today->equalTo($expiryDate)) {
+            return response()->json(['status' => 'error', 'message' => "Membership {$member->name} berakhir hari ini. Silakan perpanjang."]);
+        }
+    }
+
+    // Cek double absen
+    $sudahAbsen = Attendance::where('member_id', $member->id)
+        ->whereDate('created_at', now())
+        ->exists();
+
+    if ($sudahAbsen) {
+        return response()->json(['status' => 'error', 'message' => "{$member->name} sudah absen hari ini."]);
+    }
+
+    // Catat absen
+    Attendance::create(['member_id' => $member->id, 'created_at' => now()]);
+
+    $now = \Carbon\Carbon::now('Asia/Makassar');
+    $totalLatihanBulanIni = Attendance::where('member_id', $member->id)
+        ->whereMonth('created_at', $now->month)
+        ->whereYear('created_at', $now->year)
+        ->count();
+
+    $totalLatihanAllTime = Attendance::where('member_id', $member->id)->count();
+
+    $badge = 'BEGINNER';
+    if ($totalLatihanAllTime >= 100) $badge = 'GYM MASTER';
+    elseif ($totalLatihanAllTime >= 50) $badge = 'ARIFAH WARRIOR';
+    elseif ($totalLatihanAllTime >= 20) $badge = 'CONSISTENT';
+
+    // Notifikasi admin
+    try {
+        $allAdmins = \App\Models\User::all();
+        foreach ($allAdmins as $admin) {
+            \Filament\Notifications\Notification::make()
+                ->title('Member Absen (QR)')
+                ->body("**{$member->name}** absen via QR. (Total: {$totalLatihanBulanIni}x bulan ini)")
+                ->icon('heroicon-o-check-circle')
+                ->iconColor('success')
+                ->sendToDatabase($admin);
+        }
+        \App\Helpers\WhatsAppHelper::sendAbsenNotification($member, $totalLatihanBulanIni, $badge);
+        \App\Helpers\TelegramHelper::sendAbsenNotification($member, $totalLatihanBulanIni, $badge);
+    } catch (\Exception $e) {
+        \Log::warning('QR absen notification error: ' . $e->getMessage());
+    }
+
+    return response()->json([
+        'status'        => 'success',
+        'member_name'   => $member->name,
+        'member_id'     => $member->id,
+        'paket_nama'    => $member->type ?? 'MEMBER REGULAR',
+        'total_latihan' => $totalLatihanBulanIni,
+        'badge'         => $badge,
+    ]);
+});
+
 Route::post('/absen', function (Request $request) {
     // 1. Bersihkan Nomor HP
     $cleanPhone = preg_replace('/[^0-9]/', '', $request->phone);
