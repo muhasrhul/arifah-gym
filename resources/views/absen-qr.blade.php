@@ -77,11 +77,44 @@
             </div>
         </div>
 
-        <!-- Manual Input fallback -->
-        <div class="mt-4 text-center">
+        <!-- Mode Toggle -->
+        <div class="mt-4 flex items-center justify-center gap-4">
+            <button onclick="setMode('camera')" id="btn-camera"
+                class="text-[#0992C2] text-xs uppercase tracking-widest font-bold transition-colors">
+                <i class="fa-solid fa-camera mr-1"></i> Kamera
+            </button>
+            <div class="h-3 w-px bg-zinc-700"></div>
+            <button onclick="setMode('scanner')" id="btn-scanner"
+                class="text-zinc-600 text-xs uppercase tracking-widest font-bold hover:text-zinc-400 transition-colors">
+                <i class="fa-solid fa-barcode mr-1"></i> Alat Scanner
+            </button>
+            <div class="h-3 w-px bg-zinc-700"></div>
             <a href="/absen" class="text-zinc-600 text-xs uppercase tracking-widest hover:text-zinc-400 transition-colors">
-                <i class="fa-solid fa-keyboard mr-1"></i> Input Manual
+                <i class="fa-solid fa-keyboard mr-1"></i> Manual
             </a>
+        </div>
+
+        <!-- Scanner Hardware Mode -->
+        <div id="hardware-scanner-card" class="premium-card p-6 rounded-[2.5rem] mt-4 hidden">
+            <p class="text-zinc-400 text-xs uppercase tracking-widest text-center mb-5 font-bold">
+                Scan barcode kartu member dengan alat scanner
+            </p>
+            <div class="flex flex-col items-center gap-4">
+                <div class="w-20 h-20 rounded-full border-2 border-[#0992C2]/40 flex items-center justify-center"
+                    style="box-shadow: 0 0 30px rgba(9,146,194,0.15)">
+                    <i class="fa-solid fa-barcode text-[#0992C2] text-3xl"></i>
+                </div>
+                <div id="hw-status" class="text-center text-zinc-500 text-xs uppercase tracking-widest font-bold">
+                    <i class="fa-solid fa-circle-dot mr-1 text-green-500"></i> Siap menerima scan...
+                </div>
+                <!-- Input tersembunyi yang menangkap input scanner -->
+                <input id="scanner-input" type="text" autocomplete="off"
+                    class="opacity-0 absolute w-px h-px"
+                    placeholder="scanner input" />
+                <p class="text-zinc-700 text-[10px] text-center">
+                    Pastikan alat scanner terhubung dan halaman ini aktif
+                </p>
+            </div>
         </div>
 
         <p class="mt-8 text-zinc-900 text-[10px] uppercase tracking-[0.8em] font-black italic text-center">ARIFAH GYM &copy; 2026</p>
@@ -140,6 +173,8 @@
         function processAbsen(memberId) {
             cooldown = true;
             statusText.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1 text-[#0992C2]"></i> Memproses...';
+            const hwStatus = document.getElementById('hw-status');
+            if (hwStatus) hwStatus.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1 text-[#0992C2]"></i> Memproses...';
 
             fetch('/absen-qr', {
                 method: 'POST',
@@ -164,6 +199,9 @@
                 setTimeout(() => {
                     cooldown = false;
                     statusText.innerHTML = '<i class="fa-solid fa-qrcode mr-1 text-[#0992C2]"></i> Siap scan...';
+                    const hwStatus = document.getElementById('hw-status');
+                    if (hwStatus) hwStatus.innerHTML = '<i class="fa-solid fa-circle-dot mr-1 text-green-500"></i> Siap menerima scan...';
+                    if (currentMode === 'scanner') document.getElementById('scanner-input').focus();
                 }, 4000);
             });
         }
@@ -209,6 +247,68 @@
             setTimeout(() => resultArea.classList.add('hidden'), 4000);
             statusText.innerHTML = '<i class="fa-solid fa-qrcode mr-1 text-[#0992C2]"></i> Siap scan...';
         }
+
+        // ── MODE TOGGLE ──────────────────────────────────────────────
+        let currentMode = 'camera';
+
+        function setMode(mode) {
+            currentMode = mode;
+            const cameraCard    = document.getElementById('scanner-card');
+            const hardwareCard  = document.getElementById('hardware-scanner-card');
+            const btnCamera     = document.getElementById('btn-camera');
+            const btnScanner    = document.getElementById('btn-scanner');
+
+            if (mode === 'camera') {
+                cameraCard.classList.remove('hidden');
+                hardwareCard.classList.add('hidden');
+                btnCamera.classList.replace('text-zinc-600', 'text-[#0992C2]');
+                btnScanner.classList.replace('text-[#0992C2]', 'text-zinc-600');
+            } else {
+                cameraCard.classList.add('hidden');
+                hardwareCard.classList.remove('hidden');
+                btnScanner.classList.replace('text-zinc-600', 'text-[#0992C2]');
+                btnCamera.classList.replace('text-[#0992C2]', 'text-zinc-600');
+                // Fokus ke input tersembunyi agar scanner langsung terbaca
+                document.getElementById('scanner-input').focus();
+            }
+        }
+
+        // ── HARDWARE SCANNER INPUT ───────────────────────────────────
+        // Scanner USB/Bluetooth bekerja seperti keyboard: ketik lalu Enter
+        let scannerBuffer = '';
+        let scannerTimer  = null;
+
+        document.addEventListener('keydown', function (e) {
+            if (currentMode !== 'scanner') return;
+            if (cooldown) return;
+
+            // Enter = scanner selesai kirim data
+            if (e.key === 'Enter') {
+                const val = scannerBuffer.trim();
+                scannerBuffer = '';
+                clearTimeout(scannerTimer);
+                if (val && /^\d+$/.test(val)) {
+                    processAbsen(val);
+                }
+                return;
+            }
+
+            // Kumpulkan karakter dari scanner
+            if (e.key.length === 1) {
+                scannerBuffer += e.key;
+            }
+
+            // Reset buffer jika tidak ada input selama 500ms
+            clearTimeout(scannerTimer);
+            scannerTimer = setTimeout(() => { scannerBuffer = ''; }, 500);
+        });
+
+        // Jaga fokus input tersembunyi saat mode scanner aktif
+        document.addEventListener('click', function () {
+            if (currentMode === 'scanner') {
+                document.getElementById('scanner-input').focus();
+            }
+        });
     </script>
 </body>
 </html>

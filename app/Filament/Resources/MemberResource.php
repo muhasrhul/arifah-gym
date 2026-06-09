@@ -147,9 +147,11 @@ class MemberResource extends Resource
                                 if ($isPerpanjangan || $isPaketHarian || $isMemberAktif) {
                                     $set('biaya_registrasi_info', 0);
                                     $set('harga_paket_info', $harga);
+                                    $set('total_tagihan_hidden', $harga);
                                 } else {
                                     $set('biaya_registrasi_info', $registrationFee);
                                     $set('harga_paket_info', $harga + $registrationFee);
+                                    $set('total_tagihan_hidden', $harga + $registrationFee);
                                 }
                             }),
 
@@ -262,27 +264,47 @@ class MemberResource extends Resource
                                 ->numeric()
                                 ->prefix('Rp')
                                 ->reactive()
-                                ->dehydrated(false)
+                                ->dehydrated(fn ($record) => !($record && $record->is_active)) // Kirim ke backend hanya saat belum aktif
                                 ->disabled(fn ($record) => $record && $record->is_active) // Disable jika sudah aktif
                                 ->afterStateUpdated(function ($state, $set, $get) {
                                     // Update total saat biaya paket diubah manual
                                     $biayaPaket = (int)($state ?? 0);
                                     $biayaRegistrasi = (int)($get('biaya_registrasi_info') ?? 0);
-                                    $set('harga_paket_info', $biayaPaket + $biayaRegistrasi);
+                                    $total = $biayaPaket + $biayaRegistrasi;
+                                    $set('harga_paket_info', $total);
+                                    $set('total_tagihan_hidden', $total);
                                 })
                                 ->afterStateHydrated(function ($set, $get, $record) {
                                     if ($record && $record->type) {
                                         $paket = Paket::where('nama_paket', $record->type)->first();
                                         $hargaPaket = $paket ? (int)$paket->harga : 0;
                                         
-                                        // LOGIKA BARU:
-                                        // 1. Jika member SUDAH AKTIF: Tampilkan harga paket sebagai referensi historis
-                                        // 2. Jika member EXPIRED (perpanjangan): Set 0 saat pertama buka (akan terisi otomatis saat ganti paket)
-                                        // 3. Jika member PENDAFTAR BARU: Tampilkan harga paket
-                                        
                                         if ($record->is_active) {
-                                            // Member sudah aktif: tampilkan harga sebagai referensi historis
-                                            $set('biaya_paket_info', $hargaPaket);
+                                            // Ambil transaksi terakhir (pendaftaran atau perpanjangan)
+                                            $transaksi = \App\Models\Transaction::where('member_id', $record->id)
+                                                ->where(function($query) {
+                                                    $query->where('type', 'like', 'Pendaftaran Baru%')
+                                                          ->orWhere('type', 'like', 'Perpanjangan%')
+                                                          ->orWhere('type', 'like', 'Perpanjang Member%');
+                                                })
+                                                ->latest('payment_date')
+                                                ->first();
+                                            
+                                            if ($transaksi) {
+                                                $isPerpanjangan = str_contains($transaksi->type, 'Perpanjangan') || str_contains($transaksi->type, 'Perpanjang Member');
+                                                
+                                                if ($isPerpanjangan) {
+                                                    // Perpanjangan: tidak ada fee, biaya paket = amount langsung
+                                                    $set('biaya_paket_info', (int)$transaksi->amount);
+                                                } else {
+                                                    // Pendaftaran baru: biaya paket = amount - registration_fee
+                                                    $registrationFee = $paket ? (int)$paket->registration_fee : 0;
+                                                    $biayaPaket = max(0, (int)$transaksi->amount - $registrationFee);
+                                                    $set('biaya_paket_info', $biayaPaket);
+                                                }
+                                            } else {
+                                                $set('biaya_paket_info', $hargaPaket);
+                                            }
                                         } elseif ($record->expiry_date) {
                                             // Member expired: set 0 (akan terisi otomatis saat ganti paket via afterStateUpdated)
                                             $set('biaya_paket_info', 0);
@@ -322,7 +344,9 @@ class MemberResource extends Resource
                                     // Update total saat biaya registrasi diubah manual
                                     $biayaPaket = (int)($get('biaya_paket_info') ?? 0);
                                     $biayaRegistrasi = (int)($state ?? 0);
-                                    $set('harga_paket_info', $biayaPaket + $biayaRegistrasi);
+                                    $total = $biayaPaket + $biayaRegistrasi;
+                                    $set('harga_paket_info', $total);
+                                    $set('total_tagihan_hidden', $total);
                                 })
                                 ->afterStateHydrated(function ($set, $get, $record) {
                                     if ($record && $record->type) {
@@ -333,7 +357,7 @@ class MemberResource extends Resource
                                         // Paksa set 0 untuk paket harian DAN update total
                                         if ($paket && $paket->durasi_hari < 30) {
                                             $set('biaya_registrasi_info', 0);
-                                            $set('harga_paket_info', $hargaPaket); // Total = harga paket saja
+                                            // Untuk paket harian, total akan di-handle oleh afterStateHydrated harga_paket_info
                                             return;
                                         }
                                         
@@ -352,10 +376,10 @@ class MemberResource extends Resource
                                         // 4. Jika member PENDAFTAR BARU → Tampilkan fee
                                         
                                         if ($record->is_active && !$sudahPernahPerpanjangan) {
-                                            // Member aktif dan belum pernah perpanjangan: tampilkan fee sebagai referensi (member baru)
+                                            // Biaya admin selalu dari database (tidak pernah di-override)
                                             $set('biaya_registrasi_info', $registrationFee);
                                         } elseif ($record->is_active && $sudahPernahPerpanjangan) {
-                                            // Member aktif dan sudah pernah perpanjangan: fee = 0 (member lama)
+                                            // Sudah pernah perpanjangan: fee = 0
                                             $set('biaya_registrasi_info', 0);
                                         } elseif ($record->expiry_date) {
                                             // Member expired (perpanjangan): fee = 0
@@ -413,53 +437,46 @@ class MemberResource extends Resource
                                 ->placeholder('Otomatis...')
                                 ->numeric()
                                 ->prefix('Rp')
-                                ->formatStateUsing(fn ($state) => $state ? number_format($state, 0, ',', '.') : '0')
                                 ->reactive()
                                 ->disabled()
                                 ->dehydrated(false)
+                                ->afterStateUpdated(function ($state, $set) {
+                                    $set('total_tagihan_hidden', $state);
+                                }) // Kirim ke backend hanya saat belum aktif
                                 ->afterStateHydrated(function ($set, $get, $record) {
                                     if ($record && $record->type) {
                                         $paket = Paket::where('nama_paket', $record->type)->first();
                                         $harga = $paket ? (int)$paket->harga : 0;
                                         $registrationFee = $paket ? (int)$paket->registration_fee : 0;
                                         
-                                        // PENTING: Jika member EXPIRED (tidak aktif tapi punya expiry_date), set 0
                                         if (!$record->is_active && $record->expiry_date) {
                                             $set('harga_paket_info', 0);
+                                            $set('total_tagihan_hidden', 0);
                                             return;
                                         }
-                                        
-                                        // PENTING: Paksa set 0 untuk paket harian (durasi < 30 hari)
-                                        if ($paket && $paket->durasi_hari < 30) {
-                                            $set('harga_paket_info', $harga); // Total = harga paket saja, tanpa fee
-                                            return;
-                                        }
-                                        
-                                        // LOGIKA PINTAR:
-                                        // Cek apakah member ini sudah pernah perpanjangan
-                                        $sudahPernahPerpanjangan = \App\Models\Transaction::where('member_id', $record->id)
-                                            ->where(function($query) {
-                                                $query->where('type', 'like', 'Perpanjangan:%')
-                                                      ->orWhere('type', 'like', 'Perpanjang Member:%');
-                                            })
-                                            ->exists();
-                                        
-                                        // 1. Jika member AKTIF dan BELUM pernah perpanjangan → Total = harga + fee (member baru)
-                                        // 2. Jika member AKTIF dan SUDAH pernah perpanjangan → Total = harga saja (member lama)
-                                        // 3. Jika member PENDAFTAR BARU → Total = harga + fee
-                                        
-                                        if ($record->is_active && !$sudahPernahPerpanjangan) {
-                                            // Member aktif dan belum pernah perpanjangan: total dengan fee (member baru)
-                                            $totalTagihan = $harga + $registrationFee;
-                                        } elseif ($record->is_active && $sudahPernahPerpanjangan) {
-                                            // Member aktif dan sudah pernah perpanjangan: total tanpa fee (member lama)
+
+                                        if ($record->is_active) {
+                                            // Ambil dari transaksi terakhir (pendaftaran atau perpanjangan)
+                                            $transaksi = \App\Models\Transaction::where('member_id', $record->id)
+                                                ->where(function($query) {
+                                                    $query->where('type', 'like', 'Pendaftaran Baru%')
+                                                          ->orWhere('type', 'like', 'Perpanjangan%')
+                                                          ->orWhere('type', 'like', 'Perpanjang Member%');
+                                                })
+                                                ->latest('payment_date')
+                                                ->first();
+                                            
+                                            $totalTagihan = $transaksi ? (int)$transaksi->amount : ($harga + $registrationFee);
+                                        } elseif ($paket && $paket->durasi_hari < 30) {
+                                            // Paket harian belum aktif: pakai harga paket saja
                                             $totalTagihan = $harga;
                                         } else {
-                                            // Pendaftar baru: harga paket + fee
+                                            // Pendaftar baru belum aktif: harga + fee sebagai estimasi
                                             $totalTagihan = $harga + $registrationFee;
                                         }
                                         
                                         $set('harga_paket_info', $totalTagihan);
+                                        $set('total_tagihan_hidden', $totalTagihan);
                                     }
                                 })
                                 ->helperText(function ($record) {
@@ -470,6 +487,9 @@ class MemberResource extends Resource
                                 })
                                 ->extraInputAttributes(['style' => 'font-weight: 900; color: #000000; font-size: 1.5rem; background-color: #fef3c7;']),
                         ]),
+
+                        Forms\Components\Hidden::make('total_tagihan_hidden')
+                            ->dehydrated(true),
 
                         Forms\Components\Toggle::make('is_active')
                             ->label('Status Aktif')

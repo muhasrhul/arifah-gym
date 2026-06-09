@@ -21,6 +21,7 @@ class EditMember extends EditRecord
     // Property untuk menyimpan data form
     protected $formBiayaPaket = 0;
     protected $formBiayaRegistrasi = 0;
+    protected $formTotalHarga = 0;
 
     public function mount($record): void
     {
@@ -252,11 +253,15 @@ class EditMember extends EditRecord
         if (!isset($this->formBiayaRegistrasi) || $this->formBiayaRegistrasi === null) {
             $this->formBiayaRegistrasi = isset($data['biaya_registrasi_info']) ? (int)$data['biaya_registrasi_info'] : 0;
         }
+
+        // Simpan total tagihan dari hidden field
+        $this->formTotalHarga = isset($data['total_tagihan_hidden']) ? (int)$data['total_tagihan_hidden'] : 0;
         
         // HAPUS field info dari $data agar tidak masuk ke database (field ini hanya untuk tampilan)
         unset($data['biaya_paket_info']);
         unset($data['biaya_registrasi_info']);
         unset($data['harga_paket_info']);
+        unset($data['total_tagihan_hidden']);
         
         // PENTING: Jika member sudah punya expiry_date (bukan pendaftar baru), set fee ke 0
         if ($record->expiry_date) {
@@ -300,26 +305,25 @@ class EditMember extends EditRecord
         }
 
         if ($sedangDiaktifkan) {
-            // Gunakan nilai dari form jika ada, jika tidak ambil dari database paket
-            $hargaPaket = $this->formBiayaPaket;
-            $registrationFee = $this->formBiayaRegistrasi;
-            
-            // Jika form kosong, ambil dari database paket (fallback)
-            if ($hargaPaket == 0) {
-                $paket = Paket::where('nama_paket', $data['type'])->first();
-                $hargaPaket = $paket ? (int)$paket->harga : 0;
+            // Prioritas utama: ambil dari field TOTAL TAGIHAN (harga_paket_info) yang sudah dihitung di form
+            if ($this->formTotalHarga > 0) {
+                $totalHarga = $this->formTotalHarga;
+            } else {
+                // Fallback: hitung manual dari komponen harga
+                $hargaPaket = $this->formBiayaPaket;
+                $registrationFee = $this->formBiayaRegistrasi;
                 
-                // PENTING: Hanya set registration fee jika:
-                // 1. Belum di-set (registrationFee == 0)
-                // 2. Member belum punya expiry_date (pendaftar baru, bukan perpanjangan)
-                // 3. Bukan paket harian (durasi >= 30)
-                if ($registrationFee == 0 && !$record->expiry_date && $paket && $paket->durasi_hari >= 30) {
-                    $registrationFee = $paket ? (int)$paket->registration_fee : 0;
+                if ($hargaPaket == 0) {
+                    $paket = Paket::where('nama_paket', $data['type'])->first();
+                    $hargaPaket = $paket ? (int)$paket->harga : 0;
+                    
+                    if ($registrationFee == 0 && !$record->expiry_date && $paket && $paket->durasi_hari >= 30) {
+                        $registrationFee = $paket ? (int)$paket->registration_fee : 0;
+                    }
                 }
-                // Jika paket harian ATAU perpanjangan, registrationFee tetap 0
+                
+                $totalHarga = $hargaPaket + $registrationFee;
             }
-            
-            $totalHarga = $hargaPaket + $registrationFee;
 
             // 3. join_date tetap dari input manual user untuk perpanjangan
             // Tidak perlu set otomatis ke hari ini

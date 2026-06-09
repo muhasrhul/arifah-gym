@@ -17,6 +17,7 @@ class CreateMember extends CreateRecord
     // Property untuk menyimpan data form
     protected $formBiayaPaket = 0;
     protected $formBiayaRegistrasi = 0;
+    protected $formTotalHarga = 0;
 
     // 1. CEGAT DATA SEBELUM DISIMPAN (SET ORDER ID & TANGGAL)
     protected function mutateFormDataBeforeCreate(array $data): array
@@ -52,6 +53,18 @@ class CreateMember extends CreateRecord
             $this->formBiayaRegistrasi = isset($data['biaya_registrasi_info']) ? (int)$data['biaya_registrasi_info'] : 0;
         }
 
+        // Simpan total tagihan dari hidden field
+        $this->formTotalHarga = isset($data['harga_paket_info']) ? (int)$data['harga_paket_info'] : 0;
+        if (isset($data['total_tagihan_hidden'])) {
+            $this->formTotalHarga = (int)$data['total_tagihan_hidden'];
+        }
+
+        // Hapus field info agar tidak masuk ke database
+        unset($data['biaya_paket_info']);
+        unset($data['biaya_registrasi_info']);
+        unset($data['harga_paket_info']);
+        unset($data['total_tagihan_hidden']);
+
         // AWALAN REG: Agar serasi di semua tabel
         $data['order_id'] = 'REG-' . strtoupper(uniqid());
 
@@ -75,23 +88,25 @@ class CreateMember extends CreateRecord
 
         // Hanya catat uang dan kirim notif kalau statusnya AKTIF
         if ($member->is_active) {
-            // Gunakan nilai dari form jika ada, jika tidak ambil dari database paket
-            $hargaPaket = $this->formBiayaPaket;
-            $registrationFee = $this->formBiayaRegistrasi;
-            
-            // Jika form kosong, ambil dari database paket (fallback)
-            if ($hargaPaket == 0) {
-                $paket = Paket::where('nama_paket', $member->type)->first();
-                $hargaPaket = $paket ? (int)$paket->harga : 0;
+            // Prioritas utama: ambil dari field TOTAL TAGIHAN yang sudah dihitung di form
+            if ($this->formTotalHarga > 0) {
+                $totalHarga = $this->formTotalHarga;
+            } else {
+                // Fallback: hitung manual dari komponen harga
+                $hargaPaket = $this->formBiayaPaket;
+                $registrationFee = $this->formBiayaRegistrasi;
                 
-                // PENTING: Hanya set registration fee jika belum di-set DAN bukan paket harian
-                if ($registrationFee == 0 && $paket && $paket->durasi_hari >= 30) {
-                    $registrationFee = $paket ? (int)$paket->registration_fee : 0;
+                if ($hargaPaket == 0) {
+                    $paket = Paket::where('nama_paket', $member->type)->first();
+                    $hargaPaket = $paket ? (int)$paket->harga : 0;
+                    
+                    if ($registrationFee == 0 && $paket && $paket->durasi_hari >= 30) {
+                        $registrationFee = $paket ? (int)$paket->registration_fee : 0;
+                    }
                 }
-                // Jika paket harian (durasi < 30), registrationFee tetap 0 (sudah di-set di mutateFormDataBeforeCreate)
+                
+                $totalHarga = $hargaPaket + $registrationFee;
             }
-            
-            $totalHarga = $hargaPaket + $registrationFee; // Total termasuk fee untuk pendaftar baru
 
             // --- A. KIRIM NOTIFIKASI KE LONCENG DULU ---
             $admins = User::all();
