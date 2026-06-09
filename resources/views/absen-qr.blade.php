@@ -184,8 +184,15 @@
                 },
                 body: JSON.stringify({ member_id: memberId })
             })
-            .then(r => r.json())
+            .then(r => {
+                if (r.status === 419) {
+                    setTimeout(() => location.reload(), 1000);
+                    return null;
+                }
+                return r.json();
+            })
             .then(data => {
+                if (!data) return;
                 if (data.status === 'success') {
                     document.getElementById('successSound').play().catch(() => {});
                     showSuccess(data);
