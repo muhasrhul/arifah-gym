@@ -146,11 +146,9 @@
    FORGOT PASSWORD LINK - LOGIN PAGE
    ========================================= */
 
-/* Container untuk link lupa password */
+/* Container untuk link lupa password - disembunyikan */
 .forgot-password-container {
-    margin-top: 1.5rem;
-    text-align: center;
-    width: 100%;
+    display: none;
 }
 
 /* Link lupa password */
@@ -186,4 +184,37 @@
 .forgot-password-link svg {
     width: 1rem;
     height: 1rem;
+}
+
+/* Sembunyikan tanda bintang required di halaman login */
+.filament-login-page .filament-forms-field-wrapper .filament-forms-field-wrapper-label sup,
+.filament-login-page sup.required,
+.filament-login-page [class*="required"] sup {
+    display: none !important;
+}
+
+/* Center form login di mobile */
+@media (max-width: 768px) {
+    .filament-login-page {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+    }
+}
+
+/* Posisi form login di tengah layar pada mobile */
+@media (max-width: 768px) {
+    .filament-login-page {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+    }
+
+    .filament-login-page > * {
+        margin-top: auto !important;
+        margin-bottom: auto !important;
+    }
 }

@@ -741,104 +741,36 @@ class AppServiceProvider extends ServiceProvider
                     })();
                 </script>
                 
+                <?php if (false): // NONAKTIF - Inject "Lupa Password?" link di halaman login ?>
                 <script>
-                    // Inject "Lupa Password?" link di halaman login
                     (function() {
                         function addForgotPasswordLink() {
-                            // Cek apakah ini halaman login
-                            if (!window.location.pathname.includes("/login")) {
-                                return;
-                            }
-                            
-                            // Cek apakah link sudah ada
-                            if (document.querySelector(".forgot-password-link")) {
-                                return;
-                            }
-                            
-                            // Cari tombol submit login
-                            const submitButton = document.querySelector(".filament-login-page button[type=\'submit\']");
-                            if (!submitButton) {
-                                return;
-                            }
-                            
-                            // Buat container untuk link
+                            if (!window.location.pathname.includes("/login")) return;
+                            if (document.querySelector(".forgot-password-link")) return;
+                            const submitButton = document.querySelector(".filament-login-page button[type=submit]");
+                            if (!submitButton) return;
                             const container = document.createElement("div");
                             container.className = "forgot-password-container";
                             container.style.cssText = "margin-top: 1.5rem; text-align: center; width: 100%;";
-                            
-                            // Buat link
                             const link = document.createElement("a");
                             link.href = "/forgot-password";
                             link.className = "forgot-password-link";
-                            link.style.cssText = "display: inline-flex; align-items: center; gap: 0.375rem; font-size: 0.875rem; font-weight: 600; color: #0992C2; text-decoration: none; transition: all 0.2s ease; padding: 0.5rem 1rem; border-radius: 0.5rem;";
-                            
-                            // Buat icon
-                            const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                            icon.setAttribute("fill", "none");
-                            icon.setAttribute("stroke", "currentColor");
-                            icon.setAttribute("viewBox", "0 0 24 24");
-                            icon.style.cssText = "width: 1rem; height: 1rem;";
-                            
-                            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                            path.setAttribute("stroke-linecap", "round");
-                            path.setAttribute("stroke-linejoin", "round");
-                            path.setAttribute("stroke-width", "2");
-                            path.setAttribute("d", "M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z");
-                            
-                            icon.appendChild(path);
-                            link.appendChild(icon);
-                            link.appendChild(document.createTextNode(" Lupa Password?"));
-                            
-                            // Hover effect
-                            link.addEventListener("mouseenter", function() {
-                                this.style.color = "#0779a3";
-                                this.style.backgroundColor = "rgba(9, 146, 194, 0.1)";
-                            });
-                            
-                            link.addEventListener("mouseleave", function() {
-                                this.style.color = "#0992C2";
-                                this.style.backgroundColor = "transparent";
-                            });
-                            
+                            link.style.cssText = "display: inline-flex; align-items: center; gap: 0.375rem; font-size: 0.875rem; font-weight: 600; color: #0992C2; text-decoration: none; padding: 0.5rem 1rem; border-radius: 0.5rem;";
+                            link.appendChild(document.createTextNode("Lupa Password?"));
                             container.appendChild(link);
-                            
-                            // Insert setelah tombol submit
                             submitButton.parentElement.appendChild(container);
                         }
-                        
-                        // Jalankan saat DOM ready
                         if (document.readyState === "loading") {
                             document.addEventListener("DOMContentLoaded", addForgotPasswordLink);
                         } else {
                             addForgotPasswordLink();
                         }
-                        
-                        // Jalankan lagi setelah delay (untuk Livewire)
                         setTimeout(addForgotPasswordLink, 500);
                         setTimeout(addForgotPasswordLink, 1000);
-                        
-                        // Livewire event listeners
-                        document.addEventListener("livewire:load", function() {
-                            setTimeout(addForgotPasswordLink, 100);
-                        });
-                        
-                        document.addEventListener("livewire:update", function() {
-                            setTimeout(addForgotPasswordLink, 100);
-                        });
-                        
-                        // Observer untuk perubahan DOM (dengan debounce)
-                        let timeoutId;
-                        const observer = new MutationObserver(function() {
-                            clearTimeout(timeoutId);
-                            timeoutId = setTimeout(addForgotPasswordLink, 100);
-                        });
-                        
-                        if (document.body) {
-                            observer.observe(document.body, { childList: true, subtree: true });
-                        }
                     })();
                 </script>
-                
+                <?php endif; ?>
+
                 <script>
                     // Toggle Show/Hide Password dengan Icon Mata
                     (function() {
