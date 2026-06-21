@@ -38,83 +38,101 @@ class IncomeChart extends LineChartWidget
     protected function getData(): array
     {
         $filter = $this->filter;
-        
-        // Cache berdasarkan filter
-        return cache()->remember('chart_income_' . $filter, 600, function () use ($filter) {
-            $dataUang = [];
-            $dataTanggal = [];
-            
-            $now = Carbon::now('Asia/Makassar');
-            
-            if ($filter === 'month') {
-                // Data bulan ini
-                $startDate = $now->copy()->startOfMonth();
-                $endDate = $now->copy()->endOfMonth();
-                $label = 'Bulan ' . $now->translatedFormat('F Y');
-                
-                // Ambil data CashFlow untuk bulan ini, group by tanggal
-                $cashFlows = CashFlow::selectRaw('DATE(date) as date, SUM(amount) as total')
+        $now = Carbon::now('Asia/Makassar');
+        $today = $now->format('Y-m-d');
+        $dataUang = [];
+        $dataTanggal = [];
+
+        if ($filter === 'month') {
+            $startDate = $now->copy()->startOfMonth();
+            $endDate = $now->copy()->endOfMonth();
+            $label = 'Bulan ' . $now->translatedFormat('F Y');
+
+            // Cache data hari-hari yang sudah lewat (tidak akan berubah)
+            $pastCashFlows = cache()->remember('chart_income_past_' . $today, 86400, function () use ($now, $today) {
+                return CashFlow::selectRaw('DATE(date) as date, SUM(amount) as total')
                     ->whereMonth('date', $now->month)
                     ->whereYear('date', $now->year)
                     ->where('type', 'income')
+                    ->whereDate('date', '<', $today)
                     ->groupBy('date')
                     ->pluck('total', 'date');
+            });
 
-                // Loop setiap hari dalam bulan ini
-                $currentDate = $startDate->copy();
-                while ($currentDate <= $endDate) {
-                    $dateKey = $currentDate->format('Y-m-d');
-                    $dataTanggal[] = $currentDate->format('d M');
-                    $dataUang[] = $cashFlows[$dateKey] ?? 0;
-                    $currentDate->addDay();
-                }
-                
-            } elseif ($filter === 'year') {
-                // Data tahun ini per bulan
-                $label = 'Tahun ' . $now->year;
-                
-                $cashFlows = CashFlow::selectRaw('MONTH(date) as month, SUM(amount) as total')
-                    ->whereYear('date', $now->year)
-                    ->where('type', 'income')
-                    ->groupBy('month')
-                    ->pluck('total', 'month');
-                
-                // Loop 12 bulan
-                for ($i = 1; $i <= 12; $i++) {
-                    $dataTanggal[] = Carbon::create($now->year, $i, 1)->translatedFormat('M');
-                    $dataUang[] = $cashFlows[$i] ?? 0;
-                }
-                
-            } else {
-                // Semua waktu per bulan
-                $label = 'Semua Waktu';
-                
-                $cashFlows = CashFlow::selectRaw('DATE_FORMAT(date, "%Y-%m") as month, SUM(amount) as total')
-                    ->where('type', 'income')
-                    ->groupBy('month')
-                    ->orderBy('month')
-                    ->pluck('total', 'month');
-                
-                foreach ($cashFlows as $month => $total) {
-                    $dataTanggal[] = Carbon::parse($month . '-01')->translatedFormat('M Y');
-                    $dataUang[] = $total;
-                }
+            // Data hari ini selalu fresh (tidak di-cache)
+            $todayTotal = CashFlow::whereDate('date', $today)
+                ->where('type', 'income')
+                ->sum('amount');
+
+            $cashFlows = is_array($pastCashFlows) ? $pastCashFlows : $pastCashFlows->toArray();
+            $cashFlows[$today] = $todayTotal;
+
+            // Loop sampai akhir bulan, tapi hari yang belum terjadi di-set null
+            $currentDate = $startDate->copy();
+            while ($currentDate <= $endDate) {
+                $dateKey = $currentDate->format('Y-m-d');
+                $dataTanggal[] = $currentDate->format('d M');
+                // Hari yang belum terjadi = null (garis tidak digambar)
+                $dataUang[] = $currentDate->lte($now) ? ($cashFlows[$dateKey] ?? 0) : null;
+                $currentDate->addDay();
             }
 
-            return [
-                'datasets' => [
-                    [
-                        'label' => 'Pendapatan (' . $label . ')',
-                        'data' => $dataUang,
-                        'borderColor' => '#F59E0B',
-                        'backgroundColor' => 'rgba(245, 158, 11, 0.1)',
-                        'fill' => true,
-                        'tension' => 0.4, 
-                    ],
+        } elseif ($filter === 'year') {
+            $label = 'Tahun ' . $now->year;
+
+            // Cache bulan-bulan yang sudah lewat
+            $pastMonths = cache()->remember('chart_income_year_past_' . $now->format('Y-m'), 86400, function () use ($now) {
+                return CashFlow::selectRaw('MONTH(date) as month, SUM(amount) as total')
+                    ->whereYear('date', $now->year)
+                    ->where('type', 'income')
+                    ->where('date', '<', $now->copy()->startOfMonth())
+                    ->groupBy('month')
+                    ->pluck('total', 'month');
+            });
+
+            // Bulan ini selalu fresh
+            $thisMonthTotal = CashFlow::whereYear('date', $now->year)
+                ->whereMonth('date', $now->month)
+                ->where('type', 'income')
+                ->sum('amount');
+
+            $cashFlows = is_array($pastMonths) ? $pastMonths : $pastMonths->toArray();
+            $cashFlows[$now->month] = $thisMonthTotal;
+
+            for ($i = 1; $i <= 12; $i++) {
+                $dataTanggal[] = Carbon::create($now->year, $i, 1)->translatedFormat('M');
+                // Bulan yang belum terjadi = null
+                $dataUang[] = $i <= $now->month ? ($cashFlows[$i] ?? 0) : null;
+            }
+
+        } else {
+            $label = 'Semua Waktu';
+
+            $cashFlows = CashFlow::selectRaw('DATE_FORMAT(date, "%Y-%m") as month, SUM(amount) as total')
+                ->where('type', 'income')
+                ->groupBy('month')
+                ->orderBy('month')
+                ->pluck('total', 'month');
+
+            foreach ($cashFlows as $month => $total) {
+                $dataTanggal[] = Carbon::parse($month . '-01')->translatedFormat('M Y');
+                $dataUang[] = $total;
+            }
+        }
+
+        return [
+            'datasets' => [
+                [
+                    'label' => 'Pendapatan (' . $label . ')',
+                    'data' => $dataUang,
+                    'borderColor' => '#F59E0B',
+                    'backgroundColor' => 'rgba(245, 158, 11, 0.1)',
+                    'fill' => true,
+                    'tension' => 0.4,
                 ],
-                'labels' => $dataTanggal,
-            ];
-        });
+            ],
+            'labels' => $dataTanggal,
+        ];
     }
     
     protected function getFilters(): ?array
@@ -131,19 +149,11 @@ class IncomeChart extends LineChartWidget
     {
         return [
             'maintainAspectRatio' => false,
-            'scales' => [
-                'y' => [
-                    'ticks' => [
-                        'display' => true,
-                        'callback' => 'function(value) { return "Rp " + value.toLocaleString("id-ID"); }',
-                    ],
-                ],
-            ],
             'plugins' => [
                 'tooltip' => [
-                    'callbacks' => [
-                        'label' => 'function(context) { return "Pendapatan: Rp " + context.parsed.y.toLocaleString("id-ID"); }',
-                    ],
+                    'enabled' => true,
+                    'mode' => 'index',
+                    'intersect' => false,
                 ],
             ],
         ];
