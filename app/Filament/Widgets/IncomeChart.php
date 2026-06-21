@@ -55,7 +55,7 @@ class IncomeChart extends LineChartWidget
                     ->whereYear('date', $now->year)
                     ->where('type', 'income')
                     ->whereDate('date', '<', $today)
-                    ->groupBy('date')
+                    ->groupByRaw('DATE(date)')
                     ->pluck('total', 'date');
             });
 
@@ -85,7 +85,7 @@ class IncomeChart extends LineChartWidget
                     ->whereYear('date', $now->year)
                     ->where('type', 'income')
                     ->where('date', '<', $now->copy()->startOfMonth())
-                    ->groupBy('month')
+                    ->groupByRaw('MONTH(date)')
                     ->pluck('total', 'month');
             });
 
@@ -109,7 +109,7 @@ class IncomeChart extends LineChartWidget
 
             $cashFlows = CashFlow::selectRaw('DATE_FORMAT(date, "%Y-%m") as month, SUM(amount) as total')
                 ->where('type', 'income')
-                ->groupBy('month')
+                ->groupByRaw('DATE_FORMAT(date, "%Y-%m")')
                 ->orderBy('month')
                 ->pluck('total', 'month');
 
