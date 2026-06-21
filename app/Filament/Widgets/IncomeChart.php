@@ -67,12 +67,11 @@ class IncomeChart extends LineChartWidget
             $cashFlows = is_array($pastCashFlows) ? $pastCashFlows : $pastCashFlows->toArray();
             $cashFlows[$today] = $todayTotal;
 
-            // Loop sampai akhir bulan, tapi hari yang belum terjadi di-set null
+            // Loop sampai akhir bulan, per hari
             $currentDate = $startDate->copy();
             while ($currentDate <= $endDate) {
                 $dateKey = $currentDate->format('Y-m-d');
                 $dataTanggal[] = $currentDate->format('d M');
-                // Hari yang belum terjadi = null (garis tidak digambar)
                 $dataUang[] = $currentDate->lte($now) ? ($cashFlows[$dateKey] ?? 0) : null;
                 $currentDate->addDay();
             }
