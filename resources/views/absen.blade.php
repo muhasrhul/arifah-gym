@@ -70,7 +70,14 @@
         </div>
 
         @if(session('success'))
-            <script>document.getElementById('successSound').play();</script>
+            <script>
+                document.getElementById('successSound').play();
+                
+                // Auto-redirect ke halaman absen setelah 5 detik
+                setTimeout(function() {
+                    window.location.href = '/absen';
+                }, 5000); // 5000ms = 5 detik
+            </script>
 
             <div class="card-pop flex flex-col items-center premium-card p-8 rounded-[3.5rem] text-center">
                 <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-4 shadow-xl">
@@ -211,6 +218,12 @@
                     </div>
 
                     @if(session('error'))
+                        <script>
+                            // Auto-redirect ke halaman absen setelah 3 detik untuk error
+                            setTimeout(function() {
+                                window.location.href = '/absen';
+                            }, 3000); // 3000ms = 3 detik
+                        </script>
                         <div class="shake mb-8 p-5 bg-red-600/10 border border-red-600/20 rounded-[2rem] flex items-center gap-4">
                             <div class="w-10 h-10 bg-red-600/20 rounded-full flex items-center justify-center shrink-0">
                                 <i class="fa-solid fa-xmark text-red-600"></i>
@@ -245,6 +258,13 @@
 
     <script>
         WebFont.load({ google: { families: ['Poppins:400,700,900,900i'] } });
+
+        // Auto-refresh halaman setiap 90 menit untuk mencegah CSRF token expired
+        // Session Laravel default: 120 menit, refresh sebelum expired
+        setTimeout(function() {
+            console.log('Auto-refreshing page to prevent CSRF token expiration...');
+            window.location.reload();
+        }, 90 * 60 * 1000); // 90 menit = 5,400,000 ms
 
         // Prevent double submit dan tampilkan loading state
         const absenForm = document.getElementById('absenForm');
