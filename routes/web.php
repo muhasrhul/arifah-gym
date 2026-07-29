@@ -250,44 +250,17 @@ Route::post('/absen', function (Request $request) {
         'motivasi'     => $motivasi
     ]);
     
-    // 6. Kirim Notifikasi SETELAH Response (Background - Tidak Blocking User)
-    // Response sudah disiapkan, notifikasi jalan belakangan
-    if (function_exists('fastcgi_finish_request')) {
-        // Untuk PHP-FPM: kirim response ke user dulu, baru proses notifikasi
-        $response->send();
-        fastcgi_finish_request();
+    // 6. Dispatch Notifikasi ke Background Queue (TIDAK BLOCKING!)
+    // Response langsung dikirim ke user, notifikasi jalan terpisah di background
+    if (env('ATTENDANCE_NOTIFICATIONS_ENABLED', true)) {
+        \App\Jobs\SendAttendanceNotifications::dispatch(
+            $member->id,
+            $totalLatihanBulanIni,
+            $badge
+        );
     }
     
-    // Sekarang baru kirim notifikasi (user sudah dapat response)
-    try {
-        // Notifikasi ke Admin Filament
-        $allAdmins = \App\Models\User::all(); 
-        foreach ($allAdmins as $admin) {
-            Notification::make()
-                ->title('Member Absen Baru!')
-                ->body("**{$member->name}** baru saja melakukan absensi. (Total: {$totalLatihanBulanIni}x bulan ini)")
-                ->icon('heroicon-o-check-circle')
-                ->iconColor('success')
-                ->sendToDatabase($admin);
-        }
-        
-        // WhatsApp Notification
-        try {
-            \App\Helpers\WhatsAppHelper::sendAbsenNotification($member, $totalLatihanBulanIni, $badge);
-        } catch (\Exception $e) {
-            \Log::warning('WhatsApp notification skipped: ' . $e->getMessage());
-        }
-        
-        // Telegram Notification
-        try {
-            \App\Helpers\TelegramHelper::sendAbsenNotification($member, $totalLatihanBulanIni, $badge);
-        } catch (\Exception $e) {
-            \Log::warning('Telegram notification skipped: ' . $e->getMessage());
-        }
-    } catch (\Exception $e) {
-        \Log::error('Background notification error: ' . $e->getMessage());
-    }
-    
+    // Return response LANGSUNG ke user (instant!)
     return $response;
 });
 
