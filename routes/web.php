@@ -140,14 +140,37 @@ Route::post('/absen-qr', function (Request $request) {
 });
 
 Route::post('/absen', function (Request $request) {
-    // 1. Bersihkan Nomor HP
-    $cleanPhone = preg_replace('/[^0-9]/', '', $request->phone);
-    if (str_starts_with($cleanPhone, '62')) {
-        $cleanPhone = '0' . substr($cleanPhone, 2);
+    // 1. Validasi dan Bersihkan Nomor HP
+    $inputPhone = preg_replace('/[^0-9]/', '', $request->phone);
+    
+    // Validasi minimal 10 digit
+    if (strlen($inputPhone) < 10 || strlen($inputPhone) > 15) {
+        return back()->with('error', 'Format nomor tidak valid (minimal 10 digit)');
     }
+    
+    // 2. Ubah ke format standar: 62XXXXXXXXX
+    $cleanPhone = $inputPhone;
+    if (str_starts_with($cleanPhone, '0')) {
+        // 0812345678 → 62812345678
+        $cleanPhone = '62' . substr($cleanPhone, 1);
+    } elseif (str_starts_with($cleanPhone, '8')) {
+        // 812345678 → 62812345678
+        $cleanPhone = '62' . $cleanPhone;
+    }
+    
+    // 3. Bikin hash dari nomor yang diinput
+    $phoneHash = hash('sha256', $cleanPhone);
+    
+    // 4. Cari Member pakai hash (SUPER CEPAT - pakai index)
+    $member = Member::where('phone_hash', $phoneHash)->first();
 
-    // 2. Cari Member
-    $member = Member::where('phone', 'like', "%$cleanPhone%")->first();
+    // Logging untuk debugging
+    \Log::info('Absen attempt', [
+        'input' => $request->phone,
+        'cleaned' => $cleanPhone,
+        'hash' => $phoneHash,
+        'member_found' => $member ? $member->id : null
+    ]);
 
     if (!$member) {
         return back()->with('error', 'Nomor tidak terdaftar! Silakan hubungi kasir.');
@@ -212,42 +235,8 @@ Route::post('/absen', function (Request $request) {
         $badge = 'CONSISTENT';
     }
 
-    // 5. Kirim Notifikasi ke Admin (Updated dengan Info Total Latihan)
-    $allAdmins = \App\Models\User::all(); 
-    foreach ($allAdmins as $admin) {
-        // JALUR 1: Filament (Untuk memicu lonceng live)
-        Notification::make()
-            ->title('Member Absen Baru!')
-            ->body("**{$member->name}** baru saja melakukan absensi. (Total: {$totalLatihanBulanIni}x bulan ini)")
-            ->icon('heroicon-o-check-circle')
-            ->iconColor('success')
-            ->sendToDatabase($admin);
-            
-    }
-
-    // 6 & 7. Kirim Notifikasi WhatsApp & Telegram ke Owner (NON-BLOCKING)
-    // Notifikasi berjalan dengan timeout sangat pendek agar tidak mengganggu response
-    try {
-        // WhatsApp Notification dengan timeout protection
-        try {
-            \App\Helpers\WhatsAppHelper::sendAbsenNotification($member, $totalLatihanBulanIni, $badge);
-        } catch (\Exception $e) {
-            \Log::warning('WhatsApp notification skipped: ' . $e->getMessage());
-        }
-        
-        // Telegram Notification dengan timeout protection
-        try {
-            \App\Helpers\TelegramHelper::sendAbsenNotification($member, $totalLatihanBulanIni, $badge);
-        } catch (\Exception $e) {
-            \Log::warning('Telegram notification skipped: ' . $e->getMessage());
-        }
-    } catch (\Exception $e) {
-        // Jika ada error apapun, log saja dan lanjutkan
-        \Log::error('Notification error (non-blocking): ' . $e->getMessage());
-    }
-
-    // 8. Kembalikan Respon Sukses + Data Statistik ke View (PRIORITAS UTAMA)
-    return back()->with([
+    // 5. Kembalikan Respon Sukses + Data Statistik ke View (PRIORITAS UTAMA - INSTANT!)
+    $response = back()->with([
         'success'      => true,
         'member_name'  => $member->name,
         'member_id'    => $member->id, // Kirim ID asli
@@ -260,6 +249,46 @@ Route::post('/absen', function (Request $request) {
         'badge'        => $badge, // Badge berdasarkan all-time
         'motivasi'     => $motivasi
     ]);
+    
+    // 6. Kirim Notifikasi SETELAH Response (Background - Tidak Blocking User)
+    // Response sudah disiapkan, notifikasi jalan belakangan
+    if (function_exists('fastcgi_finish_request')) {
+        // Untuk PHP-FPM: kirim response ke user dulu, baru proses notifikasi
+        $response->send();
+        fastcgi_finish_request();
+    }
+    
+    // Sekarang baru kirim notifikasi (user sudah dapat response)
+    try {
+        // Notifikasi ke Admin Filament
+        $allAdmins = \App\Models\User::all(); 
+        foreach ($allAdmins as $admin) {
+            Notification::make()
+                ->title('Member Absen Baru!')
+                ->body("**{$member->name}** baru saja melakukan absensi. (Total: {$totalLatihanBulanIni}x bulan ini)")
+                ->icon('heroicon-o-check-circle')
+                ->iconColor('success')
+                ->sendToDatabase($admin);
+        }
+        
+        // WhatsApp Notification
+        try {
+            \App\Helpers\WhatsAppHelper::sendAbsenNotification($member, $totalLatihanBulanIni, $badge);
+        } catch (\Exception $e) {
+            \Log::warning('WhatsApp notification skipped: ' . $e->getMessage());
+        }
+        
+        // Telegram Notification
+        try {
+            \App\Helpers\TelegramHelper::sendAbsenNotification($member, $totalLatihanBulanIni, $badge);
+        } catch (\Exception $e) {
+            \Log::warning('Telegram notification skipped: ' . $e->getMessage());
+        }
+    } catch (\Exception $e) {
+        \Log::error('Background notification error: ' . $e->getMessage());
+    }
+    
+    return $response;
 });
 
 // ========================================

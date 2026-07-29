@@ -19,6 +19,31 @@ class Member extends Model
     ];
 
     /**
+     * Otomatis bikin phone_hash setiap kali field phone di-set
+     */
+    public function setPhoneAttribute($value)
+    {
+        // 1. Simpan nomor asli (untuk ditampilkan ke user)
+        $this->attributes['phone'] = $value;
+        
+        // 2. Bersihkan nomor dari spasi, tanda (-), dan (+)
+        $cleaned = preg_replace('/[^0-9]/', '', $value);
+        
+        // 3. Ubah ke format standar: 62XXXXXXXXX
+        if (str_starts_with($cleaned, '0')) {
+            // 0812345678 → 62812345678
+            $cleaned = '62' . substr($cleaned, 1);
+        } elseif (str_starts_with($cleaned, '8')) {
+            // 812345678 → 62812345678
+            $cleaned = '62' . $cleaned;
+        }
+        // Kalau udah 62xxx, biarkan aja
+        
+        // 4. Bikin "sidik jari" (hash) dari nomor yang udah bersih
+        $this->attributes['phone_hash'] = hash('sha256', $cleaned);
+    }
+
+    /**
      * Logika Perpanjangan Dinamis (Renewal via Tombol Khusus)
      */
     public function perpanjangSatuBulan()
