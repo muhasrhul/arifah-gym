@@ -955,6 +955,15 @@ class AppServiceProvider extends ServiceProvider
                         main {
                             padding-bottom: 80px !important;
                         }
+
+                        /* Tambahkan space scrolling di modal agar tidak tertutup bottom nav */
+                        @media (max-width: 768px) {
+                            .filament-modal-content,
+                            [role="dialog"] .overflow-y-auto,
+                            .fi-modal-content {
+                                padding-bottom: 80px !important;
+                            }
+                        }
                     }
                 </style>
 
