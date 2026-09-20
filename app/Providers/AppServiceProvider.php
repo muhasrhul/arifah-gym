@@ -49,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
                     ->icon('heroicon-o-database')
                     ->group('Sistem')
                     ->sort(10)
-                    ->visible(fn () => auth()->check() && auth()->user()->isSuperAdmin()), // Hanya Super Admin
+                    ->visible(false), // Nonaktif sementara
             ]);
 
             // 2. ATUR URUTAN GRUP NAVIGASI
