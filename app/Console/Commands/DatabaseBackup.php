@@ -204,8 +204,8 @@ class DatabaseBackup extends Command
         
         foreach ($files as $file) {
             if (is_file($file)) {
-                // Hapus file yang lebih dari 30 hari
-                if ($now - filemtime($file) >= 30 * 24 * 60 * 60) {
+                // Hapus file yang lebih dari 5 hari
+                if ($now - filemtime($file) >= 5 * 24 * 60 * 60) {
                     unlink($file);
                     $deleted++;
                 }
