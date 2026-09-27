@@ -7,7 +7,7 @@
     <script type="text/javascript"
             src="https://app.sandbox.midtrans.com/snap/snap.js"
             data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
-    @vite(['resources/css/app.css'])
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     
@@ -401,18 +401,7 @@
             </div>
 
             <div class="space-y-4">
-                <!-- Metode 1: Midtrans (GoPay, QRIS, Credit Card, VA) -->
-                <button id="pay-button" class="w-full bg-gradient-to-r from-[#0992C2] to-[#0782A9] hover:from-[#0782A9] hover:to-[#0992C2] border-2 border-[#0992C2] text-white font-black py-6 rounded-xl text-sm uppercase tracking-wider shadow-lg hover:shadow-[#0992C2]/50 transition-all duration-300 transform hover:scale-[1.02]">
-                    <div class="flex items-center justify-center gap-3">
-                        <i class="fa-solid fa-credit-card text-white text-2xl"></i> 
-                        <div class="text-left">
-                            <div class="font-hero italic text-base">BAYAR SEKARANG</div>
-                            <div class="text-[10px] font-normal opacity-90 tracking-wide">GoPay • QRIS • Credit Card • Transfer</div>
-                        </div>
-                    </div>
-                </button>
-
-                <!-- Metode 2: Transfer Bank Manual -->
+                <!-- Metode 1: Transfer Bank -->
                 <button onclick="openModal('transfer-modal')" class="w-full bg-white/5 hover:bg-[#0992C2]/10 border-2 border-white/10 hover:border-[#0992C2]/30 text-white font-bold py-5 rounded-xl text-xs uppercase tracking-wider shadow-md hover:shadow-[#0992C2]/30 transition-all duration-300 transform hover:scale-[1.02]">
                     <div class="flex items-center justify-center gap-3">
                         <i class="fa-solid fa-building-columns text-[#0992C2] text-xl"></i> 
@@ -420,7 +409,7 @@
                     </div>
                 </button>
 
-                <!-- Metode 3: Cash - DISABLED -->
+                <!-- Metode 2: Cash - DISABLED -->
                 <!-- 
                 <button onclick="savePaymentMethod('cash'); confirmPayment('cash');" class="w-full bg-white/5 hover:bg-[#0992C2]/10 border-2 border-white/10 hover:border-[#0992C2]/30 text-white font-bold py-5 rounded-xl text-xs uppercase tracking-wider shadow-md hover:shadow-[#0992C2]/30 transition-all duration-300 transform hover:scale-[1.02]">
                     <div class="flex items-center justify-center gap-3">
@@ -729,72 +718,6 @@
         function markPaymentConfirmed() {
             paymentConfirmed = true;
         }
-
-        // MIDTRANS SNAP INTEGRATION
-        const payButton = document.getElementById('pay-button');
-        
-        payButton.addEventListener('click', function () {
-            // Disable button to prevent double click
-            payButton.disabled = true;
-            payButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Memproses...';
-            
-            // Request snap token dari backend
-            fetch('{{ route("payment.create") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    member_id: {{ $member->id }}
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Buka Midtrans Snap
-                    window.snap.pay(data.snap_token, {
-                        onSuccess: function(result) {
-                            // Pembayaran berhasil
-                            markPaymentConfirmed();
-                            showSuccessAnimation(
-                                "PEMBAYARAN BERHASIL!", 
-                                "Terima kasih! Pembayaran Anda telah dikonfirmasi. <br><br> <span class='text-[#0992C2] font-bold'>Akun Anda sudah aktif dan siap digunakan!</span>"
-                            );
-                        },
-                        onPending: function(result) {
-                            // Pembayaran pending
-                            markPaymentConfirmed();
-                            showSuccessAnimation(
-                                "PEMBAYARAN DIPROSES", 
-                                "Pembayaran Anda sedang diproses. <br><br> <span class='text-[#0992C2] font-bold'>Kami akan mengaktifkan akun Anda segera setelah pembayaran dikonfirmasi.</span>"
-                            );
-                        },
-                        onError: function(result) {
-                            // Pembayaran error
-                            alert('Pembayaran gagal. Silakan coba lagi.');
-                            payButton.disabled = false;
-                            payButton.innerHTML = '<div class="flex items-center justify-center gap-3"><i class="fa-solid fa-credit-card text-white text-2xl"></i><div class="text-left"><div class="font-hero italic text-base">BAYAR SEKARANG</div><div class="text-[10px] font-normal opacity-90 tracking-wide">GoPay • QRIS • Credit Card • Transfer</div></div></div>';
-                        },
-                        onClose: function() {
-                            // User close popup
-                            payButton.disabled = false;
-                            payButton.innerHTML = '<div class="flex items-center justify-center gap-3"><i class="fa-solid fa-credit-card text-white text-2xl"></i><div class="text-left"><div class="font-hero italic text-base">BAYAR SEKARANG</div><div class="text-[10px] font-normal opacity-90 tracking-wide">GoPay • QRIS • Credit Card • Transfer</div></div></div>';
-                        }
-                    });
-                } else {
-                    alert('Gagal membuat pembayaran: ' + (data.message || 'Unknown error'));
-                    payButton.disabled = false;
-                    payButton.innerHTML = '<div class="flex items-center justify-center gap-3"><i class="fa-solid fa-credit-card text-white text-2xl"></i><div class="text-left"><div class="font-hero italic text-base">BAYAR SEKARANG</div><div class="text-[10px] font-normal opacity-90 tracking-wide">GoPay • QRIS • Credit Card • Transfer</div></div></div>';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan. Silakan coba lagi.');
-                payButton.disabled = false;
-                payButton.innerHTML = '<div class="flex items-center justify-center gap-3"><i class="fa-solid fa-credit-card text-white text-2xl"></i><div class="text-left"><div class="font-hero italic text-base">BAYAR SEKARANG</div><div class="text-[10px] font-normal opacity-90 tracking-wide">GoPay • QRIS • Credit Card • Transfer</div></div></div>';
-            });
-        });
     </script>
 </body>
 </html>
