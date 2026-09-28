@@ -49,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
                     ->icon('heroicon-o-database')
                     ->group('Sistem')
                     ->sort(10)
-                    ->visible(true), // Aktif
+                    ->visible(false), // Nonaktif
             ]);
 
             // 2. ATUR URUTAN GRUP NAVIGASI
