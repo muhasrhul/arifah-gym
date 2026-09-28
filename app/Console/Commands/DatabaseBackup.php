@@ -53,9 +53,31 @@ class DatabaseBackup extends Command
             
             $fullPath = $backupPath . '/' . $filename;
             
+            // Detect mysqldump path (support both Linux and Windows)
+            $mysqldumpPath = 'mysqldump'; // Default
+            
+            // Check if running on Windows and mysqldump not in PATH
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // Common Windows MySQL paths
+                $windowsPaths = [
+                    'C:\\xampp\\mysql\\bin\\mysqldump.exe',
+                    'C:\\laragon\\bin\\mysql\\mysql-8.0.30-winx64\\bin\\mysqldump.exe',
+                    'C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe',
+                    'C:\\Program Files\\MySQL\\MySQL Server 5.7\\bin\\mysqldump.exe',
+                ];
+                
+                foreach ($windowsPaths as $path) {
+                    if (file_exists($path)) {
+                        $mysqldumpPath = $path;
+                        break;
+                    }
+                }
+            }
+            
             // Command mysqldump
             $command = sprintf(
-                'mysqldump --user=%s --password=%s --host=%s %s > %s',
+                '%s --user=%s --password=%s --host=%s %s > %s',
+                escapeshellarg($mysqldumpPath),
                 escapeshellarg($username),
                 escapeshellarg($password),
                 escapeshellarg($host),
@@ -106,6 +128,15 @@ class DatabaseBackup extends Command
         $maxRetries = 3;
         $retryCount = 0;
         
+        // Cek apakah konfigurasi Google Drive lengkap
+        $config = config('filesystems.disks.google');
+        if (empty($config['clientId']) || empty($config['clientSecret']) || empty($config['refreshToken'])) {
+            $this->error('⚠ Google Drive credentials tidak lengkap di .env');
+            $this->error('   Silakan jalankan: php generate-google-token.php');
+            $this->warn('   Backup tetap tersimpan di lokal: storage/app/backups/' . $filename);
+            return;
+        }
+        
         while ($retryCount < $maxRetries) {
             try {
                 $this->info('Mengupload ke Google Drive...' . ($retryCount > 0 ? " (Percobaan ke-" . ($retryCount + 1) . ")" : ""));
@@ -134,9 +165,29 @@ class DatabaseBackup extends Command
                 
             } catch (\Exception $e) {
                 $retryCount++;
+                $errorMsg = $e->getMessage();
+                
+                // Deteksi error authentication
+                if (strpos($errorMsg, 'authentication') !== false || 
+                    strpos($errorMsg, 'UNAUTHENTICATED') !== false ||
+                    strpos($errorMsg, 'CREDENTIALS_MISSING') !== false ||
+                    strpos($errorMsg, '401') !== false) {
+                    
+                    $this->error('✗ Error: Google Drive authentication gagal!');
+                    $this->error('   Refresh Token mungkin sudah expired atau tidak valid.');
+                    $this->error('   ');
+                    $this->error('   Solusi:');
+                    $this->error('   1. Jalankan: php generate-google-token.php');
+                    $this->error('   2. Ikuti instruksi untuk generate refresh token baru');
+                    $this->error('   3. Update GOOGLE_DRIVE_REFRESH_TOKEN di .env');
+                    $this->error('   4. Jalankan: php artisan config:clear');
+                    $this->warn('   ');
+                    $this->warn('   Backup tetap tersimpan di lokal: storage/app/backups/' . $filename);
+                    return; // Stop retry untuk auth error
+                }
                 
                 if ($retryCount >= $maxRetries) {
-                    $this->warn('⚠ Error upload ke Google Drive setelah ' . $maxRetries . ' percobaan: ' . $e->getMessage());
+                    $this->warn('⚠ Error upload ke Google Drive setelah ' . $maxRetries . ' percobaan: ' . $errorMsg);
                     $this->warn('   Backup tetap tersimpan di lokal: storage/app/backups/' . $filename);
                 } else {
                     $this->warn('⚠ Upload gagal, mencoba lagi dalam 5 detik...');
