@@ -72,11 +72,6 @@
         @if(session('success'))
             <script>
                 document.getElementById('successSound').play();
-                
-                // Auto-redirect ke halaman absen setelah 5 detik
-                setTimeout(function() {
-                    window.location.href = '/absen';
-                }, 5000); // 5000ms = 5 detik
             </script>
 
             <div class="card-pop flex flex-col items-center premium-card p-8 rounded-[3.5rem] text-center">
@@ -98,91 +93,62 @@
                     </div>
                 </div>
 
-                <!-- Digital Member Card -->
-                <div class="relative w-full rounded-2xl overflow-hidden mb-8 mx-auto transition-all duration-500 hover:scale-[1.02] group"
-                     style="max-width: 520px;
-                            background: linear-gradient(135deg, #0d1b2a 0%, #0a1628 50%, #0d1b2a 100%);
-                            border: 1px solid rgba(9,146,194,0.25);
-                            box-shadow: 0 0 0 1px rgba(9,146,194,0.1), 0 20px 60px -10px rgba(0,0,0,0.8), 0 0 40px -5px rgba(9,146,194,0.15);">
+                <!-- Digital Member Card - Design dari check-status.blade.php -->
+                <div class="flex flex-col items-center gap-6 py-4 w-full px-2">
+                    <!-- Modern Member Card dengan Glassmorphism -->
+                    <div id="memberCard" class="relative text-white font-sans rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl text-left w-full max-w-[320px] md:max-w-[350px] transition-all duration-500 hover:shadow-[0_20px_60px_-15px_rgba(9,146,194,0.5)] group" 
+                         style="aspect-ratio: 5/3; background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%); backdrop-filter: blur(20px);">
+                        
+                        <!-- Animated Background Pattern -->
+                        <div class="absolute inset-0 opacity-[0.03] pointer-events-none">
+                            <div class="absolute top-0 left-0 w-full h-full" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px);"></div>
+                        </div>
 
-                    <!-- Dumbbell Watermark -->
-                    <div class="absolute inset-0 flex items-center pointer-events-none overflow-hidden opacity-[0.04]">
-                        <i class="fa-solid fa-dumbbell -rotate-12" style="font-size:130px; margin-left:24px;"></i>
-                    </div>
+                        <!-- Dumbbell Watermark dengan Animasi -->
+                        <div class="absolute -bottom-6 -left-6 opacity-[0.06] transform -rotate-12 pointer-events-none transition-all duration-700 group-hover:opacity-[0.12] group-hover:scale-110">
+                            <i class="fa-solid fa-dumbbell text-[180px]"></i>
+                        </div>
 
-                    <!-- Blue glow top-right -->
-                    <div class="absolute top-0 right-0 pointer-events-none"
-                         style="width:200px; height:200px; opacity:0.2;
-                                background: radial-gradient(circle at top right, #0992C2 0%, transparent 70%);
-                                filter: blur(20px);"></div>
+                        <!-- Glowing Orb Effect -->
+                        <div class="absolute top-0 right-0 w-40 h-40 opacity-30 transition-all duration-700 group-hover:opacity-50 group-hover:scale-125" style="background: radial-gradient(circle, #0992C2 0%, transparent 70%); filter: blur(30px);"></div>
+                        
+                        <!-- Shimmer Effect on Hover -->
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" style="background: linear-gradient(90deg, transparent 0%, rgba(9, 146, 194, 0.1) 50%, transparent 100%); animation: shimmer 2s infinite;"></div>
 
-                    <div class="relative z-10 flex" style="padding: 18px 16px 18px 20px; gap: 12px; text-align: left;">
-
-                        <!-- Left: Info — mirrors canvas layout -->
-                        <div class="flex flex-col overflow-hidden" style="flex:1; min-width:0; justify-content:space-between;">
-
-                            <!-- Badge -->
-                            <div>
-                                <span class="inline-flex items-center uppercase font-black rounded-full"
-                                      style="font-size:8px; letter-spacing:0.12em; padding: 4px 10px; line-height:1;
-                                             border: 1.5px solid #0992C2; color: #0992C2;
-                                             background: rgba(9,146,194,0.1);">
+                        <div class="p-4 md:p-6 h-full flex flex-col justify-between relative z-10">
+                            <!-- Header Section -->
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="flex-1 min-w-0">
+                                    <h2 class="text-xs md:text-[14px] font-extrabold italic leading-tight tracking-tighter transition-all duration-300 group-hover:text-[#0992C2]" style="color: #0992C2; font-family: 'Poppins', sans-serif; text-shadow: 0 0 20px rgba(9, 146, 194, 0.5);">ARIFAH GYM</h2>
+                                    <p class="text-[7px] md:text-[8px] uppercase tracking-[0.15em] md:tracking-[0.2em] opacity-70 font-bold transition-all duration-300 group-hover:opacity-100" style="font-family: 'Poppins', sans-serif;">Official Member</p>
+                                </div>
+                                <span class="px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[6px] md:text-[7px] font-bold uppercase border whitespace-nowrap transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg" style="border-color: #0992C2; color: #0992C2; background: rgba(9, 146, 194, 0.15); font-family: 'Poppins', sans-serif; box-shadow: 0 0 15px rgba(9, 146, 194, 0.3);">
                                     {{ session('paket_nama') }}
                                 </span>
                             </div>
 
-                            <!-- Gym name -->
-                            <div style="margin-top:10px;">
-                                <p class="font-black italic truncate"
-                                   style="font-family:'Poppins'; font-size:22px; color:#0992C2; line-height:1.1;
-                                          text-shadow: 0 0 18px rgba(9,146,194,0.6);">
-                                    ARIFAH GYM
-                                </p>
-                                <p style="font-size:7px; letter-spacing:0.18em; color:rgba(255,255,255,0.45);
-                                          font-weight:700; text-transform:uppercase; margin-top:3px;">
-                                    OFFICIAL MEMBER
-                                </p>
+                            <!-- Member Info Section -->
+                            <div class="mt-2 transform transition-all duration-300 group-hover:translate-x-1">
+                                <h3 class="text-base md:text-xl font-bold uppercase truncate transition-all duration-300 group-hover:text-[#0992C2]" style="font-family: 'Poppins', sans-serif; letter-spacing: 0.05em;">{{ session('member_name') }}</h3>
+                                <p class="text-[8px] md:text-[10px] opacity-50 font-mono tracking-widest transition-all duration-300 group-hover:opacity-70">ID: {{ session('member_id') }}</p>
                             </div>
 
-                            <!-- Member name + ID -->
-                            <div style="margin-top:10px;">
-                                <p class="font-black uppercase truncate"
-                                   style="font-family:'Poppins'; font-size:18px; color:#fff; line-height:1.1;">
-                                    {{ session('member_name') }}
-                                </p>
-                                <p style="font-size:8px; font-family:monospace; color:rgba(255,255,255,0.35);
-                                          letter-spacing:0.12em; margin-top:3px;">
-                                    ID: {{ session('member_id') }}
-                                </p>
-                            </div>
-
-                            <!-- Divider + Expiry -->
-                            <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:8px;">
-                                <p style="font-size:7px; letter-spacing:0.16em; color:rgba(255,255,255,0.38);
-                                          font-weight:700; text-transform:uppercase;">
-                                    BERLAKU HINGGA
-                                </p>
-                                <p class="font-black uppercase truncate"
-                                   style="font-family:'Poppins'; font-size:16px; color:#0992C2;
-                                          letter-spacing:0.04em; margin-top:3px;">
-                                    {{ session('expiry_date') }}
-                                </p>
-                            </div>
-
-                        </div>
-
-                        <!-- Right: QR -->
-                        <div class="flex-shrink-0 flex items-center justify-center">
-                            <div class="rounded-xl transition-all duration-500 group-hover:scale-105"
-                                 style="padding:7px; background:#fff;
-                                        box-shadow: 0 0 0 2px rgba(9,146,194,0.5), 0 0 28px rgba(9,146,194,0.45);">
-                                <img id="qrSrc"
-                                     src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ session('member_id') }}"
-                                     style="width:115px; height:115px; display:block;"
-                                     crossorigin="anonymous">
+                            <!-- Footer Section -->
+                            <div class="flex justify-between items-end border-t border-white/20 pt-2 md:pt-3 transition-all duration-300 group-hover:border-[#0992C2]/30">
+                                <div class="transform transition-all duration-300 group-hover:translate-y-[-2px]">
+                                    <p class="text-[8px] md:text-[9px] uppercase opacity-50 font-medium mb-1 transition-all duration-300 group-hover:opacity-70" style="font-family: 'Poppins', sans-serif; letter-spacing: 0.1em;">Berlaku Hingga</p>
+                                    <p class="text-xs md:text-sm font-bold text-white transition-all duration-300 group-hover:text-[#0992C2]" style="font-family: 'Poppins', sans-serif;">
+                                        {{ session('expiry_date') }}
+                                    </p>
+                                </div>
+                                <div class="bg-white p-1 md:p-1.5 rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-2xl" style="box-shadow: 0 4px 20px rgba(9, 146, 194, 0.3);">
+                                    <img id="qrSource" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ session('member_id') }}" crossorigin="anonymous" style="width: 35px; height: 35px;" class="md:w-[40px] md:h-[40px]">
+                                </div>
                             </div>
                         </div>
 
+                        <!-- Subtle Border Glow -->
+                        <div class="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style="box-shadow: inset 0 0 30px rgba(9, 146, 194, 0.2);"></div>
                     </div>
                 </div>
 
@@ -219,10 +185,10 @@
 
                     @if(session('error'))
                         <script>
-                            // Auto-redirect ke halaman absen setelah 3 detik untuk error
+                            // Auto-redirect ke halaman absen setelah 5 detik untuk error
                             setTimeout(function() {
                                 window.location.href = '/absen';
-                            }, 3000); // 3000ms = 3 detik
+                            }, 5000); // 5000ms = 5 detik
                         </script>
                         <div class="shake mb-8 p-5 bg-red-600/10 border border-red-600/20 rounded-[2rem] flex items-center gap-4">
                             <div class="w-10 h-10 bg-red-600/20 rounded-full flex items-center justify-center shrink-0">
@@ -303,163 +269,103 @@
             const btn = document.getElementById('btnDownload');
             const canvas = document.getElementById('finalCanvas');
             const ctx = canvas.getContext('2d');
-            // Canvas: 1050x550
-            canvas.width = 1050; canvas.height = 550;
-            btn.innerHTML = "RENDERING...";
-            btn.disabled = true;
-
+            
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+            
+            await document.fonts.load('900 italic 48px Poppins');
+            await document.fonts.load('700 25px Poppins');
+            await document.fonts.load('700 50px Poppins');
             await document.fonts.ready;
 
-            const W = 1050, H = 550;
-            const R = 48;
-
-            // 1. Background: dark navy gradient
-            ctx.save();
-            ctx.beginPath();
-            ctx.roundRect(0, 0, W, H, R);
-            ctx.clip();
-
-            const grad = ctx.createLinearGradient(0, 0, W, H);
-            grad.addColorStop(0, '#0d1b2a');
-            grad.addColorStop(0.5, '#0a1628');
-            grad.addColorStop(1, '#0d1b2a');
+            // 1. Background
+            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            grad.addColorStop(0, '#1e293b');
+            grad.addColorStop(1, '#0f172a');
             ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, W, H);
+            ctx.beginPath(); ctx.roundRect(0, 0, 1050, 630, 60); ctx.fill();
 
-            // 2. Blue glow top-right
-            const flare = ctx.createRadialGradient(W, 0, 0, W, 0, 500);
-            flare.addColorStop(0, 'rgba(9,146,194,0.25)');
+            // 2. Dumbbell Watermark
+            ctx.save();
+            ctx.translate(100, 600);
+            ctx.rotate(-15 * Math.PI / 180);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+            ctx.font = "900 450px 'Font Awesome 6 Free'";
+            ctx.fillText("\uf44b", 0, 0); 
+            ctx.restore();
+
+            // 3. Flare Kuning
+            const flare = ctx.createRadialGradient(850, 150, 0, 850, 150, 400);
+            flare.addColorStop(0, 'rgba(9, 146, 194, 0.15)');
             flare.addColorStop(1, 'transparent');
             ctx.fillStyle = flare;
-            ctx.fillRect(0, 0, W, H);
+            ctx.beginPath(); ctx.roundRect(0, 0, 1050, 630, 60); ctx.fill();
 
-            // 3. Blue glow bottom-left subtle
-            const flare2 = ctx.createRadialGradient(0, H, 0, 0, H, 350);
-            flare2.addColorStop(0, 'rgba(9,146,194,0.10)');
-            flare2.addColorStop(1, 'transparent');
-            ctx.fillStyle = flare2;
-            ctx.fillRect(0, 0, W, H);
+            ctx.textBaseline = "top";
 
-            // 4. Dumbbell watermark — drawn manually with canvas, rotated -12deg, low opacity
-            ctx.save();
-            ctx.globalAlpha = 0.055;
-            ctx.translate(160, H / 2 + 30);
-            ctx.rotate(-12 * Math.PI / 180);
-            ctx.fillStyle = "#ffffff";
-            // Dumbbell: bar + 2 plates each side
-            const bar = { w: 160, h: 18 };
-            const plate = { w: 28, h: 80 };
-            const grip = { w: 18, h: 50 };
-            // Center bar
-            ctx.fillRect(-bar.w/2, -bar.h/2, bar.w, bar.h);
-            // Left plates
-            ctx.fillRect(-bar.w/2 - grip.w - plate.w, -plate.h/2, plate.w, plate.h);
-            ctx.fillRect(-bar.w/2 - grip.w, -grip.h/2, grip.w, grip.h);
-            // Right plates
-            ctx.fillRect(bar.w/2 + grip.w, -plate.h/2, plate.w, plate.h);
-            ctx.fillRect(bar.w/2, -grip.h/2, grip.w, grip.h);
-            ctx.restore();
+            // 4. Nama Gym
+            ctx.fillStyle = "#0992C2";
+            ctx.font = "italic 900 48px Poppins";
+            ctx.fillText("ARIFAH GYM", 60, 65);
+            
+            ctx.fillStyle = "rgba(255,255,255,0.6)";
+            ctx.font = "700 25px Poppins";
+            ctx.fillText("OFFICIAL MEMBER", 60, 135);
 
-            ctx.restore();
-
-            // 5. Card border glow
-            ctx.save();
+            // 5. Type Member (Pill Box)
+            const typeText = "{{ session('paket_nama') ?? 'MEMBER' }}".toUpperCase();
+            ctx.font = "700 22px Poppins";
+            const pWidth = ctx.measureText(typeText).width;
+            const rectX = 960 - pWidth - 30;
+            ctx.strokeStyle = "#0992C2";
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.roundRect(0, 0, W, H, R);
-            ctx.strokeStyle = 'rgba(9,146,194,0.3)';
-            ctx.lineWidth = 2;
+            ctx.roundRect(rectX, 65, pWidth + 30, 55, 27.5);
             ctx.stroke();
-            ctx.restore();
-
-            const lx = 50;
-            const maxLW = 490;
-            const qx = 560, qy = 55, qs = 440, qr = 22;
-
-            // Distribute left col evenly across QR height: qy=55 → qy+qs=495 (440px total)
-            // 7 text blocks, 6 gaps between them
-            // Block heights: pill=36, gymName=46, official=18, memberName=42, id=18, label=16, expiry=38 → total=214
-            // Remaining: 440-214=226, per gap=226/6≈37px
-            const gap = 30;
-            let y = qy;
-
-            // 1. Badge pill (h=36)
-            const paket = "{{ session('paket_nama') }}".toUpperCase();
-            ctx.font = "700 17px Poppins";
-            const pw = ctx.measureText(paket).width;
-            const pillPad = 13, pillH = 36, pillR = 18;
-            const pillW = pw + pillPad * 2;
-            ctx.strokeStyle = "#0992C2"; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.roundRect(lx, y, pillW, pillH, pillR); ctx.stroke();
-            ctx.fillStyle = "rgba(9,146,194,0.12)";
-            ctx.beginPath(); ctx.roundRect(lx, y, pillW, pillH, pillR); ctx.fill();
             ctx.fillStyle = "#0992C2";
             ctx.textBaseline = "middle";
-            ctx.fillText(paket, lx + pillPad, y + pillH / 2);
+            ctx.fillText(typeText, rectX + 15, 65 + (55/2));
             ctx.textBaseline = "top";
-            y += pillH + gap + 34; // extra space after badge before gym name
 
-            // 2. Gym name (h=46)
-            ctx.fillStyle = "#0992C2";
-            ctx.font = "italic 900 55px Poppins";
-            ctx.fillText("ARIFAH GYM", lx, y);
-            y += 55 + gap;
-
-            // 3. Official member (h=18)
-            ctx.fillStyle = "rgba(255,255,255,0.50)";
-            ctx.font = "700 18px Poppins";
-            ctx.fillText("OFFICIAL MEMBER", lx, y);
-            y += 18 + gap;
-
-            // 4. Member name (h=42)
+            // 6. Nama & ID
             ctx.fillStyle = "#ffffff";
-            ctx.font = "900 42px Poppins";
-            ctx.fillText("{{ session('member_name') }}".toUpperCase(), lx, y, maxLW);
-            y += 42 + gap;
+            ctx.font = "900 70px Poppins";
+            ctx.fillText("{{ session('member_name') ?? 'NAME' }}".toUpperCase(), 60, 270);
+            ctx.fillStyle = "rgba(255,255,255,0.5)";
+            ctx.font = "400 32px monospace";
+            ctx.fillText("ID: {{ session('member_id') ?? '' }}", 60, 360);
 
-            // 5. Member ID (h=18)
-            ctx.fillStyle = "rgba(255,255,255,0.35)";
-            ctx.font = "400 18px monospace";
-            ctx.fillText("ID: {{ session('member_id') }}", lx, y);
-            y += 18 + gap;
+            // 7. Garis Pemisah & Footer
+            ctx.strokeStyle = "rgba(255,255,255,0.1)";
+            ctx.beginPath(); ctx.moveTo(60, 460); ctx.lineTo(960, 460); ctx.stroke();
+            ctx.fillStyle = "rgba(255,255,255,0.5)";
+            ctx.font = "400 25px Poppins";
+            ctx.fillText("BERLAKU HINGGA", 60, 490);
+            ctx.fillStyle = "rgba(255,255,255,0.6)";
+            ctx.font = "700 50px Poppins"; 
+            
+            const expDate = "{{ session('expiry_date') ?? '' }}";
+            ctx.fillText(expDate.toUpperCase(), 60, 530);
 
-            // 6. Berlaku hingga label (h=16)
-            ctx.strokeStyle = "rgba(255,255,255,0.08)"; ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(lx, y - 8); ctx.lineTo(lx + maxLW, y - 8); ctx.stroke();
-            ctx.fillStyle = "rgba(255,255,255,0.40)";
-            ctx.font = "700 16px Poppins";
-            ctx.fillText("BERLAKU HINGGA", lx, y);
-            y += 16 + gap;
-
-            // 7. Expiry date (h=38) — should land at ≈ 495 = qy+qs ✓
-            ctx.fillStyle = "#0992C2";
-            ctx.font = "900 38px Poppins";
-            ctx.fillText("{{ session('expiry_date') }}".toUpperCase(), lx, y);
-
-            // ── Right: QR ──
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.src = document.getElementById('qrSrc').src;
-            img.onload = function() {
-                // White box glow — x=620..1030, y=50..460
-                ctx.save();
-                ctx.shadowColor = 'rgba(9,146,194,0.65)';
-                ctx.shadowBlur = 45;
+            // 8. QR Code
+            const qrImg = new Image();
+            qrImg.crossOrigin = "anonymous";
+            qrImg.src = document.getElementById('qrSource').src;
+            qrImg.onload = function() {
+                const qrBoxSize = 115;
+                const qrSize = 95;
+                const qrX = 960 - qrBoxSize;
+                const qrY = 485;
                 ctx.fillStyle = "#ffffff";
-                ctx.beginPath(); ctx.roundRect(qx, qy, qs, qs, qr); ctx.fill();
-                ctx.restore();
-
-                ctx.strokeStyle = 'rgba(9,146,194,0.55)'; ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.roundRect(qx, qy, qs, qs, qr); ctx.stroke();
-
-                const pad = 20;
-                ctx.drawImage(img, qx + pad, qy + pad, qs - pad*2, qs - pad*2);
+                ctx.beginPath(); 
+                ctx.roundRect(qrX, qrY, qrBoxSize, qrBoxSize, 15); 
+                ctx.fill();
+                ctx.drawImage(qrImg, qrX + (qrBoxSize - qrSize) / 2, qrY + (qrBoxSize - qrSize) / 2, qrSize, qrSize);
 
                 const link = document.createElement('a');
-                link.download = 'ArifahGym-{{ session("member_name") }}.png';
+                link.download = 'Member-{{ session("member_name") ?? "Gym" }}.png';
                 link.href = canvas.toDataURL('image/png', 1.0);
                 link.click();
                 btn.innerHTML = '<span class="relative flex items-center justify-center gap-2"><i class="fa-solid fa-download text-[#0992C2] group-hover/btn:text-black transition-colors duration-300"></i><span class="group-hover/btn:text-black transition-colors duration-300">SIMPAN</span></span>';
-                btn.disabled = false;
             };
         }
     </script>

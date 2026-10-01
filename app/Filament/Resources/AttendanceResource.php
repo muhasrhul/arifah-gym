@@ -79,14 +79,14 @@ class AttendanceResource extends Resource
                                     return;
                                 }
 
-                                // 2. Cek apakah hari ini = tanggal expired
+                                // 2. Cek apakah hari ini >= tanggal expired (termasuk hari H expired)
                                 $member = \App\Models\Member::find($value);
                                 if ($member && $member->expiry_date) {
                                     $today = Carbon::now('Asia/Makassar')->startOfDay();
                                     $expiryDate = Carbon::parse($member->expiry_date)->startOfDay();
                                     
-                                    if ($today->equalTo($expiryDate)) {
-                                        $fail("Member {$member->name} tidak bisa absen karena membership berakhir hari ini. Silakan perpanjang terlebih dahulu.");
+                                    if ($today->greaterThanOrEqualTo($expiryDate)) {
+                                        $fail("Member {$member->name} tidak bisa absen karena membership sudah berakhir. Silakan perpanjang terlebih dahulu.");
                                     }
                                 }
                             };
