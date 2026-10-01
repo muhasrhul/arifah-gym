@@ -294,6 +294,19 @@
                     @error('name') <p class="text-red-500 text-[8px] mt-1 ml-1 font-black uppercase italic tracking-widest">⚠️ {{ $message }}</p> @enderror
                 </div>
 
+                <div class="space-y-2">
+                    <label class="block text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 italic">
+                        NIK (Nomor Induk Kependudukan) 
+                        <span class="text-zinc-600 font-normal text-[8px]">- Opsional</span>
+                    </label>
+                    <input type="text" name="nik" value="{{ old('nik') }}" 
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 16)"
+                           placeholder="16 digit NIK (opsional)" 
+                           maxlength="16"
+                           class="w-full p-4 md:p-5 rounded-xl md:rounded-2xl outline-none font-bold text-sm @error('nik') is-invalid @enderror">
+                    @error('nik') <p class="text-red-500 text-[8px] mt-1 ml-1 font-black uppercase italic tracking-widest">⚠️ {{ $message }}</p> @enderror
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                     <div class="space-y-2">
                         <label class="block text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 italic">WhatsApp</label>
