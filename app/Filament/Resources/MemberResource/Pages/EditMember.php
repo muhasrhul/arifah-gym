@@ -237,12 +237,16 @@ class EditMember extends EditRecord
         ]);
         
         // VALIDASI BACKEND: Paksa set biaya admin = 0 untuk paket harian
+        // BARU: Cek juga apakah member expired lebih dari 3 bulan untuk kenakan biaya admin
         // Simpan ke property untuk digunakan dalam transaksi
         if (isset($data['type'])) {
             $paket = Paket::where('nama_paket', $data['type'])->first();
             if ($paket && $paket->durasi_hari < 30) {
                 // Paket harian → Paksa set 0
                 $this->formBiayaRegistrasi = 0;
+            } elseif ($record->expiry_date && !$record->is_active) {
+                // Member expired → Cek apakah perlu biaya admin (> 3 bulan)
+                $this->formBiayaRegistrasi = $record->getAdminFee();
             }
         }
         
@@ -262,11 +266,6 @@ class EditMember extends EditRecord
         unset($data['biaya_registrasi_info']);
         unset($data['harga_paket_info']);
         unset($data['total_tagihan_hidden']);
-        
-        // PENTING: Jika member sudah punya expiry_date (bukan pendaftar baru), set fee ke 0
-        if ($record->expiry_date) {
-            $this->formBiayaRegistrasi = 0;
-        }
         
         // 1. Cek apakah status diubah dari Mati ke Aktif
         $sedangDiaktifkan = !empty($data['is_active']) && !$record->is_active;

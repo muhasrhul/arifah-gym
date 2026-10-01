@@ -131,10 +131,11 @@ class MemberResource extends Resource
                                 // Admin harus input manual
 
                                 // 3. Update Breakdown Biaya
-                                // Jika member sudah pernah punya expiry_date (perpanjangan), fee = 0
+                                // Jika member sudah pernah punya expiry_date (perpanjangan), cek apakah perlu fee
                                 // Jika belum pernah punya expiry_date (pendaftar baru), tampilkan fee
                                 // TAMBAHAN: Jika paket harian (durasi < 30), fee = 0
                                 // TAMBAHAN: Jika member sudah aktif, fee = 0 (tidak boleh charge lagi)
+                                // BARU: Jika member expired lebih dari 3 bulan, kena biaya admin lagi
                                 $isPerpanjangan = $record && $record->expiry_date;
                                 $isMemberAktif = $record && $record->is_active;
                                 
@@ -143,16 +144,28 @@ class MemberResource extends Resource
                                 
                                 $set('biaya_paket_info', $harga);
                                 
-                                // Set biaya registrasi: 0 jika perpanjangan ATAU paket harian ATAU member sudah aktif
-                                if ($isPerpanjangan || $isPaketHarian || $isMemberAktif) {
-                                    $set('biaya_registrasi_info', 0);
-                                    $set('harga_paket_info', $harga);
-                                    $set('total_tagihan_hidden', $harga);
-                                } else {
-                                    $set('biaya_registrasi_info', $registrationFee);
-                                    $set('harga_paket_info', $harga + $registrationFee);
-                                    $set('total_tagihan_hidden', $harga + $registrationFee);
+                                // LOGIKA BIAYA ADMIN BARU:
+                                // 1. Paket harian → fee = 0
+                                // 2. Member aktif → fee = 0
+                                // 3. Member expired > 3 bulan → kena fee lagi
+                                // 4. Member expired < 3 bulan → fee = 0
+                                // 5. Pendaftar baru → kena fee
+                                
+                                $adminFee = 0;
+                                
+                                if (!$isPaketHarian && !$isMemberAktif) {
+                                    if ($isPerpanjangan) {
+                                        // Cek apakah lebih dari 3 bulan tidak perpanjang
+                                        $adminFee = $record->needsAdminFee() ? $registrationFee : 0;
+                                    } else {
+                                        // Pendaftar baru
+                                        $adminFee = $registrationFee;
+                                    }
                                 }
+                                
+                                $set('biaya_registrasi_info', $adminFee);
+                                $set('harga_paket_info', $harga + $adminFee);
+                                $set('total_tagihan_hidden', $harga + $adminFee);
                             }),
 
                         // --- FIELD METODE PEMBAYARAN ---
@@ -361,7 +374,7 @@ class MemberResource extends Resource
                                             return;
                                         }
                                         
-                                        // LOGIKA PINTAR:
+                                        // LOGIKA PINTAR DENGAN RULE 3 BULAN:
                                         // Cek apakah member ini sudah pernah perpanjangan (berarti sudah pernah expired)
                                         $sudahPernahPerpanjangan = \App\Models\Transaction::where('member_id', $record->id)
                                             ->where(function($query) {
@@ -372,8 +385,9 @@ class MemberResource extends Resource
                                         
                                         // 1. Jika member AKTIF dan BELUM pernah perpanjangan → Tampilkan fee sebagai referensi (member baru pertama kali aktif)
                                         // 2. Jika member AKTIF dan SUDAH pernah perpanjangan → Fee = 0 (member lama, tidak perlu referensi lagi)
-                                        // 3. Jika member EXPIRED → Fee = 0 (perpanjangan tidak kena fee)
-                                        // 4. Jika member PENDAFTAR BARU → Tampilkan fee
+                                        // 3. Jika member EXPIRED < 3 bulan → Fee = 0 (perpanjangan normal)
+                                        // 4. Jika member EXPIRED ≥ 3 bulan → Kena fee lagi (logika baru)
+                                        // 5. Jika member PENDAFTAR BARU → Tampilkan fee
                                         
                                         if ($record->is_active && !$sudahPernahPerpanjangan) {
                                             // Biaya admin selalu dari database (tidak pernah di-override)
@@ -382,8 +396,9 @@ class MemberResource extends Resource
                                             // Sudah pernah perpanjangan: fee = 0
                                             $set('biaya_registrasi_info', 0);
                                         } elseif ($record->expiry_date) {
-                                            // Member expired (perpanjangan): fee = 0
-                                            $set('biaya_registrasi_info', 0);
+                                            // Member expired: cek apakah lebih dari 3 bulan
+                                            $adminFee = $record->needsAdminFee() ? $registrationFee : 0;
+                                            $set('biaya_registrasi_info', $adminFee);
                                         } else {
                                             // Pendaftar baru: tampilkan fee
                                             $set('biaya_registrasi_info', $registrationFee);
@@ -425,6 +440,12 @@ class MemberResource extends Resource
                                     } elseif ($record->is_active && $sudahPernahPerpanjangan) {
                                         return 'Member lama tidak dikenakan biaya admin';
                                     } elseif ($record->expiry_date) {
+                                        // Cek apakah perlu biaya admin (expired > 3 bulan)
+                                        if ($record->needsAdminFee()) {
+                                            $expiredDate = \Carbon\Carbon::parse($record->expiry_date);
+                                            $monthsDiff = $expiredDate->diffInMonths(\Carbon\Carbon::now('Asia/Makassar'));
+                                            return "Member tidak perpanjang selama {$monthsDiff} bulan. Dikenakan biaya admin.";
+                                        }
                                         return 'Perpanjangan membership bebas biaya admin';
                                     }
                                     
@@ -803,19 +824,37 @@ class MemberResource extends Resource
                     ->query(fn ($query) => $query->whereDate('expiry_date', Carbon::now('Asia/Makassar')->toDateString()))
                     ->toggle(),
 
-                // Filter 4: Punya Fingerprint
+                // Filter 5: Expired Lebih Dari 3 Bulan (Kena Biaya Admin)
+                Tables\Filters\Filter::make('expired_3_months')
+                    ->label('Expired > 3 Bulan (Kena Biaya Admin)')
+                    ->query(function ($query) {
+                        $threeMonthsAgo = Carbon::now('Asia/Makassar')->subMonths(3)->startOfDay();
+                        
+                        // Ambil daftar paket harian/mingguan (durasi < 30 hari)
+                        $paketHarianMingguan = \App\Models\Paket::where('durasi_hari', '<', 30)
+                            ->pluck('nama_paket')
+                            ->toArray();
+                        
+                        return $query->where('is_active', false)
+                            ->whereNotNull('expiry_date')
+                            ->whereDate('expiry_date', '<', $threeMonthsAgo)
+                            ->whereNotIn('type', $paketHarianMingguan); // Exclude paket harian/mingguan
+                    })
+                    ->toggle(),
+
+                // Filter 6: Punya Fingerprint
                 Tables\Filters\Filter::make('has_fingerprint')
                     ->label('Punya Fingerprint')
                     ->query(fn ($query) => $query->whereNotNull('fingerprint_id'))
                     ->toggle(),
 
-                // Filter 5: Tidak Punya Fingerprint
+                // Filter 7: Tidak Punya Fingerprint
                 Tables\Filters\Filter::make('no_fingerprint')
                     ->label('Belum Ada Fingerprint')
                     ->query(fn ($query) => $query->whereNull('fingerprint_id'))
                     ->toggle(),
 
-                // Filter 5: Tanda Tangan Digital
+                // Filter 8: Tanda Tangan Digital
                 Tables\Filters\Filter::make('has_signature')
                     ->label('Sudah TTD Digital')
                     ->query(fn ($query) => $query->whereNotNull('digital_signature'))

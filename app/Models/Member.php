@@ -44,6 +44,46 @@ class Member extends Model
     }
 
     /**
+     * Cek apakah member perlu bayar biaya admin lagi
+     * Aturan: Jika lebih dari 3 bulan tidak perpanjang dari tanggal expired → kena biaya admin
+     */
+    public function needsAdminFee(): bool
+    {
+        // Jika belum pernah punya expiry_date (pendaftar baru), tidak perlu cek
+        if (!$this->expiry_date) {
+            return false;
+        }
+        
+        // Jika member masih aktif, tidak perlu biaya admin
+        if ($this->is_active) {
+            return false;
+        }
+        
+        // Hitung selisih antara hari ini dengan tanggal expired
+        $expiredDate = Carbon::parse($this->expiry_date);
+        $today = Carbon::now('Asia/Makassar');
+        $monthsDiff = $expiredDate->diffInMonths($today);
+        
+        // Jika sudah lewat 3 bulan atau lebih dari expired date → kena biaya admin
+        return $monthsDiff >= 3;
+    }
+
+    /**
+     * Get biaya admin yang perlu dibayar
+     * Return 0 jika tidak perlu biaya admin, atau nilai dari paket jika perlu
+     */
+    public function getAdminFee(): int
+    {
+        if (!$this->needsAdminFee()) {
+            return 0;
+        }
+        
+        // Ambil registration fee dari paket current member
+        $paket = Paket::where('nama_paket', $this->type)->first();
+        return $paket ? (int)$paket->registration_fee : 0;
+    }
+
+    /**
      * Logika Perpanjangan Dinamis (Renewal via Tombol Khusus)
      */
     public function perpanjangSatuBulan()
