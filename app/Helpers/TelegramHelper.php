@@ -54,13 +54,14 @@ class TelegramHelper
             $message = substr($message, 0, 4090) . "\n...";
         }
 
-        $maxRetries = 3;
+        $maxRetries = 5;
         $attempt = 0;
 
         while ($attempt < $maxRetries) {
             $attempt++;
             try {
-                $response = Http::timeout(10)
+                $response = Http::timeout(30)
+                    ->connectTimeout(15)
                     ->post("https://api.telegram.org/bot{$botToken}/sendMessage", [
                         'chat_id' => $chatId,
                         'text' => $message,
@@ -86,11 +87,13 @@ class TelegramHelper
             }
 
             if ($attempt < $maxRetries) {
-                sleep(pow(2, $attempt - 1)); // Exponential backoff: 1s, 2s, 4s
+                sleep(pow(2, $attempt)); // Exponential backoff: 2s, 4s, 8s, 16s
             }
         }
 
-        Log::error('[Telegram] Gagal kirim notifikasi setelah ' . $maxRetries . ' percobaan');
+        Log::error('[Telegram] Gagal kirim notifikasi setelah ' . $maxRetries . ' percobaan', [
+            'message_preview' => substr($message, 0, 100)
+        ]);
         return false;
     }
     

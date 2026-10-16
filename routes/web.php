@@ -252,12 +252,28 @@ Route::post('/absen', function (Request $request) {
     
     // 6. Dispatch Notifikasi ke Background Queue (TIDAK BLOCKING!)
     // Response langsung dikirim ke user, notifikasi jalan terpisah di background
+    \Log::info('=== ABSEN DEBUG - BEFORE CHECK ENV ===');
+    \Log::info('ATTENDANCE_NOTIFICATIONS_ENABLED value', [
+        'value' => env('ATTENDANCE_NOTIFICATIONS_ENABLED', 'default_true'),
+        'queue_connection' => config('queue.default')
+    ]);
+    
     if (env('ATTENDANCE_NOTIFICATIONS_ENABLED', true)) {
+        \Log::info('=== INSIDE IF - AKAN DISPATCH JOB ===', [
+            'member_id' => $member->id,
+            'total_latihan' => $totalLatihanBulanIni,
+            'badge' => $badge
+        ]);
+        
         \App\Jobs\SendAttendanceNotifications::dispatch(
             $member->id,
             $totalLatihanBulanIni,
             $badge
         );
+        
+        \Log::info('=== AFTER DISPATCH - JOB DISPATCHED ===');
+    } else {
+        \Log::warning('=== DISPATCH DISABLED - ENV FALSE ===');
     }
     
     // Return response LANGSUNG ke user (instant!)
