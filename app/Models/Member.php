@@ -16,6 +16,7 @@ class Member extends Model
 
     protected $casts = [
         'signature_timestamp' => 'datetime',
+        'deactivated_at' => 'datetime',
     ];
 
     /**
@@ -45,7 +46,7 @@ class Member extends Model
 
     /**
      * Cek apakah member perlu bayar biaya admin lagi
-     * Aturan: Jika lebih dari 3 bulan tidak perpanjang dari tanggal expired → kena biaya admin
+     * Aturan: Jika lebih dari 2 hari tidak perpanjang dari tanggal expired → kena biaya admin
      */
     public function needsAdminFee(): bool
     {
@@ -62,10 +63,10 @@ class Member extends Model
         // Hitung selisih antara hari ini dengan tanggal expired
         $expiredDate = Carbon::parse($this->expiry_date);
         $today = Carbon::now('Asia/Makassar');
-        $monthsDiff = $expiredDate->diffInMonths($today);
+        $daysDiff = $expiredDate->diffInDays($today);
         
-        // Jika sudah lewat 3 bulan atau lebih dari expired date → kena biaya admin
-        return $monthsDiff >= 3;
+        // Jika sudah lewat 2 hari atau lebih dari expired date → kena biaya admin
+        return $daysDiff >= 2;
     }
 
     /**
