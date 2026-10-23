@@ -378,25 +378,21 @@
             <!-- Tab Content: Aturan -->
             <div id="content-aturan" class="tab-content">
                 <div class="space-y-4 text-zinc-300 text-[10px] md:text-[11px] font-bold uppercase tracking-wider mb-8 leading-relaxed px-2 h-80 overflow-y-auto custom-scroll">
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Pembayaran member harus transfer/qris (termasuk pembelian air minum). Jika admin menerima dalam bentuk uang tunai, di nyatakan tidak SAH</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Dana yang masuk tidak boleh di refund</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member bebas masuk setiap hari selama 1 bulan (unlimited)</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>1 member berlaku untuk 1 orang/1 nama, tidak boleh di pindahkan ke orang lain</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Mengisi formulir pendaftaran member secara online melalui barcode</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib absen member secara online melalui barcode</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib memakai sepatu agar lebih safety</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Di larang memakai sendal di area gym</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Setelah menjadi member & tidak melanjutkan member di bulan berikutnya sampai minimal 6 bulan berturut, akan di kenakan biaya admin jika member tersebut ingin mengaktifkan member kembali</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Pembayaran member harus tepat waktu. Lewat dari 21.00 finger pintu akan di close. Jika telat pembayaran perpanjangan beberapa hari, tetap perpanjangan di bulan berikutnya di tanggal yang sama seperti tanggal pertama masuk member & member yg expired tidak boleh masuk lagi jika belum melakukan payment perpanjangan di hari expired</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Jika ingin mengubah tanggal perpanjangan pembayaran, member di wajibkan menghilang/non aktif selama minimal 1 bulan terhitung dari tanggal expired member</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Usia member minimal 12 tahun dengan ijin tertulis maupun lisan dari orang tua & wajib di pantau langsung oleh orang tua maupun personal trainer</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Setiap masuk gym member harus absen secara online. Caranya scan barcode yang ada di atas meja kasir, kemudian klik absen member & masukkan nomor whatsapp</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib membersihkan keringat setelah memakai alat dengan antiseptik yang telah di sediakan & wajib membawa handuk kecil</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak di perbolehkan memakai sepatu masuk ke area musholla & kamar mandi</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak di perbolehkan bermain handphone di area alat beban</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member yang bermasalah & tidak mengindahkan aturan akan di keluarkan & di BLACKLIST</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib mengembalikan beban ke tempat semula</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Gym tutup 01.00 dini hari</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Pembayaran member baru & perpanjangan member hanya boleh by TRANSFER & QRIS. Jika terdapat pekerja arifah ada yang menerima dalam bentuk tunai, DI NYATAKAN TIDAK SAH.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Dana yang masuk tidak dapat DI REFUND dengan alasan apapun.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib ABSEN MEMBER sebelum naik ke area gym.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib memakai sepatu agar lebih safety. Jika terdapat member menggunakan kaki kosong (cekeran) arifah gym tidak bertanggung jawab jika terjadi kecelakaan di area kaki.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib mengembalikan alat apapun ke tempat semula.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member berlaku 30 hari aktif.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>1 member berlaku untuk 1 org. Tidak dapat di gantikan oleh teman, keluarga atau siapapun.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak masuk selama 30 hari atau tidak full, member yang tidak mengisi waktu aktif  di nyatakan member HANGUS.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p> Jika ada member yang tidak extend di hari expired wajib membayar BIAYA ADMIN kembali jika ingin mengaktifkan member.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member berusia minimal 12 tahun (harus memakai PT)</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Masuk gym sebelum waktu buka & pulang lewat dari jadwal tutup, AKAN DI KENAKAN DENDA sebesar Rp.50.000/orang.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>⁠Fasilitas di ruang rias untuk umum.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Siapapun yang bermasalah di gym akan DI KELUARKAN & DI BLACKLIST.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Arifah gym tidak bertanggung jawab jika terdapat kecelakaan yang di sebabkan kelalaian dari pihak member & kelalaian karena tidak patuh aturan.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Jika terdapat member melakukan pencurian, pelecehan, pemukulan, AKAN DI LAPORKAN KE PIHAK BERWAJIB.</p></div>
                     <div class="mt-6 p-4 bg-[#0992C2]/10 rounded-xl border border-[#0992C2]/20">
                         <p class="text-[#0992C2] font-black text-[9px] md:text-[10px]">NB : Di harapkan member yang masuk telah membaca & menyetujui persayaratan di atas</p>
                     </div>
@@ -406,40 +402,14 @@
             <!-- Tab Content: Larangan -->
             <div id="content-larangan" class="tab-content hidden">
                 <div class="space-y-4 text-zinc-300 text-[10px] md:text-[11px] font-bold uppercase tracking-wider mb-8 leading-relaxed px-2 h-80 overflow-y-auto custom-scroll">
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member di larang menyimpan air di showcase (pendingin). Members are prohibited from storing water in the showcase.</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member di larang duduk di kursi kasir maupun di atas meja kasir. Members are prohibited from sitting on the cashier's chair or on the cashier's table.</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Loker (penyimpanan barang) untuk umum tanpa terkecuali. Member di larang membawa pulang kunci loker (jika di dapati, di kenakan denda Rp.50.000). Lockers (storage facilities) are available to the public without exception. Members are prohibited from taking locker keys home (if found, a fine of 50,000 rupiah will be imposed).</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Di larang membuang sampah sembarangan. Tempat sampah sudah di sediakan. Do not litter. Trash bins are provided.</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Di larang membawa pulang sisir, hair dryer, parfum yang telah di sediakan kecuali pembalut & jarum pentul, gunakan pada saat urgent saja dan seperlunya. It is forbidden to take home combs, hair dryers, perfumes that have been provided except sanitary napkins and safety pins, use them only in urgent situations and as needed.</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Di larang main HP di tempat alat beban, bijaklah. Masih ada banyak yang antri alat. Playing with your cell phone is prohibited, be wise. There are still many people queuing.</p></div>
-                </div>
-            </div>
-
-            <!-- Tab Content: Aturan -->
-            <div id="content-aturan" class="tab-content hidden">
-                <div class="space-y-4 text-zinc-300 text-[10px] md:text-[11px] font-bold uppercase tracking-wider mb-8 leading-relaxed px-2 h-80 overflow-y-auto custom-scroll">
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Pembayaran member harus transfer/qris (termasuk pembelian air minum). Jika admin menerima dalam bentuk uang tunai, di nyatakan tidak SAH</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Dana yang masuk tidak boleh di refund</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member bebas masuk setiap hari selama 1 bulan (unlimited)</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>1 member berlaku untuk 1 orang/1 nama, tidak boleh di pindahkan ke orang lain</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Mengisi formulir pendaftaran member secara online melalui barcode</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib absen member secara online melalui barcode</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib memakai sepatu agar lebih safety</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Di larang memakai sendal di area gym</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Setelah menjadi member & tidak melanjutkan member di bulan berikutnya sampai minimal 6 bulan berturut, akan di kenakan biaya admin jika member tersebut ingin mengaktifkan member kembali</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Pembayaran member harus tepat waktu. Lewat dari 21.00 finger pintu akan di close. Jika telat pembayaran perpanjangan beberapa hari, tetap perpanjangan di bulan berikutnya di tanggal yang sama seperti tanggal pertama masuk member & member yg expired tidak boleh masuk lagi jika belum melakukan payment perpanjangan di hari expired</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Jika ingin mengubah tanggal perpanjangan pembayaran, member di wajibkan menghilang/non aktif selama minimal 1 bulan terhitung dari tanggal expired member</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Usia member minimal 12 tahun dengan ijin tertulis maupun lisan dari orang tua & wajib di pantau langsung oleh orang tua maupun personal trainer</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Setiap masuk gym member harus absen secara online. Caranya scan barcode yang ada di atas meja kasir, kemudian klik absen member & masukkan nomor whatsapp</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib membersihkan keringat setelah memakai alat dengan antiseptik yang telah di sediakan & wajib membawa handuk kecil</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak di perbolehkan memakai sepatu masuk ke area musholla & kamar mandi</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak di perbolehkan bermain handphone di area alat beban</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Member yang bermasalah & tidak mengindahkan aturan akan di keluarkan & di BLACKLIST</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Wajib mengembalikan beban ke tempat semula</p></div>
-                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Gym tutup 01.00 dini hari</p></div>
-                    <div class="mt-6 p-4 bg-[#0992C2]/10 rounded-xl border border-[#0992C2]/20">
-                        <p class="text-[#0992C2] font-black text-[9px] md:text-[10px]">NB : Di harapkan member yang masuk telah membaca & menyetujui persayaratan di atas</p>
-                    </div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak di perbolehkan menyimpan air di showcase.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak di perbolehkan membawa anak di bawah usia 12 tahun. Jika terdapat, arifah tidak bertanggung jawab jika terjadi kecelakaan terhadap anak tersebut.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Loker barang GRATIS. Di larang menyimpan barang/menitip barang di LOKER jika mau pulang karena di akses umum oleh semua member.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Membuang sampah sembarangan, DI KENAKAN DENDA 10.000/orang karena tempat sampah telah di sediakan.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak di perbolehkan membawa pulang fasilitas yang ada di laci ruang rias.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak di perbolehkan bermain handphone di area alat.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Tidak di perbolehkan memakai sendal dalam jenis apapun di area gym.</p></div>
+                    <div class="flex gap-4"><span class="text-[#0992C2] font-black">•</span><p>Jika terdapat member ada yang tidak mengembalikan plat, dumble atau alat apapun, di kenakan BIAYA DENDA sebesar 10.000/orang</p></div>
                 </div>
             </div>
 
