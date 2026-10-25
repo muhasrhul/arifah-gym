@@ -275,11 +275,6 @@
             generateCard();
         });
 
-        // Auto refresh setiap 30 detik
-        setInterval(function() {
-            location.reload();
-        }, 30000);
-
         // Render Chart.js - Jam Teramai
         function renderBusyHoursChart() {
             const data = Object.values(gymData.chartData);
