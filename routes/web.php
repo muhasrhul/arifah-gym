@@ -10,6 +10,7 @@ use App\Models\Attendance;
 use App\Models\Transaction; 
 use App\Http\Controllers\FrontMemberController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\GymStatusController;
 use Filament\Notifications\Notification;
 
 /*
@@ -25,6 +26,9 @@ Route::get('/login', function () {
 
 // 1. HALAMAN UTAMA & SEARCH
 Route::get('/', [FrontMemberController::class, 'index'])->name('home');
+
+// 1.3 HALAMAN GYM STATUS - Public view untuk member
+Route::get('/gym-status', [GymStatusController::class, 'index'])->name('gym.status');
 
 // 1.1 HALAMAN KASIR - Landing page untuk pilih menu absen atau registrasi
 Route::get('/kasir', function () {
