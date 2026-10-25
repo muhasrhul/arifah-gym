@@ -420,7 +420,7 @@
                             displayColors: false,
                             callbacks: {
                                 label: function(context) {
-                                    return 'Total: ' + context.parsed.y + ' member';
+                                    return 'Rata-rata: ' + context.parsed.y + ' member';
                                 }
                             }
                         }
